@@ -1,4 +1,4 @@
-# ML Sec Ops
+# ML Sec Ops 🍃
 
 > Practical sec lab repository focused on WebAppSec, API Security, secure coding, container hardening and vulnerability analysis.
 
@@ -256,3 +256,4 @@ The emphasis is on practical engineering thinking:
 ```text
 vulnerability → exploitation path → impact → root cause → mitigation → hardening
 ```
+
