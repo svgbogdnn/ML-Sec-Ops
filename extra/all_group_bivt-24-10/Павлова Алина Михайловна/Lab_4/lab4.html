@@ -1,0 +1,198 @@
+<h1 id="-4-xss-">Лабораторная работа №4: Симуляция XSS-атаки</h1>
+<h2 id="-i-xss-php-2021-">Часть I: Анализ XSS-уязвимостей в PHP-компонентах за 2021 год</h2>
+<h3 id="-cve-2021-">Общее количество CVE за 2021 год</h3>
+<p>По данным <strong>National Vulnerability Database (NVD)</strong>, общее количество уязвимостей за 2021 год составляет <strong>~20 140</strong>.</p>
+<p>Среди них значительную долю занимают XSS-уязвимости в веб-приложениях на PHP, что подтверждает актуальность проблемы даже для хорошо изученного типа атак.</p>
+<p><strong>Источники статистики:</strong></p>
+<ul>
+<li><a href="https://cve.mitre.org/statistics/">https://cve.mitre.org/statistics/</a></li>
+<li><a href="https://nvd.nist.gov/vuln/search">https://nvd.nist.gov/vuln/search</a></li>
+</ul>
+<hr>
+<h3 id="1-cve-2021-43698-xss-phpwhois">1. CVE-2021-43698 — XSS в phpWhois</h3>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CVE</strong></td>
+<td>CVE-2021-43698</td>
+</tr>
+<tr>
+<td><strong>Дата публикации</strong></td>
+<td>29 ноября 2021</td>
+</tr>
+<tr>
+<td><strong>CNA</strong></td>
+<td>MITRE</td>
+</tr>
+<tr>
+<td><strong>Источник</strong></td>
+<td><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-43698">NVD</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Компонент:</strong> phpWhois</p>
+<p><strong>Назначение компонента:</strong><br>Библиотека для выполнения WHOIS-запросов — получения информации о зарегистрированных доменных именах.</p>
+<p><strong>Функционал:</strong></p>
+<ul>
+<li>Получение информации о владельцах доменов</li>
+<li>Просмотр данных о DNS-серверах</li>
+<li>Проверка статуса домена</li>
+<li>Получение контактной информации регистранта</li>
+<li>Анализ доменной инфраструктуры</li>
+</ul>
+<p><strong>Описание XSS-уязвимости:</strong><br>В файле <code>example.php</code> параметр <code>$_GET[&#39;query&#39;]</code> выводится на страницу без должной экранизации. Функция <code>exit</code> завершает скрипт и выводит сообщение, содержащее пользовательский ввод напрямую в HTML. Это позволяет злоумышленнику внедрить произвольный JavaScript код, который выполнится в браузере пользователя.</p>
+<p><strong>Причина:</strong><br>Отсутствие экранирования пользовательского ввода перед выводом в HTML. Не используется функция <code>htmlspecialchars()</code> или аналогичные механизмы защиты.</p>
+<p><strong>Последствия:</strong></p>
+<ul>
+<li>Выполнение произвольного JavaScript в браузере жертвы</li>
+<li>Кража сессионных cookies</li>
+<li>Компрометация учётных записей</li>
+</ul>
+<hr>
+<h3 id="2-cve-2021-21345-xss-phpmyadmin">2. CVE-2021-21345 — XSS в phpMyAdmin</h3>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CVE</strong></td>
+<td>CVE-2021-21345</td>
+</tr>
+<tr>
+<td><strong>Дата публикации</strong></td>
+<td>2021</td>
+</tr>
+<tr>
+<td><strong>CNA</strong></td>
+<td>MITRE</td>
+</tr>
+<tr>
+<td><strong>Источник</strong></td>
+<td><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-21345">NVD</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Компонент:</strong> phpMyAdmin</p>
+<p><strong>Назначение компонента:</strong><br>Веб-интерфейс для администрирования баз данных MySQL.</p>
+<p><strong>Функционал:</strong></p>
+<ul>
+<li>Создание, редактирование и удаление баз данных</li>
+<li>Выполнение SQL-запросов</li>
+<li>Управление таблицами и записями</li>
+<li>Настройка прав доступа пользователей</li>
+<li>Экспорт/импорт данных (SQL, CSV, XML, JSON)</li>
+<li>Администрирование сервера MySQL</li>
+<li>Управление пользователями и привилегиями</li>
+</ul>
+<p><strong>Описание XSS-уязвимости:</strong><br>Отражённая XSS-уязвимость в параметре <code>table</code>. Злоумышленник может внедрить вредоносный JavaScript код, который выполнится в контексте браузера администратора при открытии специально сформированной ссылки.</p>
+<p><strong>Причина:</strong><br>Недостаточная экранизация пользовательского ввода перед выводом в HTML. Параметр <code>table</code> не проходит должную фильтрацию и санитизацию.</p>
+<p><strong>Последствия:</strong></p>
+<ul>
+<li>Кража сессионных cookies администратора</li>
+<li>Получение полного контроля над базой данных</li>
+<li>Выполнение действий от имени администратора</li>
+<li>Компрометация всей системы управления БД</li>
+</ul>
+<h2 id="-ii-xss-">Часть II: Практическая симуляция XSS-атаки</h2>
+<h3 id="-">Ход рассуждений и действия</h3>
+<p><strong>Шаг 1:</strong> Запустила Docker-контейнер с образом <code>ket9/otus-devsecops-xss:latest</code>.</p>
+<pre><code class="lang-bash">docker pull ket9/otus-devsecops-xss:latest
+docker <span class="hljs-keyword">run</span><span class="bash"> <span class="hljs-_">-d</span> -p 8080:80 ket9/otus-devsecops-xss:latest
+</span>docker ps
+</code></pre>
+<p><strong>Шаг 2:</strong> Открыла приложение по адресу <a href="http://localhost:8080/XSS-1/index.php">http://localhost:8080/XSS-1/index.php</a>. Обнаружила форму для ввода комментариев.</p>
+<p><strong>Шаг 3:</strong> Ввела тестовую строку <code>TEST_XSS_12345</code> и проверила, отображается ли она на странице. Текст отобразился без изменений, что указывает на отсутствие фильтрации.</p>
+<p><strong>Шаг 4:</strong> Внедрила XSS-пейлоад:</p>
+<pre><code class="lang-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="actionscript">alert(<span class="hljs-string">'XSS_SUCCESS'</span>)</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p><strong>Шаг 5:</strong> После нажатия кнопки &quot;Save Data&quot; появилось всплывающее окно браузера с сообщением <code>XSS_SUCCESS</code>.</p>
+<p><strong>Шаг 6:</strong> При обновлении страницы окно появляется снова, что указывает на <strong>Stored XSS</strong> — скрипт сохранился в базе данных и выполняется при каждой загрузке страницы.</p>
+<p><strong>Вывод:</strong> Приложение не экранирует пользовательский ввод перед выводом в HTML, что позволяет выполнить произвольный JavaScript в контексте браузера пользователя. Это критическая уязвимость безопасности.</p>
+<h3 id="-">Ответ приложения</h3>
+<p>Всплывающее окно браузера <code>alert()</code> с текстом <code>XSS_SUCCESS</code> и <code>XSS</code>.</p>
+<h3 id="-">Тип найденной уязвимости</h3>
+<p><strong>Stored Cross-Site Scripting (XSS)</strong> — межсайтовый скриптинг второго порядка.</p>
+<p>Злоумышленник внедряет вредоносный JavaScript код в форму комментария, который сервер сохраняет в базе данных без должной санитизации. При каждом посещении страницы другими пользователями скрипт выполняется в их браузерах.</p>
+<h3 id="-">Последствия</h3>
+<ol>
+<li>Выполнение произвольных скриптов в браузере пользователя</li>
+<li>Кража сессионных cookies и метаданных сессии</li>
+<li>Компрометация учётных записей пользователей</li>
+<li>Подмена содержимого страницы</li>
+<li>Перенаправление на фишинговые сайты</li>
+<li>Выполнение действий от имени жертвы</li>
+</ol>
+<h3 id="-">Меры предотвращения</h3>
+<p><strong>1. Экранирование специальных символов при выводе в HTML:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Символ</th>
+<th>HTML-сущность</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;</code></td>
+<td><code>&amp;lt;</code></td>
+</tr>
+<tr>
+<td><code>&gt;</code></td>
+<td><code>&amp;gt;</code></td>
+</tr>
+<tr>
+<td><code>&quot;</code></td>
+<td><code>&amp;quot;</code></td>
+</tr>
+<tr>
+<td><code>&#39;</code></td>
+<td><code>&amp;#x27;</code></td>
+</tr>
+<tr>
+<td><code>&amp;</code></td>
+<td><code>&amp;amp;</code></td>
+</tr>
+</tbody>
+</table>
+<p>В PHP использовать функцию <code>htmlspecialchars()</code> с флагом <code>ENT_QUOTES</code>:</p>
+<pre><code class="lang-php"><span class="hljs-built_in">echo</span> htmlspecialchars(<span class="hljs-variable">$user_input</span>, ENT_QUOTES, <span class="hljs-string">'UTF-8'</span>);
+</code></pre>
+<p><strong>2. Валидация и фильтрация входных данных:</strong></p>
+<ul>
+<li>Использовать белые списки (whitelist) для разрешённых символов</li>
+<li>Отклонять ввод, содержащий теги <code>&lt;script&gt;</code>, <code>&lt;img&gt;</code>, <code>&lt;svg&gt;</code>, <code>&lt;body&gt;</code></li>
+<li>Блокировать обработчики событий: <code>onerror</code>, <code>onload</code>, <code>onclick</code>, <code>onmouseover</code></li>
+</ul>
+<p><strong>3. Content Security Policy (CSP):</strong>
+Настроить HTTP-заголовок:</p>
+<pre><code><span class="hljs-attribute">Content-Security-Policy</span>: <span class="hljs-keyword">default-src</span> <span class="hljs-string">'self'</span>; <span class="hljs-keyword">script-src</span> <span class="hljs-string">'self'</span>
+</code></pre><p>Это запретит выполнение inline-скриптов и скриптов из внешних источников.</p>
+<p><strong>4. Использование безопасных фреймворков:</strong></p>
+<ul>
+<li>Современные шаблонизаторы (Twig, Blade) автоматически экранируют вывод</li>
+<li>Не отключать авто-экранирование без крайней необходимости</li>
+</ul>
+<p><strong>5. HttpOnly флаг для cookies:</strong></p>
+<pre><code class="lang-php">setcookie(<span class="hljs-symbol">'session'</span>, $<span class="hljs-keyword">value</span>, [
+    <span class="hljs-symbol">'httponly'</span> =&gt; <span class="hljs-literal">true</span>,
+    <span class="hljs-symbol">'secure'</span> =&gt; <span class="hljs-literal">true</span>,
+    <span class="hljs-symbol">'samesite'</span> =&gt; <span class="hljs-symbol">'Strict'</span>
+]);
+</code></pre>
+<p>Это предотвратит кражу cookies через JavaScript.</p>
+<p><strong>6. Регулярное тестирование:</strong></p>
+<ul>
+<li>Проводить статический анализ кода (SonarQube, PHPStan)</li>
+<li>Использовать динамическое тестирование (OWASP ZAP, Burp Suite)</li>
+<li>Проводить penetration testing</li>
+</ul>

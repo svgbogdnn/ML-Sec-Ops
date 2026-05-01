@@ -1,0 +1,60 @@
+<h1 id="-5">Лабораторная работа №5</h1>
+<h2 id="-i">Часть I</h2>
+<h3 id="-">Образы</h3>
+<p>Смотрим какие есть образы командой <code>docker images</code>
+<img src="image.png" alt="alt text"></p>
+<h3 id="-">Пользователь</h3>
+<p>Смотрим юзера командой <code>whoami</code> до захода в образ
+<img src="image-1.png" alt="alt text"></p>
+<h3 id="-">В образе</h3>
+<p>Заходим в образ командой </p>
+<p><code>docker run -it productivity-app-mas-taska-server:latest sh</code></p>
+<p>и смотрим юзера командой <code>whoami</code></p>
+<p><img src="image-2.png" alt="alt text"></p>
+<h2 id="-ii">Часть II</h2>
+<h3 id="dockerfile">Dockerfile</h3>
+<p>Создадим Dockerfile на основе предыдущего образа. В нем создадим нерутового юзера <code>test</code></p>
+<p><img src="image-3.png" alt="alt text"></p>
+<h3 id="whoami">whoami</h3>
+<p>Сбилдим новый образ</p>
+<p> <code>docker build -t productivity-app-secure:latest .</code></p>
+<p><img src="image-4.png" alt="alt text"></p>
+<p>Заходим в образ командой </p>
+<p><code>docker run -it productivity-app-secure:latest sh</code></p>
+<p>и смотрим юзера командой <code>whoami</code></p>
+<p><img src="image-5.png" alt="alt text"></p>
+<h3 id="-">Доп флаги</h3>
+<ol>
+<li><p>Запускать с read-only файловой системой:</p>
+<p> <code>docker run --read-only ...</code></p>
+</li>
+<li><p>Ограничить cpu и memrory:</p>
+<p> <code>docker run --memory=512m --cpus=1 ...</code></p>
+</li>
+<li><p>Ограничить capabilities:</p>
+<p> <code>docker run --cap-drop=ALL ...</code></p>
+</li>
+</ol>
+<h2 id="-iii">Часть III</h2>
+<h3 id="-trivy">Запускаем сканирование командой при помощи trivy</h3>
+<pre><code>docker <span class="hljs-keyword">run</span> --<span class="hljs-keyword">rm</span> \
+  -v /<span class="hljs-keyword">var</span>/<span class="hljs-keyword">run</span>/docker.sock:/<span class="hljs-keyword">var</span>/<span class="hljs-keyword">run</span>/docker.sock \
+  aquasec/trivy image productivity-<span class="hljs-keyword">app</span>-secure:latest
+</code></pre><p><img src="image-8.png" alt="alt text"></p>
+<p><img src="image-6.png" alt="alt text"></p>
+<p><img src="image-7.png" alt="alt text"></p>
+<h3 id="-">Вывод</h3>
+<p>Общий результат:</p>
+<p>Всего найдено 109 уязвимостей.</p>
+<p>CRITICAL уязвимостей - 0.</p>
+<p>Обнаружено 6 уязвимостей уровня HIGH.</p>
+<p>Некоторые уязвимости высокого уровня:</p>
+<ol>
+<li><p>libncursesw6 — CVE-2025-69720.</p>
+<p>Уязвимость переполнения буфера может привести к выполнению произвольного кода.</p>
+</li>
+<li><p>libsystemd0 — CVE-2026-29111.</p>
+<p>Выполнение произвольного кода или отказ в обслуживании через некорректный/ложный IPC</p>
+</li>
+</ol>
+<p>Эти уязвимости относятся не к коду приложения напрямую, а к системным пакетам базового Debian-образа. </p>

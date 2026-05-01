@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторная работа 4</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; margin: 40px; line-height: 1.6; color: #333; background-color: #f4f7f6; }
+        .container { background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 900px; margin: auto; }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; border-left: 5px solid #3498db; padding-left: 15px; }
+        h3 { color: #444; margin-top: 20px; }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 10px; }
+        .bad-practice { color: #c0392b; font-weight: bold; }
+        .good-practice { color: #27ae60; font-weight: bold; }
+        hr { border: 0; height: 1px; background: #eee; margin: 40px 0; }
+        code { background: #f0f0f0; padding: 2px 5px; border-radius: 3px; font-family: Consolas, monospace; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Отчет по лабораторной работе №4</h1>
+        <p style="text-align: center;"><em>Анализ безопасности кода и механизмы Django</em></p>
+
+        <h2>Часть 1. Разбор уязвимого кода</h2>
+        <p>Работали с фрагментами на Flask. Основные проблемы везде связаны с тем, что разработчик поленился или забыл про безопасность.</p>
+
+        <h3>1. Хардкод секретов</h3>
+        <p><span class="bad-practice">Проблема:</span> Ключ <code>SECRET_KEY</code> прописан прямо в файле. Это классика — при краже кода злоумышленник получает полный контроль над подписью сессий.</p>
+        <p><span class="good-practice">Решение:</span> Использовать переменные окружения. В коде оставляем только вызов <code>os.getenv()</code>.</p>
+
+        <h3>2. Обычные поля для паролей</h3>
+        <p><span class="bad-practice">Проблема:</span> Использование <code>TextField</code> вместо <code>PasswordField</code>. Пароль светится на экране, никакой приватности.</p>
+        <p><span class="good-practice">Решение:</span> Только специальные поля, которые маскируют ввод. И не забываем про валидацию данных на стороне сервера.</p>
+
+        <h3>3. Хранение паролей и обработка ошибок</h3>
+        <p><span class="bad-practice">Проблема:</span> Пароли сохраняются в базу «как есть». При ошибке регистрации приложение все равно пишет, что все круто. Это путает пользователя и скрывает баги.</p>
+        <p><span class="good-practice">Решение:</span> Пароли — только в хешированном виде (bcrypt, argon2). Ошибки нужно обрабатывать точечно и возвращать адекватные статусы.</p>
+
+        <hr>
+
+        <h2>Часть 2. Безопасность в Django</h2>
+        
+        <h3>Защита от типовых атак</h3>
+        <p>Django — довольно "параноидальный" фреймворк, и это хорошо. Он закрывает:</p>
+        <ul>
+            <li><strong>XSS:</strong> Все данные в шаблонах экранируются автоматически.</li>
+            <li><strong>CSRF:</strong> Каждая форма требует уникальный токен, чтобы исключить запросы со стороны.</li>
+            <li><strong>SQLi:</strong> ORM берет на себя очистку запросов к базе.</li>
+        </ul>
+
+        <h3>Как устроены сессии</h3>
+        <p>Тут все работает на связке "Куки + База". В браузере у пользователя живет только <code>sessionid</code>. Это просто длинная случайная строка. А вся "начинка" сессии хранится на сервере. Когда приходит запрос, Django по ID достает данные из своей базы. Это надежно, потому что украсть саму информацию из кук невозможно — её там просто нет.</p>
+    </div>
+</body>
+</html>

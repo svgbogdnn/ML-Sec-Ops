@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Лабораторная работа 4</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.55;
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 20px;
+      color: #222;
+      background: #fff;
+    }
+
+    h1, h2, h3 {
+      color: #222;
+      line-height: 1.25;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-top: 0;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 8px;
+    }
+
+    h2 {
+      font-size: 23px;
+      margin-top: 34px;
+      border-bottom: 1px solid #e5e5e5;
+      padding-bottom: 6px;
+    }
+
+    h3 {
+      font-size: 19px;
+      margin-top: 26px;
+    }
+
+    a {
+      color: #0645ad;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.95em;
+    }
+
+    pre {
+      background: #f4f4f4;
+      padding: 13px;
+      border-radius: 6px;
+      overflow-x: auto;
+      border: 1px solid #e0e0e0;
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      font-size: 14px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 16px 0;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #f2f2f2;
+    }
+
+    ul {
+      padding-left: 24px;
+    }
+
+    img {
+      max-width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      margin: 10px 0;
+    }
+
+    .note {
+      background: #f8f8f8;
+      border-left: 4px solid #999;
+      padding: 10px 14px;
+      margin: 14px 0;
+    }
+
+    .sources {
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Лабораторная работа 4</h1>
+  <p><strong>Тема:</strong> симуляция XSS-атаки.</p>
+
+  <h2>Часть 1. CVE за 2021 год</h2>
+
+  <p>Я искал CVE за 2021 год по словам <code>XSS</code>, <code>PHP</code>, <code>WordPress</code>, <code>plugin</code>, <code>CWE-79</code>. Таких уязвимостей оказалось реально много.</p>
+
+  <p>По NVD за 2021 год получилось примерно <strong>21957 CVE</strong>. Число может чуть отличаться из-за фильтров, но главный вывод такой: даже за один год уязвимостей очень много.</p>
+
+  <p class="sources">Источник:<br>
+    <a href="https://nvd.nist.gov/vuln/search">https://nvd.nist.gov/vuln/search</a>
+  </p>
+
+  <h3>CVE-2021-29625 — Adminer XSS</h3>
+
+  <p class="sources">Источники:<br>
+    <a href="https://nvd.nist.gov/vuln/detail/CVE-2021-29625">https://nvd.nist.gov/vuln/detail/CVE-2021-29625</a><br>
+    <a href="https://github.com/advisories/GHSA-2v82-5746-vwqc">https://github.com/advisories/GHSA-2v82-5746-vwqc</a>
+  </p>
+
+  <p><strong>Что за компонент:</strong><br>
+    Adminer — это PHP-инструмент для управления базами данных через браузер. Более легкая альтернатива phpMyAdmin. Через него можно смотреть таблицы, выполнять SQL-запросы и менять данные.
+  </p>
+
+  <p><strong>Суть уязвимости:</strong><br>
+    В Adminer 4.6.1–4.8.0 была XSS-уязвимость в обработке ссылки <code>doc_link</code>. Данные недостаточно нормально экранировались и могли попасть в HTML.
+  </p>
+
+  <p><strong>Причина:</strong><br>
+    Пользовательские данные выводились на страницу без безопасного экранирования.
+  </p>
+
+  <p><strong>Последствия:</strong><br>
+    Можно было заставить браузер пользователя выполнить JavaScript-код. Неприятно, особенно если пользователь сидит под админкой.
+  </p>
+
+  <h3>CVE-2021-34641 — SEOPress WordPress Plugin XSS</h3>
+
+  <p class="sources">Источники:<br>
+    <a href="https://nvd.nist.gov/vuln/detail/CVE-2021-34641">https://nvd.nist.gov/vuln/detail/CVE-2021-34641</a><br>
+    <a href="https://www.wordfence.com/vulnerability-advisories/">https://www.wordfence.com/vulnerability-advisories/</a>
+  </p>
+
+  <p><strong>Что за компонент:</strong><br>
+    SEOPress — это WordPress-плагин для SEO. Он помогает настраивать title, description, meta-теги, sitemap и др.
+  </p>
+
+  <p><strong>Суть уязвимости:</strong><br>
+    В SEOPress 5.0.0–5.0.3 была Stored XSS. Авторизованный пользователь мог вставить вредоносный JS через поля title/description.
+  </p>
+
+  <p><strong>Причина:</strong><br>
+    Ввод плохо проверялся и потом выводился в админке без нормальной обработки.
+  </p>
+
+  <p><strong>Последствия:</strong><br>
+    Скрипт сохранялся и выполнялся у других пользователей, которые открывали эту страницу. То есть баг не одноразовый, а сохраняемый.
+  </p>
+
+  <h2>Часть 2. XSS-атака на стенде</h2>
+
+  <h3>Запуск</h3>
+
+  <p>Сначала я скачал образ:</p>
+
+  <pre><code>docker pull ket9/otus-devsecops-xss</code></pre>
+
+  <p>Потом запустил контейнер:</p>
+
+  <pre><code>docker run -d -p 8080:80 ket9/otus-devsecops-xss:latest</code></pre>
+
+  <p>После этого открыл приложение:</p>
+
+  <pre><code>http://localhost:8080/</code></pre>
+
+  <p>На странице были разные задания. Я выбрал <strong>XSS-1</strong>, потому что там есть поле для комментария и сразу понятно, куда можно попробовать вставить payload.</p>
+
+  <h3>Что я пробовал</h3>
+
+  <p>Сначала я ввел обычный текст:</p>
+
+  <pre><code>hello test</code></pre>
+
+  <p>Он появился на странице после сохранения. Значит, приложение берет мой ввод и вставляет его обратно в HTML.</p>
+
+  <p>Потом я ввел payload:</p>
+
+  <pre><code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code></pre>
+
+  <p>После сохранения и обновления страницы появилось alert-окно с текстом <code>XSS</code>.</p>
+
+  <p><img src="xss.png" alt="XSS атака"></p>
+
+  <p>Вывод: JS реально выполнился в браузере, значит XSS есть.</p>
+
+  <h2>Найденная уязвимость</h2>
+
+  <p>Тип: <strong>Stored XSS</strong>.</p>
+
+  <p>Почему Stored:</p>
+  <ul>
+    <li>payload вводится через форму;</li>
+    <li>приложение его сохраняет;</li>
+    <li>после обновления страницы скрипт снова выполняется;</li>
+    <li>значит, код хранится в приложении или базе.</li>
+  </ul>
+
+  <p>Также это относится к <strong>CWE-79</strong> — неправильная обработка пользовательского ввода при генерации HTML.</p>
+
+  <p>Если бы это был реальный сайт, через такую дыру можно было бы украсть cookie, токены, подменить страницу или сделать действие от имени пользователя.</p>
+
+  <h2>Меры предотвращения</h2>
+
+  <p>Главная идея: нельзя просто брать пользовательский ввод и вставлять его в HTML как есть.</p>
+
+  <h3>1. Экранировать вывод</h3>
+
+  <p>Опасные символы надо заменять на безопасные HTML-сущности:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Символ</th>
+        <th>Замена</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>&lt;</code></td>
+        <td><code>&amp;lt;</code></td>
+      </tr>
+      <tr>
+        <td><code>&gt;</code></td>
+        <td><code>&amp;gt;</code></td>
+      </tr>
+      <tr>
+        <td><code>&quot;</code></td>
+        <td><code>&amp;quot;</code></td>
+      </tr>
+      <tr>
+        <td><code>'</code></td>
+        <td><code>&amp;#039;</code></td>
+      </tr>
+      <tr>
+        <td><code>&amp;</code></td>
+        <td><code>&amp;amp;</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>В PHP можно сделать так:</p>
+
+  <pre><code>htmlspecialchars($comment, ENT_QUOTES, 'UTF-8');</code></pre>
+
+  <p>Тогда <code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code> будет показан как текст, а не выполнится как код.</p>
+
+  <h3>2. Фильтровать ввод</h3>
+
+  <p>Для комментариев лучше запрещать или удалять:</p>
+  <ul>
+    <li><code>&lt;script&gt;</code> и <code>&lt;/script&gt;</code>;</li>
+    <li><code>onerror</code>, <code>onclick</code>, <code>onload</code>;</li>
+    <li><code>javascript:</code> в ссылках;</li>
+    <li>лишние HTML-теги, если они не нужны.</li>
+  </ul>
+
+  <p>Если HTML в комментариях не нужен, проще разрешить только обычный текст. Меньше свободы — меньше шансов словить баг.</p>
+
+  <h3>3. Использовать белый список</h3>
+
+  <p>Черный список легко обойти, потому что payload-ов миллион. Лучше разрешать только безопасные символы: буквы, цифры, пробелы и обычную пунктуацию.</p>
+
+  <h3>4. Добавить CSP</h3>
+
+  <p>Можно добавить заголовок:</p>
+
+  <pre><code>Content-Security-Policy: default-src 'self'; script-src 'self'</code></pre>
+
+  <p>Это не фиксит проблему полностью, но сильно усложняет выполнение inline-скриптов.</p>
+
+  <h3>5. Проверять данные на сервере</h3>
+
+  <p>Проверки только в браузере не считаются защитой, потому что их легко обойти. Нормальная обработка должна быть именно на сервере.</p>
+
+  <h2>Итог</h2>
+
+  <p>Я нашел две CVE за 2021 год с XSS в PHP-компонентах и провел атаку на тестовом стенде. </p>
+</body>
+</html>

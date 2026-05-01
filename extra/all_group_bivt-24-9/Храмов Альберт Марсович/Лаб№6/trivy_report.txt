@@ -1,0 +1,72 @@
+====================================================
+DOCKER SECURITY SCAN REPORT (TRIVY)
+Image: tensorflow-secure
+====================================================
+
+--- Target: tensorflow-secure (ubuntu 22.04) (ubuntu) ---
+Summary: CRITICAL: 0, HIGH: 12, MEDIUM: 1812, LOW: 150
+----------------------------------------
+IMPORTANT VULNERABILITIES:
+[HIGH] CVE-2022-42919 - libpython3.11 (3.11.15-1+jammy1)
+  Title: python: local privilege escalation via the multiprocessing forkserver start method
+  Link: https://avd.aquasec.com/nvd/cve-2022-42919
+
+[HIGH] CVE-2022-42919 - libpython3.11-dev (3.11.15-1+jammy1)
+  Title: python: local privilege escalation via the multiprocessing forkserver start method
+  Link: https://avd.aquasec.com/nvd/cve-2022-42919
+
+[HIGH] CVE-2022-42919 - libpython3.11-minimal (3.11.15-1+jammy1)
+  Title: python: local privilege escalation via the multiprocessing forkserver start method
+  Link: https://avd.aquasec.com/nvd/cve-2022-42919
+
+[HIGH] CVE-2022-42919 - libpython3.11-stdlib (3.11.15-1+jammy1)
+  Title: python: local privilege escalation via the multiprocessing forkserver start method
+  Link: https://avd.aquasec.com/nvd/cve-2022-42919
+
+[HIGH] CVE-2024-35870 - linux-libc-dev (5.15.0-176.186)
+  Title: kernel: smb: client: fix UAF in smb2_reconnect_server()
+  Link: https://avd.aquasec.com/nvd/cve-2024-35870
+
+[HIGH] CVE-2024-53179 - linux-libc-dev (5.15.0-176.186)
+  Title: kernel: smb: client: fix use-after-free of signing key
+  Link: https://avd.aquasec.com/nvd/cve-2024-53179
+
+[HIGH] CVE-2025-37899 - linux-libc-dev (5.15.0-176.186)
+  Title: kernel: ksmbd: fix use-after-free in session logoff
+  Link: https://avd.aquasec.com/nvd/cve-2025-37899
+
+[HIGH] CVE-2025-38118 - linux-libc-dev (5.15.0-176.186)
+  Title: kernel: Linux kernel: Bluetooth MGMT use-after-free vulnerability allows privilege escalation
+  Link: https://avd.aquasec.com/nvd/cve-2025-38118
+
+[HIGH] CVE-2022-42919 - python3.11 (3.11.15-1+jammy1)
+  Title: python: local privilege escalation via the multiprocessing forkserver start method
+  Link: https://avd.aquasec.com/nvd/cve-2022-42919
+
+[HIGH] CVE-2022-42919 - python3.11-dev (3.11.15-1+jammy1)
+  Title: python: local privilege escalation via the multiprocessing forkserver start method
+  Link: https://avd.aquasec.com/nvd/cve-2022-42919
+
+[HIGH] CVE-2022-42919 - python3.11-minimal (3.11.15-1+jammy1)
+  Title: python: local privilege escalation via the multiprocessing forkserver start method
+  Link: https://avd.aquasec.com/nvd/cve-2022-42919
+
+[HIGH] CVE-2022-42919 - python3.11-venv (3.11.15-1+jammy1)
+  Title: python: local privilege escalation via the multiprocessing forkserver start method
+  Link: https://avd.aquasec.com/nvd/cve-2022-42919
+
+
+==================================================
+
+--- Target: Node.js (node-pkg) ---
+No vulnerabilities found.
+
+--- Target: Python (python-pkg) ---
+Summary: CRITICAL: 0, HIGH: 0, MEDIUM: 1, LOW: 0
+----------------------------------------
+No HIGH or CRITICAL vulnerabilities found for this target.
+Examples of other vulnerabilities:
+[MEDIUM] CVE-2026-3219 - pip
+
+==================================================
+

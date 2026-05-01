@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h2>Часть 1. Поиск CVE с XSS в PHP-компонентах (2021 год)</h2>
+<p><strong><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-24284">CVE-2021-24284</a></strong>
+Компонент: Royal Addons For Elementor (WordPress плагин на PHP)
+Функционал: Расширение для конструктора страниц Elementor, добавляет новые виджеты, шаблоны и функции для создания сайтов на WordPress без кодинга.
+Суть уязвимости: В файле <code>royal-elementor-addons/includes/widgets/posts.php</code> параметр <code>post_id</code> из GET-запроса выводился на страницу без экранирования. Злоумышленник мог передать вредоносный JavaScript-код, который выполнялся в браузере любого пользователя, открывшего страницу с этим параметром.
+Тип: Reflected XSS</p>
+<p><strong><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-39302">CVE-2021-39302</a></strong>
+Компонент: PHPBack (PHP-скрипт для создания сайта обратной связи)
+Функционал: Платформа для сбора идей, фидбека и голосований от пользователей. Позволяет создавать категории, модерировать предложения, управлять пользователями.
+Суть уязвимости: В файле <code>includes/functions.php</code> функция <code>filter()</code> некорректно обрабатывала пользовательский ввод. Параметр <code>query</code> из URL передавался в <code>echo</code> без санитизации, что позволяло внедрить произвольный JavaScript-код.
+Тип: Reflected XSS</p>
+<ul>
+<li>В базе NVD за 2021 год всего зафиксировано <strong>21957</strong> CVE (проверяла через <a href="https://nvd.nist.gov/vuln/search#/nvd/home?resultType=statistics">https://nvd.nist.gov/vuln/search#/nvd/home?resultType=statistics</a>)</li>
+</ul>
+<hr>
+<h2>Часть 2. Практика на стенде otus-devsecops-xss</h2>
+<h3>Подготовка</h3>
+<pre><code>docker pull ket9/otus-devsecops-xss
+docker run -d -p 8080:80 ket9/otus-devsecops-xss:latest
+</code></pre>
+<p>Открыла <code>http://localhost:8080</code>, увидела ссылки на XSS-1 и index.php.</p>
+<h3>Ход рассуждений</h3>
+<ol>
+<li><p>Кликнула на <code>index.php</code>.
+Ничего интересного, та же страница.
+Перешла на <code>XSS-1</code>, увидела форму с полем <code>comment?</code> и кнопкой save data.</p>
+</li>
+<li><p>Ввела текст: <code>Привет</code>.
+После сохранения увидела свой комментарий на странице. Ок, данные сохраняются.</p>
+</li>
+<li><p>Попробовала ввести в формает html: <code>&lt;b&gt;жирный текст&lt;/b&gt;</code>.
+Текст стал жирным. Приложение не экранирует HTML-теги.</p>
+</li>
+<li><p>Ввела: <code>&lt;script&gt;alert(&#39;XSS&#39;)&lt;/script&gt;</code>.
+После сохранения появилось всплывающее окно с текстом XSS.
+То есть и скрипт выполняется. Это XSS.</p>
+</li>
+<li><p>Закрыла вкладку, открыла заново, перешла на XSS-1.
+Окно снова появилось. Значит скрипт сохранился на сервере и выполняется у каждого, кто открывает страницу. Это Stored XSS.</p>
+</li>
+</ol>
+<p>Лог неудачных кспериментов:</p>
+<ol>
+<li>Попробовала закодировать: <code>%3Cscript%3Ealert(&#39;XSS&#39;)%3C/script%3E</code> - ничего не произошло.</li>
+<li>Попробовала добавить пробелы: <code>&lt; script &gt;</code> - браузер не распознал тег.</li>
+<li>Пробовала через адресную строку: <code>.../XSS-1/index.php?comment=&lt;script&gt;alert(1)&lt;/script&gt;</code> - параметр не читается из URL, только из POST-формы.</li>
+</ol>
+<h3>Найденная уязвимость</h3>
+<p><strong>Описание:</strong> Приложение принимает пользовательский ввод в поле комментария и сохраняет его в базу данных без экранирования. При отображении комментариев на странице содержимое вставляется напрямую в HTML, что позволяет выполнить произвольный JavaScript-код в браузере любого пользователя.
+<strong>Тип:</strong> Stored XSS - скрипт сохраняется на сервере и выполняется при каждом просмотре страницы.
+<strong>Меры предотвращения:</strong></p>
+<ol>
+<li><p>Экранирование вывода:</p>
+<p> Перед вставкой пользовательских данных в HTML заменять опасные символы на их безопасные эквиваленты:</p>
+<ul>
+<li><code>&lt;</code> → <code>&amp;lt;</code></li>
+<li><code>&gt;</code> → <code>&amp;gt;</code></li>
+<li><code>&quot;</code> → <code>&amp;quot;</code></li>
+<li><code>&#39;</code> → <code>&amp;#x27;</code></li>
+<li><code>&amp;</code> → <code>&amp;amp;</code></li>
+</ul>
+</li>
+<li><p>Content Security Policy:</p>
+<p> Добавить HTTP-заголовок:</p>
+<pre><code>Content-Security-Policy: default-src &#39;self&#39;; script-src &#39;self&#39;
+</code></pre>
+<p> Это запретит браузеру выполнять скрипты из внешних источников и inline-скрипты, если они попали в страницу.</p>
+</li>
+<li><p>HttpOnly для сессионных кук:</p>
+<p> Установить флаг <code>HttpOnly</code> для cookie сессии, чтобы JavaScript не мог прочитать их:</p>
+<pre><code class="language-php">setcookie(&#39;session_id&#39;, $value, [
+    &#39;httponly&#39; =&gt; true,
+    &#39;secure&#39; =&gt; true,
+    &#39;samesite&#39; =&gt; &#39;Strict&#39;
+]);
+</code></pre>
+</li>
+</ol>
+
+</body>
+</html>

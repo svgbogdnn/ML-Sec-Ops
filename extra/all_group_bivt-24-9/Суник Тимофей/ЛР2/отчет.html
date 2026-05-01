@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Лабораторная работа №2</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 960px; margin: 40px auto; padding: 0 20px; color: #222; line-height: 1.65; }
+  h1 { border-bottom: 2px solid #333; padding-bottom: 8px; }
+  h2 { border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-top: 40px; }
+  h3 { margin-top: 28px; color: #333; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 0.92em; }
+  th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: #f0f0f0; font-weight: bold; }
+  code { background: #f5f5f5; padding: 2px 5px; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
+  pre { background: #f5f5f5; padding: 14px; border-radius: 5px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 32px 0; }
+  blockquote { border-left: 4px solid #ccc; margin: 0; padding-left: 16px; color: #555; }
+</style>
+</head>
+<body>
+<h1>Лабораторная работа №2. OWASP API Top 10</h1>
+<h2>Часть 1. CVE, связанные с REST API</h2>
+<p>CVE за последний год, попадающие под категории OWASP API Security Top 10.</p>
+<table>
+<thead>
+<tr>
+<th>CVE</th>
+<th>Источник</th>
+<th>Тип (OWASP API Top 10)</th>
+<th>Недостаток</th>
+<th>Причина</th>
+<th>Последствия</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CVE-2025-14777 (Keycloak)</strong></td>
+<td>https://nvd.nist.gov/vuln/detail/CVE-2025-14777</td>
+<td>API1:2023 Broken Object Level Authorization</td>
+<td>Пользователь с правами на один ресурс может обратиться к ресурсу другого клиента, подставив чужой <code>resourceId</code></td>
+<td>Права проверяются по <code>resourceServer</code>, а запрос к БД идёт только по <code>resourceId</code> — несоответствие между уровнем проверки и уровнем действия</td>
+<td>Чтение, изменение и удаление чужих объектов; нарушение изоляции клиентов</td>
+</tr>
+<tr>
+<td><strong>CVE-2025-20348 (Cisco Nexus Dashboard)</strong></td>
+<td>https://nvd.nist.gov/vuln/detail/CVE-2025-20348</td>
+<td>API5:2023 Broken Function Level Authorization</td>
+<td>Низкопривилегированный пользователь через REST API может вызывать административные функции</td>
+<td>На части эндпойнтов отсутствовала проверка роли пользователя перед выполнением операции</td>
+<td>Эскалация привилегий, загрузка и изменение системных файлов, утечка служебной информации</td>
+</tr>
+<tr>
+<td><strong>CVE-2025-56520 (Dify)</strong></td>
+<td>https://nvd.nist.gov/vuln/detail/CVE-2025-56520</td>
+<td>API7:2023 Server Side Request Forgery</td>
+<td>Сервер выполняет HTTP-запросы по произвольному URL из пользовательского ввода</td>
+<td>Переменная <code>BLACKLIST_IPS</code> не задана в конфигурации по умолчанию, поэтому блокировка внутренних адресов фактически не работала</td>
+<td>Обращение к внутренним сервисам, обход сетевых ограничений, утечка данных из закрытого контура</td>
+</tr>
+</tbody>
+</table>
+<h3>Вывод по части 1</h3>
+<p>Все три уязвимости объединяет одна общая черта: приложение либо вообще не проверяет права доступа, либо проверяет их не на том уровне. В Keycloak — права проверяются по одному идентификатору, а действие выполняется по другому. В Cisco — роль пользователя не верифицируется перед вызовом привилегированных функций. В Dify — сервер доверяет внешнему вводу при формировании исходящих запросов.</p>
+<p>Это типичный паттерн: разработчики добавляют проверку аутентификации, но забывают про авторизацию на уровне конкретного объекта или функции.</p>
+<hr />
+<h2>Часть 2. Практическое исследование уязвимого приложения</h2>
+<p>Запустил контейнер через <code>docker-compose up -d</code>, перешёл на <code>http://localhost:8080</code>, выполнил инициализацию базы по ссылке <code>/createdb</code>.</p>
+<hr />
+<h3>Шаг 1. Разведка без авторизации</h3>
+<p>Первым делом проверяю, что отдаёт API без каких-либо токенов.</p>
+<p><strong>GET</strong> <code>http://localhost:8080/users/v1</code></p>
+<pre><code class="language-json">{&quot;users&quot;:[
+  {&quot;email&quot;:&quot;mail1@mail.com&quot;,&quot;username&quot;:&quot;name1&quot;},
+  {&quot;email&quot;:&quot;mail2@mail.com&quot;,&quot;username&quot;:&quot;name2&quot;},
+  {&quot;email&quot;:&quot;admin@mail.com&quot;,&quot;username&quot;:&quot;admin&quot;}
+]}
+</code></pre>
+<p>Список всех пользователей с email доступен без аутентификации. Уже интересно.</p>
+<p><strong>GET</strong> <code>http://localhost:8080/users/v1/name1</code></p>
+<pre><code class="language-json">{&quot;username&quot;:&quot;name1&quot;,&quot;email&quot;:&quot;mail1@mail.com&quot;}
+</code></pre>
+<p>Данные конкретного пользователя тоже отдаются без токена — достаточно знать <code>username</code>.</p>
+<p><strong>GET</strong> <code>http://localhost:8080/books/v1</code></p>
+<pre><code class="language-json">{&quot;Books&quot;:[
+  {&quot;book_title&quot;:&quot;bookTitle82&quot;,&quot;user&quot;:&quot;name1&quot;},
+  {&quot;book_title&quot;:&quot;bookTitle98&quot;,&quot;user&quot;:&quot;name2&quot;},
+  {&quot;book_title&quot;:&quot;bookTitle68&quot;,&quot;user&quot;:&quot;admin&quot;}
+]}
+</code></pre>
+<p>API отдаёт связанные данные всех пользователей без проверки прав.</p>
+<hr />
+<h3>Уязвимость 1 — Broken Object Property Level Authorization + Broken Function Level Authorization</h3>
+<p><strong>Тип:</strong> API3:2023 + API5:2023<br />
+<strong>Суть:</strong> приложение раскрывает персональные данные пользователей (email, имена) через публичные эндпойнты без аутентификации.<br />
+<strong>Меры:</strong>
+- Закрыть <code>/users/v1</code> — доступ только для администратора
+- Требовать авторизацию для <code>/users/v1/{username}</code>
+- Возвращать только необходимый минимум данных (не раскрывать email в публичном списке)</p>
+<hr />
+<h3>Шаг 2. Поиск скрытых эндпойнтов</h3>
+<p>Попробовал несколько нестандартных путей:</p>
+<p><strong>GET</strong> <code>http://localhost:8080/users/v1/_debug</code></p>
+<pre><code class="language-json">{&quot;users&quot;:[
+  {&quot;admin&quot;:false,&quot;email&quot;:&quot;mail1@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;name1&quot;},
+  {&quot;admin&quot;:false,&quot;email&quot;:&quot;mail2@mail.com&quot;,&quot;password&quot;:&quot;pass2&quot;,&quot;username&quot;:&quot;name2&quot;},
+  {&quot;admin&quot;:true,&quot;email&quot;:&quot;admin@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;admin&quot;}
+]}
+</code></pre>
+<p>Открытый debug-эндпойнт без авторизации возвращает пароли всех пользователей в открытом виде. Включая администратора.</p>
+<hr />
+<h3>Уязвимость 2 — Security Misconfiguration</h3>
+<p><strong>Тип:</strong> API8:2023<br />
+<strong>Суть:</strong> debug-эндпойнт <code>/users/v1/_debug</code> оставлен активным в production-окружении и доступен без авторизации. Возвращает пароли в открытом (нехешированном) виде.<br />
+<strong>Меры:</strong>
+- Отключить debug-эндпойнты в production полностью
+- Если debug нужен в dev — закрыть его авторизацией
+- Никогда не хранить и не возвращать пароли в открытом виде — только хеши</p>
+<hr />
+<h3>Шаг 3. Проверка защиты от брутфорса</h3>
+<p>Попробовал логин с неправильными данными несколько раз подряд:</p>
+<pre><code>GET http://localhost:8080/users/v1/login?username=name1&amp;password=wrongpass
+→ {&quot;status&quot;:&quot;fail&quot;,&quot;message&quot;:&quot;User not found&quot;}
+
+(повторил 15 раз — никаких ограничений)
+</code></pre>
+<p>Никакого rate limiting, капчи, блокировки по IP или временной задержки не обнаружено.</p>
+<hr />
+<h3>Уязвимость 3 — Broken Authentication</h3>
+<p><strong>Тип:</strong> API2:2023<br />
+<strong>Суть:</strong> приложение хранит пароли в открытом виде (видно из <code>/users/v1/_debug</code>) и не ограничивает количество попыток входа. Это делает брутфорс тривиальным.<br />
+<strong>Меры:</strong>
+- Хешировать пароли (bcrypt / argon2)
+- Ввести rate limiting на эндпойнт логина
+- Реализовать временную блокировку после N неудачных попыток</p>
+<hr />
+<h3>Шаг 4. Проверка возможности изменения чужих данных</h3>
+<p>Попробовал изменить email пользователя без авторизации:</p>
+<pre><code class="language-bash">curl -X PUT &quot;http://localhost:8080/users/v1/name1/email&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;email&quot;:&quot;hacker@mail.com&quot;}'
+→ {&quot;status&quot;:&quot;fail&quot;,&quot;message&quot;:&quot;Invalid token&quot;}
+</code></pre>
+<p>Повторная проверка:</p>
+<pre><code>GET http://localhost:8080/users/v1/name1
+→ {&quot;username&quot;:&quot;name1&quot;,&quot;email&quot;:&quot;mail1@mail.com&quot;}
+</code></pre>
+<p>Email не изменился — операции записи требуют токен. Тем не менее операции чтения остаются полностью открытыми.</p>
+<hr />
+<h3>Итоговая таблица найденных уязвимостей</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Эндпойнт</th>
+<th>Тип уязвимости</th>
+<th>Критичность</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>/users/v1</code>, <code>/users/v1/{username}</code></td>
+<td>API3 + API5: данные пользователей без авторизации</td>
+<td>Высокая</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>/users/v1/_debug</code></td>
+<td>API8: открытый debug с паролями в открытом виде</td>
+<td>Критическая</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>/users/v1/login</code></td>
+<td>API2: нет защиты от брутфорса + пароли не хешированы</td>
+<td>Высокая</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3>Общий вывод</h3>
+<p>Приложение демонстрирует классический набор ошибок при проектировании API: аутентификация добавлена только на операции записи, а чтение данных (в том числе критических — пароли через debug) доступно без каких-либо проверок. Уязвимость BOLA здесь особенно показательна — сервер не различает «я хочу посмотреть свои данные» и «я хочу посмотреть данные любого другого пользователя».</p>
+</body>
+</html>

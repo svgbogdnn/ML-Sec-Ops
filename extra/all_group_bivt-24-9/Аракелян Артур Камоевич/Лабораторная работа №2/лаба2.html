@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Лабораторная работа 2</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 32px 22px;
+      color: #222;
+      background: #fff;
+    }
+    h1, h2, h3 {
+      color: #222;
+      line-height: 1.25;
+      margin-top: 1.4em;
+      margin-bottom: 0.55em;
+    }
+    h1 {
+      font-size: 2.05em;
+      border-bottom: 2px solid #e5e5e5;
+      padding-bottom: 0.35em;
+    }
+    h2 {
+      font-size: 1.55em;
+      border-bottom: 1px solid #eeeeee;
+      padding-bottom: 0.25em;
+    }
+    h3 {
+      font-size: 1.2em;
+    }
+    p {
+      margin: 0.75em 0;
+    }
+    a {
+      color: #0b57d0;
+      text-decoration: none;
+      word-break: break-word;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    code {
+      background: #f5f5f5;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: "Courier New", Consolas, monospace;
+      font-size: 0.95em;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 14px 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      border: 1px solid #e8e8e8;
+      line-height: 1.45;
+    }
+    pre code {
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      font-size: 0.95em;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.1em 0;
+      font-size: 0.94em;
+    }
+    th, td {
+      border: 1px solid #d9d9d9;
+      padding: 9px 11px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: #f3f3f3;
+      font-weight: 700;
+    }
+    tr:nth-child(even) td {
+      background: #fafafa;
+    }
+    ul, ol {
+      margin: 0.8em 0;
+      padding-left: 1.8em;
+    }
+    li {
+      margin: 0.35em 0;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #e5e5e5;
+      margin: 1.8em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>Лабораторная работа 2</h1>
+<h2>Часть 1. Анализ уязвимостей REST API</h2>
+<p>В этой части я посмотрел несколько CVE за 2025 год, которые связаны с проблемами в REST API. Для классификации использовал категории OWASP API Top 10. Во всех примерах проблема находится не только в самой технической ошибке, а в логике проверки доступа, обработки входных данных или ограничений на стороне сервера.</p>
+<table>
+<thead>
+<tr>
+  <th>CVE</th>
+  <th>Источник</th>
+  <th>Тип по OWASP API Top 10</th>
+  <th>В чём недостаток</th>
+  <th>Основная причина</th>
+  <th>Возможные последствия</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>CVE-2025-52554 (n8n)</strong></td>
+  <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-52554">https://nvd.nist.gov/vuln/detail/CVE-2025-52554</a></td>
+  <td>Broken Object Level Authorization</td>
+  <td>Пользователь мог остановить чужое выполнение workflow через endpoint <code>/rest/executions/:id/stop</code>, если знал или подбирал чужой <code>execution id</code></td>
+  <td>В большинстве endpoint проверка прав была, но именно для остановки выполнения не проверялось, принадлежит ли объект текущему пользователю</td>
+  <td>Нарушение работы чужих автоматизаций, остановка бизнес-процессов, влияние на данные и задачи других пользователей</td>
+</tr>
+<tr>
+  <td><strong>CVE-2025-61928 (Better Auth)</strong></td>
+  <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-61928">https://nvd.nist.gov/vuln/detail/CVE-2025-61928</a></td>
+  <td>Broken Authentication</td>
+  <td>Неаутентифицированный пользователь мог создать или изменить API-ключи для другого аккаунта через маршруты <code>api/auth/api-key/create</code> и <code>update</code></td>
+  <td>Сервер принимал <code>userId</code> из тела запроса и мог использовать его как идентификатор пользователя без нормальной проверки сессии</td>
+  <td>Обход аутентификации, захват чужой учётной записи, получение доступа от имени другого пользователя</td>
+</tr>
+<tr>
+  <td><strong>CVE-2025-56520 (Dify)</strong></td>
+  <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-56520">https://nvd.nist.gov/vuln/detail/CVE-2025-56520</a></td>
+  <td>Server Side Request Forgery (SSRF)</td>
+  <td>Сервер выполнял HTTP-запросы по URL, который передавал пользователь</td>
+  <td>Не было достаточной фильтрации и проверки URL на стороне сервера</td>
+  <td>Доступ к внутренним сервисам, обход сетевых ограничений, утечка данных, получение чувствительной информации</td>
+</tr>
+</tbody>
+</table>
+<h3>Вывод по первой части</h3>
+<p>Во всех трёх случаях уязвимость связана с тем, что API слишком сильно доверяет входным данным или не проверяет контекст запроса:</p>
+<ul>
+<li>в n8n не проверялось, принадлежит ли конкретный объект текущему пользователю;</li>
+<li>в Better Auth сервер доверял <code>userId</code> из запроса и из-за этого можно было обойти аутентификацию;</li>
+<li>в Dify сервер выполнял запросы по пользовательскому URL, из-за чего возникала SSRF-уязвимость.</li>
+</ul>
+<p>То есть для REST API критично не просто проверять формат входных данных, а ещё проверять права доступа, состояние сессии и то, какие действия сервер выполняет от имени пользователя.</p>
+<hr />
+<h2>Часть 2. Поиск недостатка в уязвимом API</h2>
+<p>Во второй части я выбрал вариант с самостоятельным поиском уязвимости в тестовом приложении. После запуска контейнера открыл приложение по адресу:</p>
+<pre><code class="language-text">http://localhost:8080/
+</code></pre>
+<p>Затем перешёл на страницу инициализации базы данных:</p>
+<pre><code class="language-text">http://localhost:8080/createdb
+</code></pre>
+<p>После заполнения базы начал проверять, какие данные API отдаёт без авторизации.</p>
+<h3>Проверка списка пользователей</h3>
+<p>Сначала отправил GET-запрос на получение списка пользователей:</p>
+<pre><code class="language-text">http://localhost:8080/users/v1
+</code></pre>
+<p>В ответ приложение вернуло список пользователей:</p>
+<pre><code class="language-json">{
+  &quot;users&quot;: [
+    {
+      &quot;email&quot;: &quot;mail1@mail.com&quot;,
+      &quot;username&quot;: &quot;name1&quot;
+    },
+    {
+      &quot;email&quot;: &quot;mail2@mail.com&quot;,
+      &quot;username&quot;: &quot;name2&quot;
+    },
+    {
+      &quot;email&quot;: &quot;admin@mail.com&quot;,
+      &quot;username&quot;: &quot;admin&quot;
+    }
+  ]
+}
+</code></pre>
+<p>Уже на этом этапе видно, что API без авторизации отдаёт список пользователей и их email.</p>
+<h3>Проверка данных конкретного пользователя</h3>
+<p>Дальше я попробовал обратиться к конкретному пользователю по имени в URL:</p>
+<pre><code class="language-text">http://localhost:8080/users/v1/name1
+</code></pre>
+<p>Ответ был таким:</p>
+<pre><code class="language-json">{
+  &quot;username&quot;: &quot;name1&quot;,
+  &quot;email&quot;: &quot;mail1@mail.com&quot;
+}
+</code></pre>
+<p>Аналогично можно открыть данные других пользователей, просто подставляя их <code>username</code> в URL. Получается, что сервер отдаёт объект пользователя только по идентификатору из адреса и не проверяет, имеет ли текущий клиент право видеть эти данные.</p>
+<h3>Проверка связанных данных</h3>
+<p>После этого я проверил, какие данные можно получить по книгам:</p>
+<pre><code class="language-text">http://localhost:8080/books/v1
+</code></pre>
+<p>Приложение вернуло:</p>
+<pre><code class="language-json">{
+  &quot;Books&quot;: [
+    {
+      &quot;book_title&quot;: &quot;bookTitle82&quot;,
+      &quot;user&quot;: &quot;name1&quot;
+    },
+    {
+      &quot;book_title&quot;: &quot;bookTitle98&quot;,
+      &quot;user&quot;: &quot;name2&quot;
+    },
+    {
+      &quot;book_title&quot;: &quot;bookTitle68&quot;,
+      &quot;user&quot;: &quot;admin&quot;
+    }
+  ]
+}
+</code></pre>
+<p>Этот ответ дополнительно показывает, что API раскрывает не только пользователей, но и связанные с ними данные. При этом авторизация для чтения снова не требуется.</p>
+<h3>Проверка возможности изменения данных</h3>
+<p>Потом я решил проверить, можно ли не только читать, но и изменять данные пользователя. Для этого отправил PUT-запрос на изменение email:</p>
+<pre><code class="language-bash">curl -X PUT &quot;http://localhost:8080/users/v1/name1/email&quot; -H &quot;Content-Type: application/json&quot; -d '{&quot;email&quot;:&quot;hacker@mail.com&quot;}'
+</code></pre>
+<p>Сервер ответил:</p>
+<pre><code class="language-json">{
+  &quot;status&quot;: &quot;fail&quot;,
+  &quot;message&quot;: &quot;Invalid token&quot;
+}
+</code></pre>
+<p>После этого я ещё раз проверил данные пользователя:</p>
+<pre><code class="language-text">http://localhost:8080/users/v1/name1
+</code></pre>
+<p>Email остался прежним:</p>
+<pre><code class="language-json">{
+  &quot;username&quot;: &quot;name1&quot;,
+  &quot;email&quot;: &quot;mail1@mail.com&quot;
+}
+</code></pre>
+<p>Значит, изменение данных защищено токеном, но чтение пользовательских данных доступно без нормальной проверки прав.</p>
+<hr />
+<h2>Найденная уязвимость</h2>
+<p>В приложении есть уязвимость типа <strong>BOLA — Broken Object Level Authorization</strong>.</p>
+<p>Суть проблемы в том, что сервер отдаёт объект пользователя только по параметру из URL (<code>username</code>) и не проверяет, имеет ли запрашивающий право просматривать именно этот объект. Из-за этого можно перебирать имена пользователей и получать чужие данные без авторизации.</p>
+<h3>Тип недостатка</h3>
+<p>По OWASP API Top 10 это относится к категории:</p>
+<pre><code class="language-text">Broken Object Level Authorization
+</code></pre>
+<p>Приложение не выполняет проверку доступа на уровне конкретного объекта. Идентификатор объекта передаётся в URL, а сервер доверяет этому значению и сразу возвращает данные.</p>
+<h3>Что может сделать злоумышленник</h3>
+<p>При такой уязвимости злоумышленник может:</p>
+<ol>
+<li>Получить список пользователей.</li>
+<li>Подставлять разные <code>username</code> в URL.</li>
+<li>Читать email и другие данные пользователей.</li>
+<li>Связывать пользователей с другими объектами, например книгами.</li>
+<li>Собирать информацию без входа в систему.</li>
+</ol>
+<p>При этом изменение email в данном приложении защищено токеном, поэтому найденная проблема относится именно к незащищённому чтению данных.</p>
+<hr />
+<h2>Меры предотвращения</h2>
+<p>Чтобы исправить такую уязвимость, нужно:</p>
+<ol>
+<li>Проверять права доступа к каждому объекту при каждом запросе.</li>
+<li>Требовать аутентификацию перед просмотром пользовательских данных.</li>
+<li>Не отдавать данные только на основании <code>username</code> из URL.</li>
+<li>Ограничить или полностью закрыть выдачу списка всех пользователей.</li>
+<li>Возвращать только минимально необходимую информацию.</li>
+<li>Реализовать object-level authorization на стороне сервера, а не полагаться на клиент.</li>
+<li>Для чужих объектов возвращать ошибку доступа, например <code>403 Forbidden</code>.</li>
+</ol>
+<hr />
+<h2>Общий вывод</h2>
+<p>В первой части я рассмотрел примеры CVE, где проблемы в REST API возникали из-за ошибок авторизации, аутентификации и проверки пользовательского ввода. Во второй части на учебном приложении была найдена похожая по смыслу проблема: API отдаёт данные пользователей без проверки прав доступа.</p>
+<p>Главный вывод: в REST API нельзя доверять параметрам из URL или тела запроса. Даже если пользователь знает корректный <code>username</code>, <code>id</code> или другой идентификатор, сервер всё равно должен проверить, имеет ли он право получить именно этот объект. В данном приложении запись данных частично защищена токеном, но чтение осталось открытым, поэтому уязвимость можно классифицировать как Broken Object Level Authorization.</p>
+
+</body>
+</html>

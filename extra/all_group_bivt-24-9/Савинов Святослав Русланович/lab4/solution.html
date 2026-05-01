@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторная работа №4</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; line-height: 1.6; color: #333; }
+        h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
+        h2 { margin-top: 24px; }
+        a { color: #0066cc; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; word-break: break-all; }
+        pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: none; padding: 0; }
+        strong { color: #111; }
+    </style>
+</head>
+<body>
+<h1>Часть I</h1>
+
+<p>Пошёл в NVD, отфильтровал по 2021 году + ключевые слова "PHP" и "XSS", выбрал 2 на разные приложения.</p>
+
+<h2>CVE-2021-43698</h2>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-43698">https://nvd.nist.gov/vuln/detail/CVE-2021-43698</a></p>
+<p>Компонент: phpWhois (PHP). Это библиотека для отправки whois-запросов, через неё узнают владельца домена, даты регистрации и окончания, какие DNS-серверы у домена.</p>
+<p>Суть XSS: в файле <code>example.php</code> параметр <code>query</code> из GET-запроса напрямую подставляется в вывод функции <code>exit()</code> без какой-либо обработки. Если жертва кликнет по ссылке вида <code>example.php?query=&lt;script&gt;...&lt;/script&gt;</code>, скрипт выполнится в её браузере.</p>
+
+<h2>CVE-2021-43675</h2>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-43675">https://nvd.nist.gov/vuln/detail/CVE-2021-43675</a></p>
+<p>Компонент: Lychee-v3 (PHP) 3.2.16, веб-фотоальбом для загрузки и шаринга фоток по альбомам. Та же схема что у phpWhois: в <code>php/Access/Guest.php</code> параметр <code>albumID</code> от пользователя печатается через <code>exit()</code> без обработки. Атакующий подсовывает скрипт в <code>albumID</code>, скрипт выполняется у того кто кликнет.</p>
+
+<p>Всего CVE за 2021 год по NVD получается около 22 тысяч (фильтр по году в search). Дофига за 1 год, особенно в PHP-плагинах WordPress и подобных компонентах.</p>
+
+<h1>Часть II</h1>
+
+<p>Контейнер запустил: <code>docker run -d -p 8080:80 ket9/otus-devsecops-xss:latest</code>. На <code>localhost:8080</code> две ссылки, <code>XSS-1</code> и <code>index.php</code>. По <code>index.php</code> пусто, просто заголовок "XSS lab". В <code>XSS-1</code> форма с полем <code>comment?</code> и кнопкой Save Data.</p>
+
+<p>Сначала пробую просто HTML-тег чтобы понять, экранируется ввод или вставляется как есть:</p>
+<pre><code>&lt;b&gt;Hello&lt;/b&gt;</code></pre>
+<p>После Save Data на странице видно <code>Hello</code> жирным шрифтом. Окей защиты нет совсм, сервер пихает мой ввод в HTML как есть. Раз HTML работает, скорее всего и <code>&lt;script&gt;</code> сработает.</p>
+
+<p>Пробую:</p>
+<pre><code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code></pre>
+<p>Браузер показывает alert "XSS". Скрипт выполнился, то что и требовалось. Захожу в <code>XSS-1</code> повторно, alert срабатывает снова. Значит коммент реально сохранился на сервере, и теперь любой посетитель страницы получит этот alert при заходе.</p>
+
+<p>Тип уязвимости: <strong>Stored XSS</strong> (Persistent XSS). От Reflected отличается тем, что вредоносная нагрузка лежит на сервере и автоматически выполняется у каждого посетителя страницы, а не только у того кто открыл специальную ссылку.</p>
+
+<p>CWE-79: Improper Neutralization of Input During Web Page Generation.</p>
+
+<h2>Как все это защитить</h2>
+
+<p>Главное это экранировать вывод. В PHP есть <code>htmlspecialchars($input, ENT_QUOTES, 'UTF-8')</code>, он заменит <code>&lt;</code>, <code>&gt;</code>, кавычки и <code>&amp;</code> на HTML-сущности (<code>&amp;lt;</code>, <code>&amp;gt;</code> и т.д.). Тогда <code>&lt;script&gt;</code> в коменте отрисуется как обычный текст, а не как тег.</p>
+
+<p>Если ввод попадает в JS-контекст (внутрь <code>&lt;script&gt;</code> или в обработчик типа <code>onclick</code>), там правила экранирования другие, htmlspecialchars не спасёт, нужно ещё JSON-encode сверху.</p>
+
+<p>Сверх экранирования полезно прикрутить CSP: заголовок <code>Content-Security-Policy: default-src 'self'</code> запретит браузеру выполнять inline-скрипты и скрипты с чужих доменов, и даже если XSS пройдёт, alert не запустится. На сессионные cookies ставлю HTTPOnly и Secure, чтобы скрипт хотя бы не угнал сессию через <code>document.cookie</code>. Валидация на сервере по white-list тоже не помешает.</p>
+
+<p>Без экранирования веб довольно уязвим.</p>
+</body>
+</html>

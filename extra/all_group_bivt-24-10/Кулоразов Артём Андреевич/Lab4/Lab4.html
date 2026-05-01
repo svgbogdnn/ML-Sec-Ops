@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>Лабораторная работа №4</h1>
+<h2>Часть 1. Анализ кода</h2>
+<h3>Фрагмент 1</h3>
+<p>Недостаток: секретный ключ зашит прямо в коде. Если кто-то получит доступ к исходникам, сможет подделывать сессионные куки и другие подписанные данные. 
+Меры противодействия: вынести ключ в переменную окружения, например через os.environ.get(&#39;SECRET_KEY&#39;).</p>
+<h3>Фрагмент 2</h3>
+<p>Недостаток: для пароля используется обычное текстовое поле, пароль видно при вводе.<br>Меры противодействия: заменить на PasswordField (или виджет PasswordInput), добавить минимальную длину и проверку символов.</p>
+<h3>Фрагмент 3</h3>
+<p>Недостаток: Пароль сохраняется в базу как есть, открытым текстом.<br>Меры противодействия: Хешировать пароль. Добавить проверку email и имени.</p>
+<h2>Часть 2. Безопасность в Django</h2>
+<h3>1. Какие атаки предотвращает Django</h3>
+<ul>
+<li>XSS - шаблоны автоматически экранируют вывод, как в Flask через escape.</li>
+<li>SQL-инъекции - ORM подставляет параметры безопасно, без ручной склейки строк.</li>
+<li>CSRF - middleware вставляет скрытый токен в формы, браузер его отправляет, сервер проверяет.</li>
+<li>Clickjacking - ставится заголовок, запрещающий открывать сайт во фрейме.</li>
+</ul>
+<h3>2. Как устроены пользовательские сессии</h3>
+<p>После успешного входа генерируется случайный идентификатор сессии. Данные кладутся в базу в таблицу django_session. Клиенту отдаётся cookie с именем sessionid и этим идентификатором. Cookie защищена: флаг HttpOnly не даёт читать её из JS, SameSite=Lax помогает от CSRF. При каждом запросе сервер достаёт сессию из базы по ключу из cookie, проверяет, восстанавливает пользователя. При выходе сессия удаляется из базы, cookie сбрасывается.</p>
+
+</body>
+</html>

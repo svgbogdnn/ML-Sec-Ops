@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>Лабораторная работа №3 (XSS в PHP)</h1>
+<h2>Часть 1</h2>
+<h3>CVE-2021-43698</h3>
+<p><strong>Источник:</strong> <a href="https://nvd.nist.gov/vuln/detail/CVE-2021-43698">https://nvd.nist.gov/vuln/detail/CVE-2021-43698</a></p>
+<p><strong>Компонент:</strong> phpWhois — написан на PHP, предназначен для получения информации о доменах через протоыкол WHOIS.</p>
+<p><strong>Недостаток:</strong> В файле example.php функция exit выводит сообщение, которое содержит значение $_GET[&#39;query&#39;] без обработки. Через параметр query можно передать скрипт, который выполнится в браузере. Это XSS.</p>
+<h3>CVE-2021-45416</h3>
+<p><strong>Источник:</strong> <a href="https://nvd.nist.gov/vuln/detail/CVE-2021-45416">https://nvd.nist.gov/vuln/detail/CVE-2021-45416</a></p>
+<p><strong>Компонент:</strong> RosarioSIS — написан на PHP (файл modules/Scheduling/Courses.php), используется для управления учебным процессом (расписание, курсы).</p>
+<p><strong>Недостаток:</strong> Через параметр search_term в скрипте Courses.php можно внедрить произвольный HTML/JavaScript. Ввод не фильтруется, код отражается на странице. Это reflected XSS.</p>
+<h3>Общее количество CVE за 2021 год</h3>
+<p><strong>Источник:</strong> <a href="https://www.cve.org/About/Metrics">https://www.cve.org/About/Metrics</a></p>
+<p>За 2021 год опубликовано 20161 CVE.</p>
+<h2>Часть 2</h2>
+<p>Запустим контейнер:
+docker pull ket9/otus-devsecops-xss
+docker run -d -p 8080:80 --name xss-lab ket9/otus-devsecops-xss:latest</p>
+<p>Перейдём <a href="http://localhost:8080">http://localhost:8080</a>
+На странице написано XSS lab, есть ссылка XSS-1 и index.php.</p>
+<h3>XSS-1 (Stored)</h3>
+<p>Перейдём по XSS-1. Там форма с полем comment? и кнопкой Save Data.</p>
+<p>Введём скрипт:</p>
+<script>alert('xss-test')</script>
+<p>Сохраним и обновим страницу. Вылезло окно с текстом xss-test — значит, скрипт остался на сервере и выполняется при каждом открытии.</p>
+<p>Вывод: ввод никак не фильтруется, попадает в HTML как есть. Это хранимый XSS.</p>
+<h2>Найденная уязвимость</h2>
+<p>Хранимый XSS (Stored XSS). Код сохраняется на сервере и срабатывает у всех, кто заходит на страницу.</p>
+<h2>Меры предотвращения</h2>
+<ul>
+<li>Экранировать вывод.</li>
+<li>Проверять входные данные, разрешать только текст без тегов.</li>
+<li>Поставить Content Security Policy (CSP), чтобы ограничить выполнение скриптов.</li>
+<li>Не вставлять пользовательский ввод напрямую в HTML.</li>
+</ul>
+
+</body>
+</html>

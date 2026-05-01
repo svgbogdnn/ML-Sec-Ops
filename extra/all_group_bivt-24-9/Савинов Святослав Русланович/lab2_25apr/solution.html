@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторная работа №2</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; line-height: 1.6; color: #333; }
+        h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
+        a { color: #0066cc; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; word-break: break-all; }
+        pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: none; padding: 0; }
+        strong { color: #111; }
+        img { max-width: 100%; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+<h1>Часть I</h1>
+<p>Взял образ из прошлой лабы: <code>ket9/otus-devsecops:latest</code>. Сначала <code>whoami</code> на хосте, получил <code>albondy</code>.</p>
+<p>Дальше <code>docker image ls</code>:</p>
+<pre><code>IMAGE                        ID             DISK USAGE   CONTENT SIZE
+ket9/otus-devsecops:latest   a85cce3b4064   720MB        163MB
+lab2-nonroot:latest          bd397b4235ca   720MB        163MB
+mysql:5.7                    4bc6bc963e6d   700MB        149MB</code></pre>
+<p>Запускаю <code>sh</code> внутри контейнера: <code>docker run -it ket9/otus-devsecops:latest sh</code>. Снова <code>whoami</code>, теперь уже <code>root</code>.</p>
+<p>Посмотрим че покажет whoami. По дефолту в контейнере все процессы запускаются от рута. В общем не оч, из коробки ниче не настроено.</p>
+<p><img src="screenshots/part1.jpg" alt="Часть I: whoami на хосте, image ls, whoami в контейнере"></p>
+
+<h1>Часть II</h1>
+<p>Dockerfile поверх того же образа:</p>
+<pre><code>FROM ket9/otus-devsecops:latest
+
+RUN sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf \
+    &amp;&amp; sed -i 's/:80/:8080/g' /etc/apache2/sites-available/000-default.conf \
+    &amp;&amp; chown -R www-data:www-data /var/www/html /var/log/apache2 /var/run/apache2 /var/lock/apache2
+
+USER www-data
+WORKDIR /var/www/html
+EXPOSE 8080
+CMD ["apache2-foreground"]</code></pre>
+<p>Поменял немного и закинул на www-data. Юзер <code>www-data</code> уже есть в базовом образе apache, отдельно не создавал. Apache от не-рута не может слушать порт 80, поэтому переключил на 8080 и раздал права на нужные директории.</p>
+<p>Собрал и проверил что юзер сменился:</p>
+<pre><code>$ docker build --platform linux/amd64 -t lab2-nonroot:latest .
+$ docker run -it --rm lab2-nonroot:latest sh
+$ whoami
+www-data
+$ id
+uid=33(www-data) gid=33(www-data) groups=33(www-data)</code></pre>
+<p><img src="screenshots/part2.jpg" alt="Часть II: build + whoami=www-data внутри собранного образа"></p>
+<p>В комментариях Dockerfile перечислил что ещё можно докрутить: заменить базу на актуальную (jessie EOL с 2020), добавить <code>HEALTHCHECK</code>, прикрутить <code>.dockerignore</code>. Из флагов запуска полезные <code>--read-only</code> (FS на чтение), <code>--no-new-privileges</code> (запрет эскалации), <code>--cap-drop=ALL</code> (режем все капы), <code>-u 33:33</code> (форсим юзера снаружи).</p>
+
+<h1>Часть III</h1>
+<p>Прогнал через Trivy:</p>
+<pre><code>trivy image --severity LOW,MEDIUM,HIGH,CRITICAL ket9/otus-devsecops:latest</code></pre>
+<p>Сводка:</p>
+<pre><code>ket9/otus-devsecops:latest (debian 8.2)
+Total: 1605 (LOW: 185, MEDIUM: 626, HIGH: 614, CRITICAL: 180)</code></pre>
+<p><img src="screenshots/part3.jpg" alt="Часть III: вывод trivy, summary + кусок таблицы"></p>
+<p>Trivy сразу кидает варн <code>This OS version is no longer supported by the distribution</code>. Debian 8 (jessie) ушёл в EOL в июне 2020. База страше моего опыта разработки.</p>
+<p>Цифры конечно пугают, но половина это апач и его подмудули которые трижды выстреливают по одной cve. <code>apache2</code>, <code>apache2-bin</code>, <code>apache2-data</code> считаются как три разных пакета, хотя источник один.</p>
+<p>Чтобы починить можно сменить базу на актуальную (закроет большую часть LOW/MEDIUM из системных либ), накатить <code>apt-get upgrade</code> поверх, и подключить Trivy в CI чтобы билд падал на CRITICAL/HIGH.</p>
+<p>Сканер довольно полезная штука для каких то явных уязвимостей.</p>
+</body>
+</html>

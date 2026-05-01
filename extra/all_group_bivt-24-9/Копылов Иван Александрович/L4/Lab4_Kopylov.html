@@ -1,0 +1,57 @@
+<h1 id="-4">Лабораторная работа № 4</h1>
+<h2 id="-1">Часть 1</h2>
+<h3 id="-1">Фрагмент 1</h3>
+<pre><code>#!/usr/bin/env python3
+<span class="hljs-keyword">from</span> flask <span class="hljs-keyword">import</span> Flask
+
+<span class="hljs-keyword">from</span> mod_api <span class="hljs-keyword">import</span> mod_api
+
+app = Flask(<span class="hljs-string">'vuln_app'</span>)
+app.config[<span class="hljs-string">'SECRET_KEY'</span>] = <span class="hljs-string">'F0cUzh8BgYJSLXAU8qDmClM0dE8GJTpsiyVEl3BCqQMCABp1U$f%'</span>
+
+app.register_blueprint(mod_api, url_prefix=<span class="hljs-string">'/api'</span>)
+</code></pre><p><strong>Недостаток</strong> : секретный ключ хранится в коде. 
+<strong>Последствия</strong> : Человек, получивший доступ к коду (а это, как правило, довольно внушительный круг людей) может воспользоваться этим ключом и получить доступ к API.
+* если это код в проекте с открытым исходным кодом, то воспользоваться ключом может буквально кто угодно
+<strong>Как устранить</strong> : не хранить ключи в коде. Для этого использовать переменные окружения и файлы настроек, которые хранить локально и никому не передавать.</p>
+<h3 id="-2">Фрагмент 2</h3>
+<pre><code><span class="hljs-title">from</span> flask_wtf <span class="hljs-keyword">import</span> Form  
+<span class="hljs-title">from</span> wtforms <span class="hljs-keyword">import</span> TextField
+<span class="hljs-class">
+<span class="hljs-keyword">class</span> <span class="hljs-type">LoginForm</span>(<span class="hljs-type">Form</span>):  
+username = <span class="hljs-type">TextField</span>('<span class="hljs-title">username'</span>)  
+password = <span class="hljs-type">TextField</span>('<span class="hljs-title">password'</span>)</span>
+</code></pre><p><strong>Недостаток</strong> : пароль вводится стандартной формой + ввод не валидируется. 
+<strong>Последствия</strong> : система не считает, что в этом поле хранится чувствительная информация, что повышает риск того, что эти данные попадут, допустим, в логи. Также символы пароля не будут скрываться в интерфейсе, соответственно, его можно будет банально подглядеть. Бонусом ко всему из-за отсутствия валидации в это поле можно попробовать протянуть инъекции или забрутфорсить пароль.
+<strong>Как устранить</strong> : использовать безопасное поле для пароля, проверять содержимое полей ещё на этапе фронта. Ещё пароли надо хэшировать, но, возможно, лучше это делать на более поздней стадии. Впрочем, не уверен.</p>
+<h3 id="-3">Фрагмент 3</h3>
+<pre><code><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">post</span><span class="hljs-params">(<span class="hljs-keyword">self</span>)</span></span>:
+    username = <span class="hljs-keyword">self</span>.get_argument(<span class="hljs-string">'username'</span>)
+    password = <span class="hljs-keyword">self</span>.get_argument(<span class="hljs-string">'password'</span>).encode(<span class="hljs-string">'utf-8'</span>)
+    email = <span class="hljs-keyword">self</span>.get_argument(<span class="hljs-string">'mail'</span>)
+
+<span class="hljs-symbol">try:</span>
+    username = username.lower()
+    email = email.strip().lower()
+    user = User({<span class="hljs-string">'username'</span>: username, <span class="hljs-string">'password'</span>: password, <span class="hljs-string">'email'</span>: email, <span class="hljs-string">'date_joined'</span>: curtime()})
+    user.validate()
+    save_user(<span class="hljs-keyword">self</span>.db_conn, user)
+except Exception, <span class="hljs-symbol">e:</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">self</span>.render_template(<span class="hljs-string">"success_create.html"</span>)
+</code></pre><p><strong>Недостаток</strong> : ошибка никак не логируется и не показывается пользователю.
+<strong>Последствия</strong> : пользователь будет думать, что данные сохранились, хотя это не так. Потом надо будет долго разбираться, что произошло. Также из-за отсутствия логирования можно не заметить и не предотвратить попытку атаки.
+<strong>Как устранить</strong> : если ошибка произошла, сообщить пользователю о ней и записать происходящее в лог.</p>
+<h2 id="-2">Часть 2</h2>
+<h3 id="-django-">Какие наиболее распространенные атаки предотвращает django?</h3>
+<ol>
+<li><strong>XSS</strong> : django автоматически экранирует html.</li>
+<li><strong>CSRF</strong> : в каждом POST-запросе проверяется секретный ключ, недоступный злоумышленнику.</li>
+<li><strong>SQL-инъекции</strong> : используются параметризированные запросы, и параметры экранируются.</li>
+<li><strong>Clickjacking</strong> : django по дефолту запрещает встраивать сайт в фрейм.
+* <em>и только тут я понял, что вопрос подразумевает просто список.</em><h3 id="-django">Как устроено управление пользовательскими сессиями в django</h3>
+</li>
+<li>При создании сессии клиенту отправляется ключ, который сохраняется в куку. При этом важно отметить, что вся остальная информация остаётся на сервере.</li>
+<li>При каждом запросе клиент отправляет ключ, сервер проверяет его и отдаёт данные клиенту.</li>
+<li>Сессия удаляется автоматически при истечении времени жизни токена или вручную, например, при выходе из аккаунта.
+* ключ псевдослучайный, его фактически невозможно подобрать, плюс, он дополнительно защищается флагами на уровне системы. </li>
+</ol>

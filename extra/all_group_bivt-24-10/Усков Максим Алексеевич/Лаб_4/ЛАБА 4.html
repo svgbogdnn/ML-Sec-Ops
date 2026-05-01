@@ -1,0 +1,173 @@
+<h1 id="часть-1">Часть 1</h1>
+<h2 id="фрагмент-кода-1">Фрагмент кода 1</h2>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env python3</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> flask <span class="im">import</span> Flask</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> mod_api <span class="im">import</span> mod_api</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> Flask(<span class="st">&#39;vuln_app&#39;</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>app.config[<span class="st">&#39;SECRET_KEY&#39;</span>] <span class="op">=</span> <span class="st">&#39;F0cUzh8BgYJSLXAU8qDmClM0dE8GJTpsiyVEl3BCqQMCABp1U$f%&#39;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>app.register_blueprint(mod_api, url_prefix<span class="op">=</span><span class="st">&#39;/api&#39;</span>)</span></code></pre></div>
+<h3 id="недостатки">Недостатки</h3>
+<p>Секретный ключ захардкожен прямо в исходном коде. К нему имеют доступ
+все разработчики, которые работают с этим проектом. Так что ключ
+скомпрометирован. Это опасно потому что с таким ключом можно получить
+доступ к критичным механизмам приложения.</p>
+<h3 id="рекомендации-по-утсранению">Рекомендации по утсранению</h3>
+<p>Нужно положить ключ в переменные окружения, секрет-хранилище или файл
+конфигурации, который не попадает в репозиторий</p>
+<h2 id="фрагмент-кода-2">Фрагмент кода 2</h2>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> flask_wtf <span class="im">import</span> Form  </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> wtforms <span class="im">import</span> TextField</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> LoginForm(Form):  </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    username <span class="op">=</span> TextField(<span class="st">&#39;username&#39;</span>)  </span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    password <span class="op">=</span> TextField(<span class="st">&#39;password&#39;</span>)ожидаемые</span></code></pre></div>
+<h3 id="недостаток">Недостаток</h3>
+<p>Поле <code>password</code> объявлено как обычное текстовое поле
+(<code>TextField</code>), а не как поле для пароля. Из-за этого пароль
+отображается на экране в открытом виде при вводе. Это повышает риск
+утечки через shoulder surfing, запись экрана, автозаполнение браузера и
+повторное отображение формы.</p>
+<h3 id="рекомендации-по-устранению">Рекомендации по устранению</h3>
+<p>Для пароля нужно использовать специальное поле
+<code>PasswordField</code>. Кроме того, для формы авторизации желательно
+добавить валидацию: обязательность заполнения, ограничения длины,
+базовую проверку формата логина.</p>
+<h2 id="франгмент-кода-3">Франгмент кода 3</h2>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> post(<span class="va">self</span>):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    username <span class="op">=</span> <span class="va">self</span>.get_argument(<span class="st">&#39;username&#39;</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    password <span class="op">=</span> <span class="va">self</span>.get_argument(<span class="st">&#39;password&#39;</span>).encode(<span class="st">&#39;utf-8&#39;</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    email <span class="op">=</span> <span class="va">self</span>.get_argument(<span class="st">&#39;mail&#39;</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        username <span class="op">=</span> username.lower()</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        email <span class="op">=</span> email.strip().lower()</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        user <span class="op">=</span> User({<span class="st">&#39;username&#39;</span>: username, <span class="st">&#39;password&#39;</span>: password, <span class="st">&#39;email&#39;</span>: email, <span class="st">&#39;date_joined&#39;</span>: curtime()})</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        user.validate()</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        save_user(<span class="va">self</span>.db_conn, user)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span>, e:</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.render_template(<span class="st">&quot;success_create.html&quot;</span>)</span></code></pre></div>
+<h3 id="недостаток-1">Недостаток</h3>
+<p>Обрабатываются вообще все исключения через
+<code>except Exception</code>, и при этом в случае ошибки пользователю
+всё равно показывается шаблон успешного создания аккаунта. Это приводит
+к скрытию ошибок, неправильной логике приложения и невозможности понять,
+была ли регистрация реально выполнена.</p>
+<h3 id="рекомендации-по-устранению-1">Рекомендации по устранению</h3>
+<p>Нужно ловить только ожидаемые типы ошибок, логировать исключения,
+возвращать пользователю корректное сообщение об ошибке, разделить
+успешный и не успешный сценарий обработки.</p>
+<h1 id="часть-2">Часть 2</h1>
+<h2 id="какие-наиболее-распространённые-атаки-предотвращает-django">1.
+Какие наиболее распространённые атаки предотвращает Django?</h2>
+<p>Django из коробки предоставляет механизмы защиты от ряда
+распространённых веб-атак.</p>
+<h3 id="xss-cross-site-scripting">1.1. XSS (Cross-Site Scripting)</h3>
+<p>Django автоматически экранирует данные в шаблонах, поэтому
+пользовательский ввод по умолчанию выводится как текст, а не как
+исполняемый HTML/JavaScript-код. Это снижает риск внедрения вредоносных
+скриптов в страницу.</p>
+<p>Источник: <a
+href="https://docs.djangoproject.com/en/6.0/topics/security/#cross-site-scripting-xss-protection">Security
+in Django - Cross site scripting (XSS) protection</a></p>
+<h3 id="csrf-cross-site-request-forgery">1.2. CSRF (Cross-Site Request
+Forgery)</h3>
+<p>Django содержит встроенную защиту от CSRF-атак. Для HTML-форм и
+POST-запросов используется специальный CSRF-токен, который проверяется
+на стороне сервера.</p>
+<p>Источник: <a
+href="https://docs.djangoproject.com/en/6.0/topics/security/#cross-site-request-forgery-csrf-protection">Security
+in Django - Cross site request forgery (CSRF) protection</a></p>
+<h3 id="sql-injection">1.3. SQL Injection</h3>
+<p>При использовании ORM Django запросы к базе данных, как правило,
+строятся безопасно - с параметризацией, что снижает риск SQL-инъекций.
+Тем не менее при ручном написании SQL-запросов разработчик всё ещё может
+допустить ошибку.</p>
+<p>Источник: <a
+href="https://docs.djangoproject.com/en/6.0/topics/security/#sql-injection-protection">Security
+in Django - SQL injection protection</a></p>
+<h3 id="clickjacking">1.4. Clickjacking</h3>
+<p>Django предоставляет встроенные средства защиты от clickjacking,
+например middleware и заголовки, запрещающие встраивание сайта в iframe
+на посторонних ресурсах.</p>
+<p>Источник: <a
+href="https://docs.djangoproject.com/en/6.0/topics/security/#clickjacking-protection">Security
+in Django - Clickjacking protection</a></p>
+<h3 id="host-header-attack-и-базовые-настройки-https-безопасности">1.5.
+Host Header Attack и базовые настройки HTTPS-безопасности</h3>
+<p>Django также содержит механизмы, связанные с проверкой допустимых
+хостов (<code>ALLOWED_HOSTS</code>) и рекомендациями по безопасной
+работе через HTTPS.</p>
+<p>Источники: - <a
+href="https://docs.djangoproject.com/en/6.0/topics/security/">Security
+in Django</a> - <a
+href="https://docs.djangoproject.com/en/6.0/ref/settings/#allowed-hosts">Django
+settings - ALLOWED_HOSTS</a> —</p>
+<h2 id="как-устроено-управление-пользовательскими-сессиями-в-django">2.
+Как устроено управление пользовательскими сессиями в Django?</h2>
+<h3 id="общий-принцип-работы">2.1. Общий принцип работы</h3>
+<p>Django поддерживает механизм пользовательских сессий через встроенный
+session framework. Он позволяет сохранять данные между запросами одного
+и того же клиента. После включения <code>SessionMiddleware</code> у
+объекта запроса появляется <code>request.session</code>, через который
+приложение может записывать и читать данные сессии.</p>
+<p>Источник: <a
+href="https://docs.djangoproject.com/en/6.0/topics/http/sessions/">How
+to use sessions</a></p>
+<h3 id="где-хранятся-сессии">2.2. Где хранятся сессии</h3>
+<p>Django поддерживает несколько вариантов хранения сессий: - в базе
+данных; - в кэше; - в связке база данных + кэш (<code>cached_db</code>);
+- в файлах; - в cookie браузера (<code>signed_cookies</code>).</p>
+<p>По умолчанию Django обычно использует хранение в базе данных через
+<code>django.contrib.sessions</code>.</p>
+<p>Источник: <a
+href="https://docs.djangoproject.com/en/6.0/topics/http/sessions/#configuring-the-session-engine">How
+to use sessions — Configuring the session engine</a></p>
+<h3 id="что-хранится-в-cookie">2.3. Что хранится в cookie</h3>
+<p>В стандартной конфигурации cookie обычно содержит
+<strong>идентификатор сессии</strong>, а сами данные лежат на сервере.
+Исключение — backend <code>signed_cookies</code>, где данные сессии
+хранятся прямо в cookie. В этом случае они защищены подписью, но не
+шифруются, поэтому их нельзя считать конфиденциальными.</p>
+<p>Источник: <a
+href="https://docs.djangoproject.com/en/6.0/topics/http/sessions/">How
+to use sessions</a></p>
+<h3 id="работа-через-request.session">2.4. Работа через
+<code>request.session</code></h3>
+<p>Объект <code>request.session</code> работает похоже на словарь. В
+него можно записывать значения по ключу, получать их, удалять и очищать.
+Это стандартный интерфейс для работы с сессионными данными в Django.</p>
+<p>Источник: <a
+href="https://docs.djangoproject.com/en/6.0/topics/http/sessions/#using-sessions-in-views">How
+to use sessions — Using sessions in views</a></p>
+<h3 id="безопасность-сессий">2.5. Безопасность сессий</h3>
+<p>Django предусматривает несколько важных механизмов защиты сессий:</p>
+<ul>
+<li><strong><code>HttpOnly</code> для session cookie</strong> —
+уменьшает риск доступа к cookie через JavaScript;</li>
+<li><strong>ротация session key при логине</strong> через
+<code>cycle_key()</code> — снижает риск session fixation;</li>
+<li><strong>полная очистка сессии при logout</strong> через
+<code>flush()</code>;</li>
+<li>настройка времени жизни cookie и сессии через параметры
+конфигурации.</li>
+</ul>
+<p>Источники: - <a
+href="https://docs.djangoproject.com/en/6.0/topics/http/sessions/#session-security">How
+to use sessions — Session security</a> - <a
+href="https://docs.djangoproject.com/en/6.0/topics/http/sessions/#examples">How
+to use sessions — Examples</a></p>
+<h3 id="связь-с-аутентификацией">2.6. Связь с аутентификацией</h3>
+<p>Сессии в Django тесно связаны с системой аутентификации.
+<code>SessionMiddleware</code> управляет сессиями между запросами, а
+<code>AuthenticationMiddleware</code> использует сессии для привязки
+пользователя к запросу, чтобы в коде был доступен
+<code>request.user</code>.</p>
+<p>Источник: <a
+href="https://docs.djangoproject.com/en/6.0/topics/auth/">User
+authentication in Django</a></p>

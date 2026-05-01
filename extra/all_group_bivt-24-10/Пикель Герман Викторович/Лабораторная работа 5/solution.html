@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Лаба 5</title>
+</head>
+<body>
+
+  <h2>Лаба 5. Часть 1.</h2>
+
+  <p>Я решил скачать докер-образ из 3-ей лабы про XSS-атаки:</p>
+
+  <p><code>docker pull ket9/otus-devsecops-xss:latest</code></p>
+
+  <p>С помощью команды docker images ls посмотрел все установленные у меня образы у меня на машине, также использовал команду <code>whomai</code>:</p>
+
+  <p><img src="./photo1.png" alt="example"></p>
+
+  <p>Затем я запустил командную оболочку <code>sh</code> внутри выбранного контейнера с помощью команды <code>docker run -it ket9/otus-devsecops-xss:latest sh</code> и вот какой вывод получил:</p>
+
+  <p><img src="./photo2.png" alt="example"></p>
+
+  <h2>Лаба 5. Часть 2.</h2>
+
+  <p>Вот простейший Dockerfile, который я написал для выполнения этой части лабораторной работы. Также добавил коментарии с тем, какие настройки безопасности можно добавить в докер контейнер и с какими флагами его можно запускать:</p>
+
+  <p><img src="./photo3.png" alt="example"></p>
+
+  <p>Собрал новый образ, запустил его и ввел в командную строку внутри контейнера <code>whoami</code>:</p>
+
+  <p><img src="./photo4.png" alt="example"></p>
+
+  <p><img src="./photo5.png" alt="example"></p>
+
+  <p><img src="./photo6.png" alt="example"></p>
+
+  <h2>Лаба 5. Часть 3.</h2>
+
+  <p>Установил <code>trivy через brew install trivy</code>.</p>
+
+  <p>Запустил сканирование с помощью команды <code>trivy image xss-nonroot</code> и вот что получил:</p>
+
+  <p><img src="./photo7.png" alt="example"></p>
+  <p><img src="./photo8.png" alt="example"></p>
+
+  <p>Как мы видим, слишком много уязвимостей в моем образе, их 1169. 82 критические уязвимости, 463 - серьезные, 426 - средние, 186 - некритические, и 12 пока не известных. 
+Думаю, основная проблема наличия стольких ошибок - устаревший образ.</p>
+
+</body>
+</html>

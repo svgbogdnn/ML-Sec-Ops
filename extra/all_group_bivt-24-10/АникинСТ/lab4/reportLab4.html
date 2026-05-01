@@ -1,0 +1,32 @@
+<h1 id="-4">Лабораторная работа №4</h1>
+<h2 id="-i">Часть I</h2>
+<h3 id="-1">Фрагмент 1</h3>
+<p>Недостаток: секретный ключ написани прямо в исходном коде. 
+При попадании в публичные репозитории, злоумышленники могут подделовать сессии пользователей и использовать csrf-атаки.</p>
+<pre><code>app<span class="hljs-selector-class">.config</span>[<span class="hljs-string">'SECRET_KEY'</span>] = <span class="hljs-string">'F0cUzh8BgYJSLXAU8qDmClM0dE8GJTpsiyVEl3BCqQMCABp1U$f%'</span>
+</code></pre><p>Исправления: использовать переменные окружения(<code>.env</code> файлы) или хранилища секретов (<code>Vault</code>).</p>
+<pre><code><span class="hljs-selector-tag">os</span><span class="hljs-selector-class">.getenv</span>(<span class="hljs-string">'SECRET_KEY'</span>)
+</code></pre><h3 id="-2">Фрагмент 2</h3>
+<p>Недостаток: поле с паролем определено как текстовое. И будет показываться в открытом виде</p>
+<pre><code><span class="hljs-attr">password</span> = TextField(<span class="hljs-string">'password'</span>)
+</code></pre><p>Исправления: использовать PasswordField для поля с паролем.</p>
+<pre><code><span class="hljs-attr">password</span> = PasswordField(<span class="hljs-string">'Пароль'</span>, validators=[DataRequired()])
+</code></pre><h3 id="-3">Фрагмент 3</h3>
+<p>Недостаток: судя по коду, User получает пароль в открытом виде и никак его не хэширует перед сохранием базы. </p>
+<pre><code><span class="hljs-keyword">user</span> = <span class="hljs-keyword">User</span>({<span class="hljs-string">'username'</span>: username, <span class="hljs-string">'password'</span>: password, <span class="hljs-string">'email'</span>: email, <span class="hljs-string">'date_joined'</span>: curtime()})
+</code></pre><p>Если злоумышленник получит доступ к базе, то он получит и все пароли юзеров. </p>
+<p>Также код отлавливает все исключения, которые могут получаться при валидации и при сохранении в базу. Тем более по умолчанию возвращается страница с успешным сохранением юзера.</p>
+<pre><code>except <span class="hljs-keyword">Exception</span>, e:
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">self</span>.render_template(<span class="hljs-string">"success_create.html"</span>)
+</code></pre><p>Исправления: хэшировать пароль перед сохранением. Добавить обработку разных ошибок(для базы и для валидации).</p>
+<h2 id="-ii">Часть II</h2>
+<p>Атаки, который django предотвращает:</p>
+<ul>
+<li>CSRF (django использует секретный ключ для идентификации csrf-токенов)</li>
+<li>XSS (django экранирует некоторые символы)</li>
+<li>SQL-инъекции (django использует свой ORM)</li>
+<li>Атаки на хэши (django добавляет соль к паролям при хэшировании)</li>
+</ul>
+<p>При первом посещении django создает id сессии и сохраняет её в куки браузера. Django хранит сессии у себя в базе данных и при обращении юзера проверяет наличие сессии c предоставленным id.</p>
+<p>Сессия по умолчанию хранится 14 дней, но этот параметр можно поменять.
+Джанго также продлевает сессию при изменении данных в ней или на каждый запрос пользователя.</p>

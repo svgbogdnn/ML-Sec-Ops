@@ -1,0 +1,38 @@
+<p>Часть I</p>
+<p>На хосте до запуска контейнера выполнил whoami - вернулся мой логин (Kirill). Дальше посмотрел список локальных образов</p>
+<pre><code>docker image ls
+</code></pre>
+<p>Из имеющихся выбрал ket9/otus-devsecops-owasp-rest:latest. Запустил оболочку внутри:</p>
+<pre><code>docker run -it --entrypoint sh ket9/otus-devsecops-owasp-rest:latest
+</code></pre>
+<p>Внутри контейнера снова whoami - вернулся root. То есть по умолчанию приложение в этом образе крутится от рута, если в нем найдут RCE и атакующий вылезет наружу через docker-уязвимость или примонтированный volume - получит root-доступ к хосту</p>
+<p>Скрин с тремя whoami лежит рядом: images/part1_whoami.png</p>
+<p>Часть II</p>
+<p>Написал свой Dockerfile. Файл лежит рядом (./Dockerfile)</p>
+<p>Сборка и проверка</p>
+<pre><code>docker build -t my-secure-rest .
+docker run -it --entrypoint sh my-secure-rest
+whoami
+</code></pre>
+<p>Внутри теперь возвращается appuser. Скрин - images/part2_whoami_appuser.png</p>
+<p>В Dockerfile в комментариях напишу какие еще настройки безопасности нужны</p>
+<p>Часть III</p>
+<p>Прогнал образ через trivy:</p>
+<pre><code>docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+    aquasec/trivy:latest image --severity HIGH,CRITICAL --no-progress ket9/otus-devsecops-owasp-rest:latest
+</code></pre>
+<p>Скрин с выводом - images/part3_trivy.png</p>
+<p>Что увидел в выводе:</p>
+<ul>
+<li>образ собран на старой Alpine-базе 3.14.2, которую дистрибутив уже не поддерживает</li>
+<li>по итогу trivy насчитал 70 HIGH/CRITICAL CVE: 56 по Alpine-пакетам и 14 по Python-пакетам</li>
+<li>Python-зависимости приложения тоже подсвечены, старые версии с известными CVE</li>
+<li>секретов trivy в этом образе не нашел</li>
+</ul>
+<p>Выводы про безопасность образа:</p>
+<ul>
+<li>образ устаревший и уязвимый, для прод-использования не годится без пересборки</li>
+<li>основная проблема - старая ОС-база и старые Python-зависимости; лечится переходом на актуальный slim/alpine-образ и обновлением requirements.txt</li>
+<li>образ запускает приложение от root - это то что я уже починил в Части II</li>
+<li>нужнно встроить trivy в CI и блокировать пуш образа в registry если есть HIGH/CRITICAL без явного исключения через .trivyignore</li>
+</ul>

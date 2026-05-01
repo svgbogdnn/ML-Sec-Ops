@@ -1,0 +1,81 @@
+<h1 id="-1">Часть 1</h1>
+
+<h2 id="1-cve-2025-54554-broken-authentication-information-disclosure">1. CVE-2025-54554 — Broken Authentication / Information Disclosure</h2>
+<p><strong>Источник:</strong> <a href="https://cve.org/CVERecord?id=CVE-2025-54554">https://cve.org/CVERecord?id=CVE-2025-54554</a></p>
+<p><strong>Недостаток:</strong> Неаутентифицированные запросы к REST API компонента tiaudit в Tera Insights tiCrypt позволяют получить информацию о внутренних SQL-запросах и структуре базы данных.</p>
+<p><strong>Причина:</strong> Отсутствие проверки аутентификации на конечных точках API и небезопасная обработка ошибок, которая раскрывает внутреннюю логику приложения.</p>
+<p><strong>Категория OWASP API Security Top 10:</strong> API2:2023 Broken Authentication</p>
+
+<h2 id="2-cve-2025-46363-security-misconfiguration-path-traversal">2. CVE-2025-46363 — Security Misconfiguration / Path Traversal</h2>
+<p><strong>Источник:</strong> <a href="https://cve.org/CVERecord?id=CVE-2025-46363">https://cve.org/CVERecord?id=CVE-2025-46363</a></p>
+<p><strong>Недостаток:</strong> Уязвимость обхода пути (Relative Path Traversal) в REST API шлюза Dell Secure Connect Gateway позволяет низкопривилегированному пользователю получать доступ к ограниченным ресурсам через манипуляции с путями.</p>
+<p><strong>Причина:</strong> Недостаточная санитизация входных параметров пути в API-запросах; сервер не проверяет, что запрашиваемый ресурс находится внутри разрешенной директории.</p>
+<p><strong>Категория OWASP API Security Top 10:</strong> API8:2023 Security Misconfiguration</p>
+
+<h2 id="3-cve-2025-4166-improper-inventory-management-log-leakage">3. CVE-2025-4166 — Improper Inventory Management / Log Leakage</h2>
+<p><strong>Источник:</strong> <a href="https://cve.org/CVERecord?id=CVE-2025-4166">https://cve.org/CVERecord?id=CVE-2025-4166</a></p>
+<p><strong>Недостаток:</strong> Плагин Key/Value v2 в HashiCorp Vault может непреднамеренно раскрывать чувствительные данные в логах сервера и аудита при обработке неправильно сформированных полезных нагрузок через REST API.</p>
+<p><strong>Причина:</strong> Небезопасное логирование — приложение записывает содержимое запросов или ошибок без маскирования конфиденциальных данных.</p>
+<p><strong>Категория OWASP API Security Top 10:</strong> API9:2023 Improper Inventory Management</p>
+<h1 id="-2">Часть 2</h1>
+
+<h2 id="-">Разведка эндпоинтов</h2>
+<p>После запуска контейнера и инициализации БД через /createdb, я изучила интерфейс приложения. На главной странице доступен список эндпоинтов REST API:</p>
+<ul>
+  <li>/createdb — создание базы данных</li>
+  <li>/users/v1 — просмотр информации обо всех пользователях</li>
+  <li>/users/v1/_debug — просмотр подробной информации обо всех пользователях</li>
+  <li>/users/v1/register — регистрация нового пользователя</li>
+  <li>/users/v1/login — вход в приложение</li>
+  <li>/users/v1/{username} — просмотр пользователя по имени</li>
+  <li>/users/v1/{username}/email — изменить email пользователя</li>
+  <li>/users/v1/{username}/password — изменить пароль пользователя</li>
+  <li>/books/v1 — все книги</li>
+</ul>
+
+<h2 id="1-">1. Найденная уязвимость: доступ к /users/v1/_debug</h2>
+
+<h3>Ход рассуждений:</h3>
+<p>Я обратила внимание на эндпоинт /users/v1/_debug, который предположительно предназначен для отладки. Перейдя по этому адресу без какой-либо авторизации, я получила доступ ко всем данным пользователей, включая их пароли в открытом виде.</p>
+
+<h3>Ответ приложения:</h3>
+<pre><code>{
+  "users": [
+    {
+      "admin": false,
+      "email": "mail1@mail.com",
+      "password": "pass1",
+      "username": "name1"
+    },
+    {
+      "admin": false,
+      "email": "mail2@mail.com",
+      "password": "pass2",
+      "username": "name2"
+    },
+    {
+      "admin": true,
+      "email": "admin@mail.com",
+      "password": "pass1",
+      "username": "admin"
+    }
+  ]
+}</code></pre>
+
+<h3>Выводы:</h3>
+<p>Приложение не проверяет права доступа к чувствительным данным. Любой пользователь (даже неаутентифицированный) может получить пароли всех учетных записей, включая администратора. Это критическая уязвимость, позволяющая полностью компрометировать систему.</p>
+
+<h3>Описание уязвимости:</h3>
+<p>Эндпоинт /users/v1/_debug возвращает все поля таблицы пользователей, включая пароли в plaintext (открытом виде), без какой-либо проверки аутентификации или авторизации. Это нарушает принцип минимальных привилегий и позволяет злоумышленнику получить учетные данные всех аккаунтов.</p>
+
+<h3>Тип уязвимости по OWASP API Security Top 10:</h3>
+<p><strong>API3:2023 — Broken Object Property Level Authorization</strong> (также классифицируется как Excessive Data Exposure)</p>
+
+<h3>Меры предотвращения:</h3>
+<ol>
+  <li><strong>Никогда не возвращать пароли в ответах API</strong> — даже в хешированном виде лучше не показывать.</li>
+  <li><strong>Реализовать проверку прав доступа</strong>: эндпоинт _debug должен быть доступен только администраторам или полностью отключен в production.</li>
+  <li><strong>Хранить пароли только в хешированном виде</strong> (bcrypt, argon2, scrypt).</li>
+  <li><strong>Использовать механизмы контроля доступа на уровне свойств объектов</strong> (property-level authorization).</li>
+  <li><strong>Удалить отладочные эндпоинты</strong> из производственной среды.</li>
+</ol>

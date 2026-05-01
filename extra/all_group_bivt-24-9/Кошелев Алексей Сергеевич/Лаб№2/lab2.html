@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>lab2.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> or <div class="page"></div> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="отчет-по-лабораторной-работе-2">Отчет по лабораторной работе №2</h1>
+<h2 id="часть-i-анализ-уязвимостей-rest-api">Часть I. Анализ уязвимостей REST API</h2>
+<p><strong>Цель:</strong> Найти среди CVE за последний год 3 уязвимости, относящиеся к недостаткам REST API из списка OWASP API Security Top-10. Пояснить, в чем заключается недостаток и какова его причина.</p>
+<h3 id="сводная-таблица-уязвимостей-связанных-с-owasp-api-top-10">Сводная таблица уязвимостей, связанных с OWASP API Top 10</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Название CVE</th>
+<th style="text-align:left">Источник</th>
+<th style="text-align:left">Тип (OWASP API Top 10)</th>
+<th style="text-align:left">Недостаток</th>
+<th style="text-align:left">Причина</th>
+<th style="text-align:left">Последствия</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>CVE-2025-14777<br>(Keycloak)</strong></td>
+<td style="text-align:left"><a href="https://github.com/keycloak/keycloak/issues/45650">GitHub Issue / NVD</a></td>
+<td style="text-align:left"><strong>API1:2023</strong><br>Broken Object Level Authorization (BOLA)</td>
+<td style="text-align:left">Аутентифицированный субъект, легитимно управляющий одним клиентским окружением, способен манипулировать ресурсами сторонних клиентов через Admin API путем подмены целевого параметра <code>resourceId</code>.</td>
+<td style="text-align:left">Дефект обусловлен архитектурной рассинхронизацией: валидация привилегий осуществляется на верхнем уровне (<code>resourceServer</code>), однако последующие транзакции в базе данных опираются исключительно на переданный идентификатор (<code>resourceId</code>), игнорируя проверку принадлежности объекта инициатору запроса.</td>
+<td style="text-align:left">Несанкционированная модификация или удаление конфигураций сторонних арендаторов, критическое нарушение принципа мультитенантной изоляции.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>CVE-2025-20348<br>(Cisco Nexus Dashboard)</strong></td>
+<td style="text-align:left"><a href="https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-nshs-urapi-gJuBVFpu">Cisco Security Advisory</a></td>
+<td style="text-align:left"><strong>API5:2023</strong><br>Broken Function Level Authorization (BFLA)</td>
+<td style="text-align:left">Учетная запись с базовым уровнем доступа способна инициировать выполнение служебных и конфигурационных операций посредством обращения к уязвимым конечным точкам REST API.</td>
+<td style="text-align:left">Отсутствие консистентного покрытия маршрутов API механизмом ролевого контроля доступа (RBAC). При обработке запросов к ряду системных эндпоинтов сервер верифицирует наличие сессии, но пропускает этап авторизации прав на вызов конкретной функции.</td>
+<td style="text-align:left">Раскрытие чувствительной телеметрии, несанкционированное взаимодействие с файловой системой узла, вертикальная эскалация привилегий.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>CVE-2025-20156<br>(Cisco Meeting Management)</strong></td>
+<td style="text-align:left"><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-20156">NVD</a><br><a href="https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-cmm-privesc-uy2Vf8pc">Cisco Advisory</a></td>
+<td style="text-align:left"><strong>API5:2023</strong><br>Broken Function Level Authorization (BFLA)</td>
+<td style="text-align:left">Авторизованный пользователь с низкими правами может выполнять административные команды через API (например, эндпоинт <code>/api/ssh_run_command/</code>), хотя в веб-интерфейсе эти функции скрыты.</td>
+<td style="text-align:left">Отсутствие строгой проверки прав пользователя на уровне самого REST API. Сервер удостоверяется в факте аутентификации пользователя, но пропускает шаг авторизации для критических конечных точек.</td>
+<td style="text-align:left">Полный административный контроль над пограничными узлами, выполнение произвольных команд, продвижение вглубь сети.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="вывод">Вывод</h3>
+<ol>
+<li>В <strong>Keycloak</strong> реализован некорректный механизм сопоставления субъекта и объекта доступа: система верифицирует контекст авторизации, но применяет его к нерелевантному идентификатору при обращении к хранилищу данных.</li>
+<li>В <strong>Cisco Nexus Dashboard</strong> наблюдается фрагментарное применение политик безопасности, при котором часть служебных интерфейсов API оказалась исключена из контура ролевой модели доступа.</li>
+<li>В <strong>Cisco Meeting Management</strong> разработчики допустили классическую ошибку Security by Obscurity (безопасность через сокрытие): интерфейсные элементы управления были скрыты от рядовых пользователей, однако механизмы защиты на уровне маршрутизатора API-запросов не были реализованы.</li>
+</ol>
+<p>Данные инциденты подтверждают необходимость внедрения концепции <strong>Zero Trust</strong> на этапе проектирования, требующей обязательной верификации авторизационных прав при каждом обращении к любой функции и каждому объекту данных API.</p>
+<h2 id="часть-ii-поиск-уязвимости">Часть II. Поиск уязвимости</h2>
+<p>После запуска контейнера, я открыл приложение по адресу <code>http://localhost:8080/</code>, а затем перешел по ссылке <code>http://localhost:8080/createdb</code>, чтобы наполнить базу тестовыми данными.</p>
+<h3 id="1-ход-моих-рассуждений-и-действий">1. Ход моих рассуждений и действий</h3>
+<p><strong>Шаг 1: Проверка доступных данных без авторизации</strong>
+Я решил проверить, какие данные приложение отдает просто так, без всяких токенов и паролей.
+Запрос к адресу <code>http://localhost:8080/users/v1</code> сразу же вернул мне список всех зарегистрированных пользователей и их почт:</p>
+<pre class="hljs"><code><div><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;users&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;email&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;mail1@mail.com&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;username&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;name1&quot;</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;email&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;mail2@mail.com&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;username&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;name2&quot;</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;email&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;admin@mail.com&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;username&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;admin&quot;</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">}</span>
+</div></code></pre>
+<p><strong>Шаг 2: Доступ к конкретному пользователю</strong>
+После этого я попробовал открыть данные конкретного пользователя, подставив его имя прямо в URL. Запрос к <code>http://localhost:8080/users/v1/name1</code> успешно сработал:</p>
+<pre class="hljs"><code><div><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;username&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;name1&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;email&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;mail1@mail.com&quot;</span><span class="hljs-punctuation">}</span>
+</div></code></pre>
+<p>Точно так же я смог посмотреть данные и по другим пользователям, а также информацию о книгах по адресу <code>http://localhost:8080/books/v1</code>.
+<em>Вывод:</em> приложение позволяет получить чужие данные, если просто знать и подставить значение <code>username</code> в адресную строку.</p>
+<p><strong>Шаг 3: Попытка изменить данные</strong>
+Я решил проверить, можно ли не только читать, но и менять чужие данные. Через командную строку я отправил <code>PUT</code> запрос на изменение почты пользователя <code>name1</code>:</p>
+<pre class="hljs"><code><div>curl -X PUT <span class="hljs-string">&quot;http://localhost:8080/users/v1/name1/email&quot;</span> -H <span class="hljs-string">&quot;Content-Type: application/json&quot;</span> -d <span class="hljs-string">&quot;{\&quot;email\&quot;:\&quot;hackernumber1@mail.com\&quot;}&quot;</span>
+</div></code></pre>
+<p>Сервер выдал ошибку:</p>
+<pre class="hljs"><code><div><span class="hljs-punctuation">{</span> <span class="hljs-attr">&quot;status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;fail&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;message&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Invalid token&quot;</span><span class="hljs-punctuation">}</span>
+</div></code></pre>
+<p>Я снова проверил профиль <code>name1</code> — почта не изменилась.
+<em>Вывод:</em> Изменять данные пользователей без токена нельзя, но вот читать их через обычный <code>GET</code> запрос может кто угодно.</p>
+<h3 id="2-найденная-уязвимость">2. Найденная уязвимость</h3>
+<p><strong>BOLA (Broken Object Level Authorization)</strong> — сервер предоставляет доступ к объекту по его идентификатору (<code>username</code>) без проверки прав и личности запрашивающего.</p>
+<h3 id="3-классификация">3. Классификация</h3>
+<p><strong>API1:2023 Broken Object Level Authorization</strong> — критический недостаток, при котором манипуляция ID в запросе позволяет несанкционированно читать чужие данные.</p>
+<h3 id="4-меры-предотвращения">4. Меры предотвращения</h3>
+<ol>
+<li><strong>Обязательная авторизация:</strong> Запрет доступа к любым эндпоинтам <code>/users/*</code> без валидного JWT-токена.</li>
+<li><strong>Проверка владения:</strong> Сервер должен сопоставлять ID из запроса с ID в токене пользователя, разрешая просмотр только собственного профиля.</li>
+<li><strong>Минимизация вывода:</strong> Исключение чувствительных полей (email) из публичных ответов API.</li>
+</ol>
+
+</body>
+</html>

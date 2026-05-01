@@ -1,0 +1,13 @@
+FROM alpine:latest
+
+RUN addgroup -S alpinegroup && adduser -S alpineuser -G alpinegroup
+
+WORKDIR /app
+
+USER alpineuser
+
+EXPOSE 8080
+
+#Убрать все capabilities: --cap-drop ALL
+#Отключить интернет: --network none
+#Защита от повышения привилегий: --security-opt no-new-privileges:true

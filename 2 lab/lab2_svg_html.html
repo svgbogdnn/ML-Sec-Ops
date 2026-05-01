@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>svg_md</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Noto Sans', Arial, sans-serif; margin: 32px; line-height: 1.55; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+    pre { padding: 12px; border: 1px solid #ddd; border-radius: 8px; overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px 10px; vertical-align: top; }
+  </style>
+</head>
+<body>
+<h1>Лабораторная Работа №2</h1>
+<p><em>Черных Богдан Игоревич ' БИВТ-24-9</em></p>
+<h2><strong>🌐 Часть 1</strong></h2>
+<p><strong>Условие</strong> — <em>"Необходимо среди CVE за последний год найти 3 CVE, относящиеся к недостаткам REST API, входящим в owasp top-10 rest api. Пояснить, в чем заключается недостаток и какова его причина."</em></p>
+<h3>🔹1</h3>
+<p><strong>Название CVE</strong> — <code>CVE-2025-4427</code><br />
+<strong>Источник</strong> — <code>https://nvd.nist.gov/vuln/detail/CVE-2025-4427</code><br />
+<strong>Тип (OWASP REST API TOP 10)</strong> — <code>Broken Authentication</code><br />
+<strong>Недостаток</strong> — в API-компоненте возможен обход аутентификации, из-за чего атакующий получает <strong>доступ к защищенным API-ресурсам</strong> без корректных учетных данных.<br />
+<strong>Причина</strong> — в API-компоненте реализован <code>authentication bypass</code> через альтернативный путь доступа к API — из-за чего запросы к защищенным API-ресурсам проходят <strong>без корректной проверки учетных данных</strong>.<br />
+<strong>Последствия</strong> — несанкционированный доступ к защищенным API-ресурсам приложения.</p>
+<h3>🔹2</h3>
+<p><strong>Название CVE</strong> — <code>CVE-2025-58121</code><br />
+<strong>Источник</strong> — <code>https://nvd.nist.gov/vuln/detail/CVE-2025-20348</code><br />
+<strong>Тип (OWASP REST API TOP 10)</strong> — <code>Broken Function Level Authorization</code><br />
+<strong>Недостаток</strong> — в нескольких REST API endpointах Checkmk пользователь с низкими привилегиями может выполнять действия, которые разрешены только администратору, и также получать чувствительную информацию.<br />
+<strong>Причина</strong> — отсутствует нормальная авторизационная проверка на части REST API endpointов. Сервер проверяет, что пользователь вошел в систему — но недостаточно проверяет, имеет ли он право выполнять именно этот API-вызов.<br />
+<strong>Последствия</strong> — выполнение неразрешенных действий и получение чувствительной информации при наличии <strong>только низкоуровневой учетной записи</strong>.</p>
+<h3>🔹3</h3>
+<p><strong>Название CVE</strong> — <code>CVE-2025-10732</code><br />
+<strong>Источник</strong> — <code>https://nvd.nist.gov/vuln/detail/CVE-2025-10732</code><br />
+<strong>Тип (OWASP REST API TOP 10)</strong> — <code>Broken Object Property Level Authorization</code><br />
+<strong>Недостаток</strong> — пользователь через REST API endpoint может получить чувствительные настройки и ключи, без разрешения на это.<br />
+<strong>Причина</strong> — некорректная реализация контроля доступа на endpointе <code>/wp-json/sureforms/v1/srfm-global-settings</code>.<br />
+<strong>Последствия</strong> — утечка API ключей, административных email адресов и настроек безопасности формы.</p>
+<h2><strong>🌐 Часть 2</strong></h2>
+<p><strong>Условие</strong> —<br />
+<em>"1. Скачать уязвимый образ с docker.hub, выполнив команду из консоли</em><br />
+<em><code>docker pull ket9/otus-devsecops-owasp-rest</code></em><br />
+<em>2. Запустить образ</em><br />
+<em><code>docker run -d -p 8080:8080 ket9/otus-devsecops-owasp-rest:latest</code></em><br />
+<em>3. Зайти на <a href="http://localhost:8080/">http://localhost:8080/</a>, посмотреть, какой функционал доступен в приложении.</em><br />
+<em><a href="http://localhost:8080/">http://localhost:8080/</a></em><br />
+<em>4. Наполнить базу данных, перейдя по ссылке <a href="http://localhost:8080/createdb">http://localhost:8080/createdb</a></em><br />
+<em><a href="http://localhost:8080/createdb">http://localhost:8080/createdb</a></em><br />
+<em>После этого вторую часть задания можно выполнить в двух вариациях: либо самостоятельно попробовать найти какой-то недостаток в приложении из owasp top-10 rest api, либо провести эмуляцию атаки (выполнить по шагам уже описанную уязвимость).</em><br />
+<em>Вне зависимости от того, какой вариант вы выбираете, ответом на дз будет текстовый файл, содержащий:</em><br />
+<em>1. ход ваших рассуждений, что пробовали делать, какой был ответ приложения, какие выводы вы из этого делали.</em><br />
+<em>2. описание найденной уязвимости</em><br />
+<em>3. к какому типу из 10 изученных относится недостаток</em><br />
+<em>4. меры предотвращения"</em>  </p>
+<p>Скачал образ (<code>docker pull ket9/otus-devsecops-owasp-rest</code>), запустил его (<code>docker run -d -p 8080:8080 ket9/otus-devsecops-owasp-rest:latest</code>).</p>
+<p>Зашел на:</p>
+<pre><code class="language-http">http://localhost:8080/
+</code></pre>
+<p>Потом заполнил базу через:</p>
+<pre><code class="language-http">http://localhost:8080/createdb
+</code></pre>
+<h3><strong>🔸 1</strong></h3>
+<p>На главной странице у нас:</p>
+<pre><code class="language-json">{ &quot;создать базу&quot;: &quot;/createdb&quot;, &quot;посмотреть информацию обо всех пользователях&quot;: &quot;/users/v1&quot;, &quot;посмотреть подробную информацию обо всех пользователях&quot;: &quot;/users/v1/_debug&quot;, &quot;регистрация нового пользователя&quot;: &quot;/users/v1/register (HTTP POST)&quot;, &quot;вход в приложение&quot;: &quot;/users/v1/login (HTTP POST)&quot;, &quot;просмотр пользователя по имени&quot;: &quot;/users/v1/{username}&quot;, &quot;удалить пользователя по имени (только для админов)&quot;: &quot;/users/v1/{username} (HTTP DELETE)&quot;, &quot;изменить email пользователя&quot;: &quot;/users/v1/{username}/email (HTTP PUT)&quot;, &quot;изменить пароль пользователя&quot;: &quot;/users/v1/{username}/password (HTTP PUT)&quot;, &quot;все книги&quot;: &quot;/books/v1&quot;, &quot;добавить книгу&quot;: &quot;/books/v1 (HTTP POST)&quot;, &quot;просмотр книги&quot;: &quot;/books/v1/{book}&quot; }
+</code></pre>
+<p>То есть приложение вывело <strong>список всех доступных ендпоинтов</strong>. Получается, что даже <strong>без авторизации</strong> можно увидеть какие маршруты есть в апи, где находится регистрация, логин и, например, дебаг страница.<br />
+<strong>Вывод</strong> — приложение раскрывает <strong>внутреннюю структуру API</strong>. Это не критично, однако злоумышленнику не придется угадывать маршруты —— приложение само показало куда можно обращаться для чего-то нехорошего.<br />
+<strong>Тип недостатка</strong> — <strong>Improper Inventory Management</strong> (из OWASP API Top 10). Открытая карта ендпоинтов на главной странице, из-за чего без авторизации видно структуру API. OWASP относит к этой категории проблемы с учетом, документированием и контролем API endpointов.</p>
+<p><strong>Меры предотвращения:</strong></p>
+<ol>
+<li>Не показывать публично полный список endpointов, так еще и на главной странице.</li>
+<li>Маршрут <code>_debug</code> должен быть отключен в прод-версии приложения, или хотя бы закрыт закрыт авторизацией.</li>
+<li>Вести актуальный список всех API endpointов: какие публичные, какие служебные, какие вообще должны быть удалены.</li>
+<li>Разделять dev/test endpointы и прод-окружения, чтобы отладочные функции не попадали в рабочую версию приложения.</li>
+<li>Закрывать непубличные endpointы авторизацией.</li>
+</ol>
+<h3><strong>🔸 2</strong></h3>
+<p>После этого решил проверить ендпоинт со списоком пользователей:</p>
+<pre><code class="language-http">http://localhost:8080/users/v1
+</code></pre>
+<p>И вижу:</p>
+<pre><code class="language-json">{&quot;users&quot;:[{&quot;email&quot;:&quot;mail1@mail.com&quot;,&quot;username&quot;:&quot;name1&quot;},{&quot;email&quot;:&quot;mail2@mail.com&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;email&quot;:&quot;admin@mail.com&quot;,&quot;username&quot;:&quot;admin&quot;}]}
+</code></pre>
+<p>То есть приложение без логина, без токена, да вообще без ничего просто сразу выдало список всех пользователей так еще и их почты, это вообще отлично.<br />
+<strong>Вывод</strong> — API отдает больше данных, чем нужно. Плохой человек может взять ник пользователя из списка и обращаться к ендпоинту конкретного пользователя.<br />
+<strong>Тип недостатка</strong> — <strong>Broken Object Property Level Authorization</strong>. Ендпоинт <code>http://localhost:8080/users/v1</code> возвращает не один чужой объект по <code>username</code> —— а сразу весь список пользователей с их свойствами <code>username</code> и <code>email</code>. OWASP относит это к ситуациям, когда API возвращает свойства объекта, которые пользователь не должен видеть.</p>
+<p><strong>Меры предотвращения:</strong></p>
+<ol>
+<li>Требовать авторизацию перед выдачей списка пользователей.</li>
+<li>Проверять права доступа перед каждым ответом, где есть пользовательские данные.</li>
+<li>Возвращать только минимально необходимые поля.</li>
+<li>Разрешить получение полного списка пользователей только администраторам.</li>
+<li>Для каждого endpointа заранее определить, какие поля можно отдавать наружу, а какие должны оставаться скрытыми.</li>
+</ol>
+<h3><strong>🔸 3</strong></h3>
+<p>После списка пользователей я пошел по конкретным пользователям по никам.</p>
+<pre><code class="language-http">http://localhost:8080/users/v1/name1
+</code></pre>
+<p>Ответ:</p>
+<pre><code class="language-json">{&quot;username&quot;: &quot;name1&quot;, &quot;email&quot;: &quot;mail1@mail.com&quot;}
+</code></pre>
+<p>Дальше</p>
+<pre><code class="language-http">http://localhost:8080/users/v1/name2
+</code></pre>
+<p>Ответ:</p>
+<pre><code class="language-json">{&quot;username&quot;: &quot;name2&quot;, &quot;email&quot;: &quot;mail2@mail.com&quot;}
+</code></pre>
+<p>Дальше</p>
+<pre><code class="language-http">http://localhost:8080/users/v1/name3
+</code></pre>
+<p>Ответ:</p>
+<pre><code class="language-json">{ &quot;status&quot;: &quot;fail&quot;, &quot;message&quot;: &quot;User not found&quot;}
+</code></pre>
+<p>Не, ну вдруг в базе написанно нет, а на деле есть.<br />
+Дальше</p>
+<pre><code class="language-http">http://localhost:8080/users/v1/admin
+</code></pre>
+<p>Ответ:</p>
+<pre><code class="language-json">{&quot;username&quot;: &quot;admin&quot;, &quot;email&quot;: &quot;admin@mail.com&quot;}
+</code></pre>
+<p>Получается что приложение отдает данные конкретного пользователя просто по значению <code>username</code> в URL. При этом не требуется ничего — ни логин, ни пароль, ни токен. Сервер фактически берет параметр из адреса, ищет юзера в базе и возвращает его данные — но не проверяет, имеет ли запрашивающий право смотреть именно этот профиль.<br />
+<strong>Вывод</strong> — Сервер отдает чужой объект без проверки прав.<br />
+<strong>Тип недостатка</strong> — <strong>Broken Object Level Authorization</strong>, он же BOLA / IDOR (из OWASP API Top 10). OWASP относит это к ситуациям, когда API endpoint получается идентификатор объекта от клиента (<code>id</code>, <code>username</code>) и выполняет действие с этим объектом, но не проверяет права доступа именно к этому объекту.</p>
+<p><strong>Меры предотвращения:</strong></p>
+<ol>
+<li>Требовать авторизацию для endpointа <code>/users/v1/{username}</code>.</li>
+<li>После авторизации проверять не только сам факт входа, но и право доступа к конкретному объекту.</li>
+<li>Обычному пользователю разрешить получать только собственный профиль.</li>
+<li>Не доверять параметру username из URL.</li>
+<li>Использовать централизованный механизм авторизации, чтобы проверка прав не писалась случайно в отдельных местах, а выполнялась одинаково для всех похожих endpointов.</li>
+</ol>
+<h3><strong>🔸 4</strong></h3>
+<p>Теперь проверю ендпоинт <code>_debug</code>, которого в нормальном проде вообще не должно быть.</p>
+<p>Перехожу по:</p>
+<pre><code class="language-http">http://localhost:8080/users/v1/_debug
+</code></pre>
+<p>И получаю:</p>
+<pre><code class="language-json">{&quot;users&quot;:[{&quot;admin&quot;:false,&quot;email&quot;:&quot;mail1@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;name1&quot;},{&quot;admin&quot;:false,&quot;email&quot;:&quot;mail2@mail.com&quot;,&quot;password&quot;:&quot;pass2&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;admin&quot;:true,&quot;email&quot;:&quot;admin@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;admin&quot;}]}
+</code></pre>
+<p>То есть получаю полный дамп вообще всех юзеров — ники, почты, проверку на админа, пароли. И все это конечно же без авторизации, ну а зачем она нужна. Полная компрометация учетных записей.<br />
+<strong>Вывод</strong> — в приложении оставлен открытый debug endpoint, который без авторизации раскрывает всю информацию о всех пользователях.<br />
+<strong>Тип недостатка</strong> — <strong>Security Misconfiguration</strong> (из OWASP API Top 10). По OWASP, недостаток может возникать на разных уровнях API: от сетевого уровня до уровня приложения. Дополнительно это и CWE-489, то есть Acitve Debug Code, потому что в приложении оставлена вся активная debug функциональность.</p>
+<p><strong>Меры предотвращения:</strong></p>
+<ol>
+<li>Полностью убрать <code>/users/v1/_debug</code> из прод-версии приложения.</li>
+<li>Никогда не возвращать пароли в API-ответах.</li>
+<li>Хранить пароли только в виде безопасных хешей, а не в открытом виде.</li>
+<li>Перед публикацией приложения проверять, что в нем не осталось debug endpointов, тестовых маршрутов и лишних служебных функций.</li>
+<li>Настроить разные конфигурации для разработки и прода, чтобы debug-режим не мог случайно попасть в рабочую версию.</li>
+</ol>
+<h3>Общий вывод</h3>
+<p>Во второй части я проверил работу REST API после запуска контейнера и заполнения базы. В приложении обнаружились несколько связанных проблем: открытая карта endpointов на <code>/</code>, выдача списка пользователей через <code>/users/v1</code>, просмотр конкретного пользователя через <code>/users/v1/{username}</code> без авторизации и открытый debug endpoint <code>/users/v1/_debug</code>, где видны пароли.</p>
+<table>
+<thead>
+<tr>
+<th>Что нашли</th>
+<th>Категория OWASP API Security Top 10 2023</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Открытая карта endpointов на <code>/</code></td>
+<td>✔️ API9:2023 — Improper Inventory Management</td>
+</tr>
+<tr>
+<td>Список всех пользователей через <code>/users/v1</code> без авторизации</td>
+<td>✔️ API3:2023 — Broken Object Property Level Authorization</td>
+</tr>
+<tr>
+<td>Просмотр конкретного пользователя через <code>/users/v1/{username}</code> без авторизации</td>
+<td>✔️ API1:2023 — Broken Object Level Authorization (BOLA)</td>
+</tr>
+<tr>
+<td>Открытый debug endpoint <code>/users/v1/_debug</code>, где видны пароли</td>
+<td>✔️ API8:2023 — Security Misconfiguration</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

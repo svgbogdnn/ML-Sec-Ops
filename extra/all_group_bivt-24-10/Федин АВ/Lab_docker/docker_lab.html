@@ -1,0 +1,45 @@
+<h1 id="-c-1">Чаcть 1</h1>
+<p>Запустим обычный alpine. В системе пользователь - мой, внутри контейнера - root.</p>
+<h1 id="-2">Часть 2</h1>
+<p>Возьмем тот же alpine, создадим юзера alpineuser и добавим его в группу alpinegroup. USER alpineuser делает так, что внутри контейнера мы больше не  являемся рутом.</p>
+<p>Из флагов для безопасности отключим все capabilities, интернет и отключим повышение привилегий.</p>
+<p>Зайдем в контейнер и проверим, что мы не рут и что сеть отключена.</p>
+<h1 id="-3">Часть 3</h1>
+<p><strong>Образ имеет 0 уязвимостей, что неудивительно, так как версия alpine максимально свежая: 3.23.4. (trivy image alpine:latest дает такой же вывод)</strong></p>
+<p>~/Downloads$ trivy image alpinesecure:latest<br>2026-04-25T19:50:26+03:00  INFO  [vuln] Vulnerability scanning is enabled
+2026-04-25T19:50:26+03:00  INFO  [secret] Secret scanning is enabled
+2026-04-25T19:50:26+03:00  INFO  [secret] If your scanning is slow, please try &#39;--scanners vuln&#39; to disable secret scanning
+2026-04-25T19:50:26+03:00  INFO  [secret] Please see <a href="https://trivy.dev/docs/v0.70/guide/scanner/secret#recommendation">https://trivy.dev/docs/v0.70/guide/scanner/secret#recommendation</a> for faster secret detection
+2026-04-25T19:50:26+03:00  INFO  Detected OS  family=&quot;alpine&quot; version=&quot;3.23.4&quot;
+2026-04-25T19:50:26+03:00  INFO  [alpine] Detecting vulnerabilities...  os_version=&quot;3.23&quot; repository=&quot;3.23&quot; pkg_num=16
+2026-04-25T19:50:26+03:00  INFO  Number of language-specific files  num=0</p>
+<p>Report Summary</p>
+<p>┌─────────────────────────────────────┬────────┬─────────────────┬─────────┐
+│               Target                │  Type  │ Vulnerabilities │ Secrets │
+├─────────────────────────────────────┼────────┼─────────────────┼─────────┤
+│ alpinesecure:latest (alpine 3.23.4) │ alpine │        0        │    -    │
+└─────────────────────────────────────┴────────┴─────────────────┴─────────┘
+Legend:</p>
+<ul>
+<li>&#39;-&#39;: Not scanned</li>
+<li>&#39;0&#39;: Clean (no security findings detected)</li>
+</ul>
+<p><strong>Для примера ket9/opus-devsecops-owasp-rest:latest имеет 72 уязвимости в alpine из-за несвежей версии 3.14.2</strong>
+~/Downloads$ trivy image ket9/otus-devsecops-owasp-rest:latest
+2026-04-25T20:01:12+03:00  INFO  [vuln] Vulnerability scanning is enabled
+2026-04-25T20:01:12+03:00  INFO  [secret] Secret scanning is enabled
+2026-04-25T20:01:12+03:00  INFO  [secret] If your scanning is slow, please try &#39;--scanners vuln&#39; to disable secret scanning
+2026-04-25T20:01:12+03:00  INFO  [secret] Please see <a href="https://trivy.dev/docs/v0.70/guide/scanner/secret#recommendation">https://trivy.dev/docs/v0.70/guide/scanner/secret#recommendation</a> for faster secret detection
+2026-04-25T20:01:12+03:00  INFO  Detected OS  family=&quot;alpine&quot; version=&quot;3.14.2&quot;
+2026-04-25T20:01:12+03:00  INFO  [alpine] Detecting vulnerabilities...  os_version=&quot;3.14&quot; repository=&quot;3.14&quot; pkg_num=57
+2026-04-25T20:01:12+03:00  INFO  Number of language-specific files  num=1
+2026-04-25T20:01:12+03:00  INFO  [python-pkg] Detecting vulnerabilities...
+2026-04-25T20:01:12+03:00  WARN  This OS version is no longer supported by the distribution  family=&quot;alpine&quot; version=&quot;3.14.2&quot;
+2026-04-25T20:01:12+03:00  WARN  The vulnerability detection may be insufficient because security updates are not provided
+2026-04-25T20:01:12+03:00  INFO  Table result includes only package filenames. Use &#39;--format json&#39; option to get the full path to the package file.</p>
+<p>Report Summary</p>
+<p>┌──────────────────────────────────────────────────────────────────────────────────┬────────────┬─────────────────┬─────────┐
+│                                      Target                                      │    Type    │ Vulnerabilities │ Secrets │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ ket9/otus-devsecops-owasp-rest:latest (alpine 3.14.2)                            │   alpine   │       72        │    -    │ </p>
+<p><strong>Вывод: образ пока не имеет известных CVE, но это ничего не значит: во-первых в нем не запущено никакого приложения, во-вторых всё равно нужно отключить лишние функции (capabilities, root), чтобы если уязвимости и были найдены в последней версии alpine или запущенном приложении, то их было сложнее эксплуатировать.</strong></p>

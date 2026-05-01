@@ -1,0 +1,82 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h1 id="-4-python-django">ЛР 4. Недостатки в python-коде. Механизмы безопасности в django</h1>
+<h2 id="-1">Часть 1</h2>
+<h3 id="-1">Фрагмент кода 1</h3>
+<pre><code class="lang-python">#!/usr/bin/env python3
+<span class="hljs-keyword">from</span> flask <span class="hljs-keyword">import</span> Flask
+
+<span class="hljs-keyword">from</span> mod_api <span class="hljs-keyword">import</span> mod_api
+
+app = Flask(<span class="hljs-string">'vuln_app'</span>)
+app.config[<span class="hljs-string">'SECRET_KEY'</span>] = <span class="hljs-string">'F0cUzh8BgYJSLXAU8qDmClM0dE8GJTpsiyVEl3BCqQMCABp1U$f%'</span>
+
+app.register_blueprint(mod_api, url_prefix=<span class="hljs-string">'/api'</span>)
+</code></pre>
+<p><strong>Недостаток:</strong></p>
+<p>Секретный ключ (SECRET_KEY) захардкожен в исходном коде приложения</p>
+<p><strong>Меры устранения:</strong></p>
+<p>Необходимо вынести секретный ключ в переменные окружения или использовать менеджеры секретов, чтобы исключить его утечку и повысить безопасность приложения</p>
+<h3 id="-2">Фрагмент кода 2</h3>
+<pre><code class="lang-python"><span class="hljs-title">from</span> flask_wtf <span class="hljs-keyword">import</span> Form  
+<span class="hljs-title">from</span> wtforms <span class="hljs-keyword">import</span> TextField
+<span class="hljs-class">
+<span class="hljs-keyword">class</span> <span class="hljs-type">LoginForm</span>(<span class="hljs-type">Form</span>):  
+    username = <span class="hljs-type">TextField</span>('<span class="hljs-title">username'</span>)  
+    password = <span class="hljs-type">TextField</span>('<span class="hljs-title">password'</span>)</span>
+</code></pre>
+<p><strong>Недостаток:</strong><br>Отсутствует валидация пользовательского ввода — поля формы принимают любые данные без проверки</p>
+<p><strong>Меры устранения:</strong><br>Следует добавить валидацию (ограничение длины, формат данных), использовать PasswordField для пароля и встроенные механизмы защиты</p>
+<h3 id="-3">Фрагмент кода 3</h3>
+<pre><code class="lang-python"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">post</span><span class="hljs-params">(<span class="hljs-keyword">self</span>)</span></span>:
+    username = <span class="hljs-keyword">self</span>.get_argument(<span class="hljs-string">'username'</span>)
+    password = <span class="hljs-keyword">self</span>.get_argument(<span class="hljs-string">'password'</span>).encode(<span class="hljs-string">'utf-8'</span>)
+    email = <span class="hljs-keyword">self</span>.get_argument(<span class="hljs-string">'mail'</span>)
+
+
+<span class="hljs-symbol">try:</span>
+    username = username.lower()
+    email = email.strip().lower()
+    user = User({<span class="hljs-string">'username'</span>: username, <span class="hljs-string">'password'</span>: password, <span class="hljs-string">'email'</span>: email, <span class="hljs-string">'date_joined'</span>: curtime()})
+    user.validate()
+    save_user(<span class="hljs-keyword">self</span>.db_conn, user)
+except Exception, <span class="hljs-symbol">e:</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">self</span>.render_template(<span class="hljs-string">"success_create.html"</span>)
+</code></pre>
+<p><strong>Недостаток:</strong><br>Некорректная обработка исключений — при возникновении ошибки пользователю возвращается сообщение об успешном выполнении операции даже при ошибке</p>
+<p><strong>Меры устранения:</strong><br>Необходимо обрабатывать ошибки корректно, логировать исключения и возвращать пользователю соответствующий результат (ошибку, а не успех)</p>
+<hr>
+<h2 id="-2">Часть 2</h2>
+<h3 id="1-django-">1. Какие наиболее распространенные атаки предотвращает Django?</h3>
+<p>Django имеет встроенные механизмы защиты от следующих атак:</p>
+<ul>
+<li>Cross-Site Scripting (XSS) — благодаря автоматическому экранированию шаблонов</li>
+<li>Cross-Site Request Forgery (CSRF) — через CSRF-токены</li>
+<li>SQL-инъекции — за счёт ORM, который использует параметризованные запросы</li>
+<li>Clickjacking — с помощью заголовка X-Frame-Options</li>
+<li>Session Hijacking — через безопасную работу с cookies (HttpOnly, Secure)</li>
+</ul>
+<h3 id="2-django">2. Управление пользовательскими сессиями в Django</h3>
+<p>Django использует встроенную систему управления сессиями, которая позволяет хранить состояние пользователя между HTTP-запросами</p>
+<p>Основные особенности:</p>
+<ul>
+<li>Каждому пользователю назначается уникальный session ID</li>
+<li>Session ID хранится в cookies браузера</li>
+<li>Данные сессии хранятся на сервере (в базе данных, кеше или файлах)</li>
+</ul>
+<p>Механизм работы:</p>
+<ol>
+<li>При первом запросе создаётся сессия и генерируется session ID</li>
+<li>Session ID отправляется пользователю в cookie</li>
+<li>При последующих запросах браузер отправляет этот cookie обратно серверу</li>
+<li>Django использует session ID для получения данных сессии</li>
+</ol>
+<p>Меры безопасности:</p>
+<ul>
+<li>cookies могут быть помечены как HttpOnly (защита от XSS)</li>
+<li>cookies могут быть Secure (передаются только по HTTPS)</li>
+<li>поддержка автоматического истечения сессий</li>
+<li>защита от подделки сессий за счёт SECRET_KEY</li>
+</ul>
+</body></html>

@@ -1,0 +1,57 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h1 id="-2">Лабораторная работа №2</h1>
+<h2 id="-1">Часть 1</h2>
+<h3 id="-cve-2026-3906-https-nvd-nist-gov-vuln-detail-cve-2026-3906-"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-3906">CVE-2026-3906</a></h3>
+<p><strong>Тип</strong> : API5:2023 Broken Function Level Authorization (CWE-862 — Missing Authorisation)
+<strong>Описание:</strong> В API появилась возможность делать редакторские &quot;заметки на полях&quot;. При этом проверка пользователя проводилась только на предмет аутентификации, что давало возможность аутентифицированным читателям с недостаточным уровнем доступа (например, подписчика), создавать заметки на любом посте, включая посты от других пользователей и приватные посты.
+<strong>Ошибка</strong>: Функция create_item_permissions_check() не проверяла, есть ли у пользователя разрешение на редактирование поста перед созданием заметки.</p>
+<h3 id="-cve-2026-40252-https-nvd-nist-gov-vuln-detail-cve-2026-40252-"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-40252">CVE-2026-40252</a></h3>
+<p><strong>Тип:</strong> API1:2023 Broken Object Level Authorization (CWE-284, CWE-639)
+<strong>Описание:</strong> FastGPT - платформа для создания AI Agent. Уязвимость позволяла любой аутентифицированной команде получать доступ и выполнять приложения, принадлежащие другим командам путем предоставления чужого appId. Это могло привести к разоблачению данных между клиентами.
+<strong>Ошибка:</strong>  Хотя API-интерфейс правильно проверяет маркер команды, он не проверяет принадлежность запрошенного приложения проверенной команде.</p>
+<h3 id="-cve-2026-33146-https-nvd-nist-gov-vuln-detail-cve-2026-33146-"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-33146">CVE-2026-33146</a></h3>
+<p><strong>Тип:</strong> API7:2023 Server Side Request Forgery (CWE-918)
+<strong>Описание:</strong> в Keycloak, решении для управления удостоверениями и доступом, некорректно выполняется HTTP-переадресация при обработке определенных запросов клиентской конфигурации. Это поведение позволяет злоумышленнику обмануть сервер и заставить его сделать непреднамеренные запросы на внутренние или ограниченные ресурсы. Эта проблема может привести к раскрытию информации и дать возможность злоумышленникам составить карту внутренней сетевой инфраструктуры.
+<strong>Ошибка:</strong> Небезопасная обработка HTTP-переадресации в пользовательских запросах.</p>
+<h2 id="-2">Часть 2</h2>
+<p>Запускаю прогу, заполняю бд.
+Смотрю <a href="http://localhost:8080/users/v1">http://localhost:8080/users/v1</a>. 
+{&quot;users&quot;:[{&quot;email&quot;:&quot;mail1@mail.com&quot;,&quot;username&quot;:&quot;name1&quot;},{&quot;email&quot;:&quot;mail2@mail.com&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;email&quot;:&quot;admin@mail.com&quot;,&quot;username&quot;:&quot;admin&quot;}]}
+Окей, у нас есть два пользователя и админ. Итак, список всех пользователей с личными данными доступен без авторизации, что</p>
+<h3 id="-1">Уязвимость 1</h3>
+<p><strong>Тип</strong>:  API3:2023 Broken Object Property Level Authorization + API5:2023 Broken Function Level Authorization
+<strong>Описание</strong>: приложение раскрывает потенциально приватные данные пользователей без требования авторизации. 
+<strong>Меры предотвращения</strong>: </p>
+<ol>
+<li>Требовать админский уровень доступа в /users/v1</li>
+<li>Требовать авторизацию в /users/v1/{username}</li>
+</ol>
+<p>Продолжим.
+<a href="http://localhost:8080/users/v1/_debug">http://localhost:8080/users/v1/_debug</a> : 
+{&quot;users&quot;:[{&quot;admin&quot;:false,&quot;email&quot;:&quot;mail1@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;name1&quot;},
+{&quot;admin&quot;:false,&quot;email&quot;:&quot;mail2@mail.com&quot;,&quot;password&quot;:&quot;pass2&quot;,&quot;username&quot;:&quot;name2&quot;},
+{&quot;admin&quot;:true,&quot;email&quot;:&quot;admin@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;admin&quot;}]}
+Класс, у нас есть открытый эндпойнт <em>для дебага</em>, по которому можно достать все данные. Продолжая и развивая тему предыдущего эндпойнта, это </p>
+<h3 id="-2">Уязвимость 2</h3>
+<p><strong>Тип</strong>:  API8:2023 Security Misconfiguration, (+ API3:2023 Broken Object Property Level Authorization, API5:2023 Broken Function Level Authorization)
+<strong>Описание</strong>: приложение раскрывает критические данные пользователей, в том числе пароли в незашифрованном виде через debug endpoint <code>/users/v1/_debug</code>, доступный без авторизации. Бинго.
+<strong>Меры предотвращения</strong>: </p>
+<ol>
+<li>Отключить в проде эндпойнт для дебага</li>
+<li>Требовать авторизацию для доступа к подобным эндпойнтам </li>
+<li>Даже в дебаге не возвращать <em>пароли</em></li>
+</ol>
+<p>Проверю-ка ещё одну вещь
+<a href="http://localhost:8080/users/v1/login?username=name1&amp;password=pass1">http://localhost:8080/users/v1/login?username=name1&amp;password=pass1</a>: { &quot;status&quot;: &quot;fail&quot;, &quot;message&quot;: &quot;User not found&quot;}
+Повторим 10 раз : каждый раз один и тот же ответ. Нет никакой системы противодействия брутфорсу</p>
+<h2 id="-3">Уязвимость 3</h2>
+<p><strong>Тип</strong>: API2:2023 Broken Authentication
+<strong>Описание</strong>: приложение хранит пароли пользователей в открытом виде и не препятствует брутфорсу.
+<strong>Меры предотвращения</strong>: </p>
+<ol>
+<li>Хешировать пароли</li>
+<li>После нескольких неправильных попыток ввода пароля запускать капчу</li>
+</ol>
+</body></html>

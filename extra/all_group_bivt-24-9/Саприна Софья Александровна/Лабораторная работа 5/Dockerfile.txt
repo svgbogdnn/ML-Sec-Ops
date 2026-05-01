@@ -1,0 +1,16 @@
+FROM alpine:latest
+EXPOSE 8080
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+WORKDIR /app
+RUN chown -R appuser:appgroup /app
+USER appuser
+CMD ["sh"]
+
+#COPY --chown=appuser:appgroup — файлы копируются с правильными правами
+#WORKDIR в директории, доступной пользователю
+#Использование конкретного тега (не latest) для воспроизводимости
+#флаги:
+#--read-only (монтировать корневую ФС только для чтения)
+#--security-opt=no-new-privileges (запретить повышение привилегий)
+#--user=appuser (явно указать пользователя)
+

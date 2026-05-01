@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>lab3.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> or <div class="page"></div> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="отчет-по-лабораторной-работе-3">Отчет по лабораторной работе №3</h1>
+<h2 id="часть-i-анализ-уязвимостей-xss-в-php">Часть I. Анализ уязвимостей (XSS в PHP)</h2>
+<h3 id="1-общее-количество-cve-за-2021-год">1. Общее количество CVE за 2021 год</h3>
+<p>Для определения точного числа уязвимостей использовались данные официальных отчетов <strong>CVE Program</strong> и агрегатора <strong>CVE Details</strong>.</p>
+<ul>
+<li><strong>Количество за 2021 год:</strong> ~20 171 уязвимость.</li>
+<li><strong>Источник:</strong> <a href="https://www.cvedetails.com/browse-by-date.php">CVE Details - Vulnerabilities by Year</a></li>
+</ul>
+<p>Динамика регистраций по кварталам (согласно CVE Program Report 2021):</p>
+<ul>
+<li><strong>Q1:</strong> 4 419 | <strong>Q2:</strong> 5 000 | <strong>Q3:</strong> 5 421 | <strong>Q4:</strong> 5 331.</li>
+</ul>
+<hr>
+<h3 id="2-подробный-анализ-выбранных-cve">2. Подробный анализ выбранных CVE</h3>
+<h4 id="а-cve-2021-29447-symfony-framework--twig">А. CVE-2021-29447 (Symfony Framework / Twig)</h4>
+<ul>
+<li><strong>Источник:</strong> <a href="https://nvd.nist.gov/vuln/detail/CVE-2021-29447">NVD CVE-2021-29447</a></li>
+<li><strong>Компонент:</strong> Symfony (PHP-фреймворк), модуль шаблонизации <strong>Twig</strong>.</li>
+<li><strong>Назначение:</strong> Symfony — каркас для разработки веб-приложений. Компонент <strong>Twig</strong> отвечает за генерацию HTML-страниц, вставляя данные из базы в шаблоны.</li>
+<li><strong>Причина уязвимости:</strong> Недостаточное экранирование выходных данных при специфических конфигурациях фильтров.</li>
+<li><strong>Последствия:</strong> Выполнение произвольного JS-кода, кража сессионных кук (Session Hijacking).</li>
+</ul>
+<h4 id="б-cve-2021-40926-getid3-library">Б. CVE-2021-40926 (getID3 Library)</h4>
+<ul>
+<li><strong>Источник:</strong> <a href="https://nvd.nist.gov/vuln/detail/CVE-2021-40926">NVD CVE-2021-40926</a></li>
+<li><strong>Компонент:</strong> Библиотека <strong>getID3</strong>, файл <code>demos/demo.mysqli.php</code>.</li>
+<li><strong>Назначение:</strong> PHP-библиотека для извлечения метаданных из медиафайлов (MP3, MP4 и др.). Используется в музыкальных порталах для чтения тегов (артист, альбом).</li>
+<li><strong>Причина уязвимости:</strong> Отсутствие санитизации параметра <code>showtagfiles</code>, который выводился напрямую на страницу.</li>
+<li><strong>Последствия:</strong> Подмена контента страницы (Deface), выполнение скриптов в браузере клиента.</li>
+</ul>
+<h4 id="в-cve-2021-24151-social-warfare-plugin">В. CVE-2021-24151 (Social Warfare Plugin)</h4>
+<ul>
+<li><strong>Источник:</strong> <a href="https://nvd.nist.gov/vuln/detail/CVE-2021-24151">NVD CVE-2021-24151</a></li>
+<li><strong>Компонент:</strong> Плагин <strong>Social Warfare</strong> (версии до 4.2.1) для WordPress.</li>
+<li><strong>Назначение:</strong> PHP-плагин для интеграции кнопок социальных сетей. Он позволяет владельцам сайтов настраивать отображение счетчиков «лайков» и репостов, а также оптимизировать мета-данные для соцсетей.</li>
+<li><strong>Причина уязвимости:</strong> <strong>Stored XSS</strong>. Плагин не выполнял должную проверку и санитизацию (очистку) данных в настройках «Twitter Username». Это позволяло аутентифицированному пользователю (например, с правами контрибьютора) сохранить вредоносный скрипт в базе данных.</li>
+<li><strong>Последствия:</strong> Скрипт выполняется в браузере любого посетителя страницы, где отображаются кнопки плагина. Это ведет к краже cookie-файлов сессии и потенциальному захвату прав администратора.</li>
+</ul>
+<hr>
+<h3 id="вывод">Вывод</h3>
+<p>Анализ статистики за 2021 год подтверждает, что XSS остается массовой проблемой для PHP-разработки. Ошибки встречаются как в крупных фреймворках (Symfony), так и в популярных плагинах (Social Warfare). Это подчеркивает необходимость обязательной фильтрации входных данных и экранирования вывода.</p>
+<hr>
+<h2 id="часть-ii-симуляция-xss-атаки-на-стенде">Часть II. Симуляция XSS-атаки на стенде</h2>
+<h3 id="1-ход-выполнения-и-анализ-работы-приложения">1. Ход выполнения и анализ работы приложения</h3>
+<p><strong>Шаг 1: Подготовка окружения</strong>
+Я скачал и запустил уязвимый Docker-образ:</p>
+<pre class="hljs"><code><div>docker pull ket9/otus-devsecops-xss
+docker run -d -p 8080:80 ket9/otus-devsecops-xss:latest
+</div></code></pre>
+<p>Стенд открыт по адресу <code>http://localhost:8080/</code>. Для атаки был выбран раздел <strong>XSS-1</strong>, содержащий форму ввода комментариев.</p>
+<p><strong>Шаг 2: Поиск точки входа и внедрение кода</strong>
+В ходе тестирования было замечено, что комментарии сохраняются и отображаются всем пользователям. В поле <code>comment</code> был введен следующий payload:</p>
+<pre class="hljs"><code><div><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="language-javascript"><span class="hljs-title function_">alert</span>(<span class="hljs-string">&#x27;XSS_by_Student&#x27;</span>)</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</div></code></pre>
+<p><strong>Шаг 3: Наблюдение результатов</strong>
+После нажатия &quot;Save Data&quot; браузер выполнил скрипт, отобразив модальное окно.</p>
+<p><img src="XSS_by_me.png" alt="Демонстрация успешной XSS-атаки"></p>
+<p>При обновлении страницы окно <code>alert</code> появлялось снова. Анализ исходного кода показал, что сервер записывает данные в файл и выводит их без обработки:</p>
+<pre class="hljs"><code><div><span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>Comments<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="language-javascript"><span class="hljs-title function_">alert</span>(<span class="hljs-string">&#x27;XSS_by_Student&#x27;</span>)</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">hr</span> /&gt;</span>
+</div></code></pre>
+<h3 id="2-тип-найденной-уязвимости">2. Тип найденной уязвимости</h3>
+<p>Обнаруженная уязвимость — <strong>Stored XSS (Хранимый XSS)</strong>.
+Вредоносный код сохраняется на сервере, что делает атаку крайне опасной: любой пользователь, зашедший на страницу, автоматически становится жертвой.</p>
+<p><strong>Последствия:</strong></p>
+<ul>
+<li>Кража сессионных данных (<code>document.cookie</code>).</li>
+<li>Фишинг и подмена интерфейса сайта.</li>
+<li>Выполнение действий от имени администратора.</li>
+</ul>
+<h3 id="3-меры-предотвращения">3. Меры предотвращения</h3>
+<p>Для защиты приложения необходимо внедрить следующие механизмы:</p>
+<ol>
+<li>
+<p><strong>Экранирование вывода (Output Encoding):</strong> Замена спецсимволов на HTML-сущности. В PHP:</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">echo</span> <span class="hljs-title function_ invoke__">htmlspecialchars</span>(<span class="hljs-variable">$comment</span>, ENT_QUOTES, <span class="hljs-string">&#x27;UTF-8&#x27;</span>);
+</div></code></pre>
+<p>Символы <code>&lt;</code>, <code>&gt;</code>, <code>&quot;</code>, <code>'</code>, <code>&amp;</code> должны превращаться в <code>&amp;lt;</code>, <code>&amp;gt;</code>, <code>&amp;quot;</code>, <code>&amp;#039;</code> и <code>&amp;amp;</code>.</p>
+</li>
+<li>
+<p><strong>Content Security Policy (CSP):</strong> Настройка HTTP-заголовка для запрета исполнения inline-скриптов:
+<code>Content-Security-Policy: default-src 'self';</code></p>
+</li>
+<li>
+<p><strong>Безопасность Cookie:</strong> Использование флага <code>HttpOnly</code> для защиты кук от чтения через JavaScript.</p>
+</li>
+</ol>
+
+</body>
+</html>

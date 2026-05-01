@@ -1,0 +1,33 @@
+FROM ket9/otus-devsecops-owasp-rest:latest
+
+# Создаем отдельную группу и пользователя без root-прав.
+# Используется явный UID/GID, чтобы было проще контролировать права при запуске.
+RUN echo "appgroup:x:10001:" >> /etc/group && \
+    echo "appuser:x:10001:10001:appuser:/home/appuser:/bin/sh" >> /etc/passwd && \
+    mkdir -p /home/appuser && \
+    chown -R 10001:10001 /home/appuser
+
+# Порт приложения из базового образа.
+EXPOSE 8080
+
+# Запускаем процесс внутри контейнера не от root.
+USER 10001:10001
+
+# Дополнительные настройки безопасности, которые лучше применять при запуске контейнера:
+# docker run --rm -p 8080:8080 \
+#   --read-only \
+#   --cap-drop=ALL \
+#   --security-opt=no-new-privileges \
+#   --pids-limit=100 \
+#   --memory=512m \
+#   --cpus=0.5 \
+#   --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+#   secure-owasp-rest:1.0
+#
+# Смысл настроек:
+# --read-only запрещает запись в файловую систему контейнера;
+# --cap-drop=ALL убирает лишние Linux capabilities;
+# --security-opt=no-new-privileges запрещает повышать привилегии;
+# --pids-limit ограничивает количество процессов;
+# --memory и --cpus ограничивают ресурсы;
+# --tmpfs /tmp дает временную директорию без права исполнения файлов.

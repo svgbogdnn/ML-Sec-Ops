@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><title>Шаг 5 - логин обычного пользователя name1</title>
+<style>
+body { margin: 0; background: #0b0f14; color: #e6edf3; font: 20px Menlo, Consolas, monospace; }
+.wrap { padding: 28px; }
+h1 { font-size: 28px; color: #7ee787; margin: 0 0 18px; }
+.label { color: #79c0ff; margin-top: 20px; }
+pre { white-space: pre-wrap; background: #111820; border: 1px solid #30363d; padding: 18px; border-radius: 10px; }
+.note { color: #ffa657; }
+</style></head>
+<body><div class="wrap">
+<h1>Шаг 5 - логин обычного пользователя name1</h1>
+<div class="label">Команда:</div>
+<pre>curl -X POST http://127.0.0.1:8080/users/v1/login -H &#x27;Content-Type: application/json&#x27; -d &#x27;{&quot;username&quot;:&quot;name1&quot;,&quot;password&quot;:&quot;pass1&quot;}&#x27;</pre>
+<div class="label">HTTP статус:</div>
+<pre>200</pre>
+<div class="label">Ответ:</div>
+<pre>{&quot;auth_token&quot;: &quot;&lt;auth_token name1&gt;&quot;, &quot;message&quot;: &quot;Successfully logged in.&quot;, &quot;status&quot;: &quot;success&quot;}</pre>
+<div class="label">Вывод:</div>
+<pre class="note">Получен токен обычного пользователя name1.</pre>
+</div></body></html>

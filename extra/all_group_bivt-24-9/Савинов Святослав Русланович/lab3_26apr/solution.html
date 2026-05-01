@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторная работа №3</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; line-height: 1.6; color: #333; }
+        h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
+        h2 { margin-top: 24px; }
+        h3 { margin-top: 20px; }
+        a { color: #0066cc; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; word-break: break-all; }
+        pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: none; padding: 0; }
+        strong { color: #111; }
+    </style>
+</head>
+<body>
+<h1>Часть I</h1>
+
+<p>OWASP API Security Top-10 за 2023 год (новая версия пока в разработке): <a href="https://owasp.org/www-project-api-security/">https://owasp.org/www-project-api-security/</a></p>
+
+<p>Чекнул три разные категории из топ10.</p>
+
+<h2>CVE-2025-12903</h2>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-12903">https://nvd.nist.gov/vuln/detail/CVE-2025-12903</a></p>
+<p>Плагин Payment Plugins Braintree For WooCommerce, версии до 3.2.78 включительно. REST-эндпоинт <code>wc-braintree/v1/3ds/vaulted_nonce</code> принимает token ID, но не проверяет кому он принадлежит. Любой неаутенифицированный пользователь передаёт чужой токен и получает payment nonce, дальше можно списать деньги с чужой карты.</p>
+<p>Категория: API1:2023 BOLA. Дыра потому что эндпоинт зарегистрирован с <code>permission_callback = __return_true</code>, то есть ownership токена и аутентификация просто не проверяются.</p>
+
+<h2>CVE-2025-56449</h2>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-56449">https://nvd.nist.gov/vuln/detail/CVE-2025-56449</a></p>
+<p>Obsidian Scheduler 5.0.0 - 6.3.0. Проверка статуса блокировки реализована только на UI-слое, REST API использует общий механизм Basic Auth и не сверяет статус юзера в БД из-за недостоаточной синхронизации между этими двумя слоями. По итогу аккаунт, заблокированный в UI за непрохождение MFA-enrollment, всё равно лезет через API и выполняет админские действия. Категория: API2:2023 Broken Authentication.</p>
+
+<h2>CVE-2025-20348</h2>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-20348">https://nvd.nist.gov/vuln/detail/CVE-2025-20348</a></p>
+<p>Cisco Nexus Dashboard и NDFC до 4.1(1g). На REST-эндпоинтах нет проверки роли, аутентифицированный пользователь с низкими правами лезет в админские операции (читает настройки HTTP Proxy / NTP, грузит образы и портит уже загруженные). Сервер проверяет только сам факт логина, саму роль не сверяет. Это API5:2023 Broken Function Level Authorization.</p>
+
+<h1>Часть II</h1>
+
+<p>Итак, контейнер запустил (<code>docker run -d -p 8080:8080 ket9/otus-devsecops-owasp-rest:latest</code>), базу наполнил через <code>/createdb</code> (ответ <code>{"message": "Database populated."}</code>), протыкаем эндпоиты. На <code>localhost:8080</code> приложение отдаёт свой список. Сразу бросается в глаза <code>/users/v1/_debug</code> с подписью "посмотреть подробную информацию обо всех пользователях".</p>
+
+<p>Открываю в браузере:</p>
+<p>http://localhost:8080/users/v1/_debug</p>
+<pre><code>{"users":[
+  {"admin":false,"email":"mail1@mail.com","password":"pass1","username":"name1"},
+  {"admin":false,"email":"mail2@mail.com","password":"pass2","username":"name2"},
+  {"admin":true,"email":"admin@mail.com","password":"pass1","username":"admin"}
+]}</code></pre>
+
+<p>Опа открытые пароли. GET без токена и cookie, статус 200, в ответе все юзеры вместе с флагом <code>admin</code>. Зная адрес эндпоинта, сразу заходим под админом (<code>admin / pass1</code>).</p>
+
+<p>Для сравнения обычный <code>/users/v1</code>:</p>
+<pre><code>{"users":[
+  {"email":"mail1@mail.com","username":"name1"},
+  {"email":"mail2@mail.com","username":"name2"},
+  {"email":"admin@mail.com","username":"admin"}
+]}</code></pre>
+
+<p>Тут пароли уже не отдаются, только email и username. То есть авторы знали что password это чувствительное поле, просто забыли про дебаг.</p>
+
+<h3>Уязвимость 1</h3>
+
+<p>Тип: API3:2023 Broken Object Property Level Authorization (BOPLA). Это именно BOPLA, а не только API8:2023 Security Misconfiguration: BOPLA про то что сервер возвращает чувствительные свойства объекта (<code>password</code>, <code>admin</code>) без проверки прав на эти свойства, и даже за авторизацией такое поле возвращать нельзя. То что эндпоинт ещё и открыт всем без логина, это сверху уже API8 Misconfig (отладочный эндпоинт остался в проде).</p>
+<p>Описание: <code>/users/v1/_debug</code> отдаёт пароли всех юзеров системы в открытом виде по обычному GET без авторизации.</p>
+<p>Меры предотвращения:</p>
+<ul>
+<li>удалить <code>_debug</code> из прода или закрыть админской авторизацией</li>
+<li>пароли хранить только хешем (bcrypt / argon2), <code>password</code> не возвращать в API ни при каких условиях</li>
+<li>ограничить состав возвращаемых полей через DTO, чтобы случайно не утекло чего-то лишнего</li>
+</ul>
+
+<h3>Уязвимость 2</h3>
+
+<p>Дальше пробую посмотреть данные конкретного юзера по имени:</p>
+<p>http://localhost:8080/users/v1/name1</p>
+<pre><code>{"username": "name1", "email": "mail1@mail.com"}</code></pre>
+<p>http://localhost:8080/users/v1/admin</p>
+<pre><code>{"username": "admin", "email": "admin@mail.com"}</code></pre>
+<p>Тоже без токена и cookie, 200 OK. Любой неаутентифицированный пользователь может получить данные любого юзера, просто подставив имя в URL. Не такая страшная как <code>_debug</code> (тут хотя бы пароля нет), но вместе с публичным <code>/users/v1</code> это даёт полное перечисление учёток в системе.</p>
+<p>Тип: API1:2023 Broken Object Level Authorization.</p>
+<p>Описание: эндпоинт <code>/users/v1/{username}</code> отдаёт данные пользователя по любому имени без проверки что запрашивающий имеет право это видеть.</p>
+<p>Меры предотвращения:</p>
+<ul>
+<li>требовать токен на всех эндпоинтах с пользовательскими данными</li>
+<li>сверять <code>username</code> в URL с владельцем токена (либо разрешать доступ только админам)</li>
+<li>не светить полный список пользователей в <code>/users/v1</code> без авторизации</li>
+</ul>
+<p>Приложение собрало почти все из топ10.</p>
+</body>
+</html>

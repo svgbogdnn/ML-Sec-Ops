@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторная работа №5</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; line-height: 1.6; color: #333; }
+        h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
+        h2 { margin-top: 24px; }
+        a { color: #0066cc; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; word-break: break-all; }
+        pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: none; padding: 0; }
+        strong { color: #111; }
+    </style>
+</head>
+<body>
+<h1>Часть I</h1>
+
+<h2>Фрагмент 1</h2>
+<p>В строке <code>app.config['SECRET_KEY'] = 'F0cUzh8BgYJSLXAU8...'</code> ключ захардкожен прямо в исходнике. Flask этим ключом подписывает сессионные cookies и CSRF-токены. Если такой код залить в публичную репу, ключ сразу становится известен, и подделать сессию за любого юзера можно за минуту.</p>
+<p>Лучше доставать из переменной окружения, <code>app.config['SECRET_KEY'] = os.environ['SECRET_KEY']</code>. В репу не коммитить, на проде положить в Vault или AWS Secrets.</p>
+
+<h2>Фрагмент 2</h2>
+<p><code>password = TextField('password')</code>, пароль показывается как обычный текст при вводе. Это больше про UX чем про безопасность, но всё равно странно для логин-формы. Заменить на <code>PasswordField</code>.</p>
+<p>Ещё <code>Form</code> из flask_wtf устарел, в актуальной версии используется <code>FlaskForm</code>. Через неё CSRF-защита подключается, если в конфиге <code>WTF_CSRF_ENABLED=True</code> и SECRET_KEY валидный (а тут, как мы выяснили, с этим как раз проблема).</p>
+
+<h2>Фрагмент 3</h2>
+<p>Тут несколько косяков подряд:</p>
+<ul>
+<li>Пароль уходит в БД как есть. Если БД утечёт, все пароли в открытом виде. Базовое правило, но прямо в коде не выполнено.</li>
+<li><code>username</code> и <code>email</code> принимаются и сразу скармливаются дальше. По email не проверяется хотя бы наличие <code>@</code>, не говоря про корректный формат.</li>
+<li><code>except Exception, e:</code> это вообще Python 2 синтаксис. В Python 3 такое не запустится, нужно <code>except Exception as e</code>.</li>
+<li>Самое обидное: при любой ошибке возвращается <code>success_create.html</code>. Юзер думает что зарегистрировался, а на самом деле всё упало где-то в <code>validate()</code> или <code>save_user</code>, и потом войти он не сможет.</li>
+</ul>
+<p>Что чинить: пароль хешировать через bcrypt (или argon2 если хочется поновее) до того как идти в БД. Email прогонять через <code>email-validator</code> или хотя бы регуляркой. Исключения ловить конкретные (<code>ValueError</code>, ошибки от БД), общий <code>except</code> оставить только для лога + 500. И на ошибке отдавать какой-то <code>error.html</code>, а не success.</p>
+
+<h1>Часть II</h1>
+
+<h2>Какие наиболее распространенные атаки предотвращает django</h2>
+<ul>
+<li>SQL-инъекции. Когда работаешь через ORM, запросы собираются с параметрами отдельно от строки запроса, поэтому ввод юзера в SQL-код не превращается. Дыра возможна только если самостоятельно писать сырой SQL через <code>cursor.execute(f"... {user_input}")</code>.</li>
+<li>XSS. При выводе переменной в шаблоне через <code>{{ var }}</code> Django сам заменяет опасные символы (<code>&lt;</code>, <code>&gt;</code>, кавычки) на HTML-сущности. Чтобы вставить HTML без экранирования, надо специально написать <code>|safe</code>.</li>
+<li>CSRF. <code>CsrfViewMiddleware</code> плюс тег <code>{% csrf_token %}</code> в форме. Если форма этот токен не отправит, POST просто отдаст 403.</li>
+<li>Clickjacking. По дефолту прилетает заголовок <code>X-Frame-Options: DENY</code> (через <code>XFrameOptionsMiddleware</code>), и сайт нельзя засунуть в iframe на чужом домене.</li>
+</ul>
+
+<h2>Управление сессиями в django</h2>
+<p>Когда юзер первый раз заходит, и в коде где-то срабатывает обращение к <code>request.session</code>, Django создаёт сессию. У неё генерируется <code>session_key</code>, его клиент получает в cookie <code>sessionid</code>.</p>
+<p>Сами данные сессии лежат в хранилище. По дефолту это таблица <code>django_session</code> в БД, но через <code>SESSION_ENGINE</code> можно переключить на кеш (Redis) или signed-cookies (тогда вообще без БД, данные подписываются и сидят в куке у клиента).</p>
+<p>При следующих запросах <code>SessionMiddleware</code> видит <code>sessionid</code> в куке, по нему достаёт данные из хранилища и кладёт в <code>request.session</code>. Дальше во вьюхе можно читать-писать как обычный словарь.</p>
+<p>На куку с сессией стоит навесить <code>HTTPOnly</code> чтобы JS её не читал, и <code>Secure</code> чтобы передавалась только по HTTPS. Время жизни ставится через <code>SESSION_COOKIE_AGE</code>, по умолчанию вроде 2 недели.</p>
+</body>
+</html>

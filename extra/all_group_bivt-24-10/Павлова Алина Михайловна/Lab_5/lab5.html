@@ -1,0 +1,203 @@
+<h1 id="-5-python-django">Лабораторная работа №5: Поиск уязвимостей в Python-коде и безопасность Django</h1>
+<hr>
+<h2 id="-i-">Часть I: Анализ фрагментов кода</h2>
+<h3 id="-1-flask-secret_key">Фрагмент кода 1: Flask с SECRET_KEY</h3>
+<pre><code class="lang-python">#!/usr/bin/env python3
+<span class="hljs-keyword">from</span> flask <span class="hljs-keyword">import</span> Flask
+<span class="hljs-keyword">from</span> mod_api <span class="hljs-keyword">import</span> mod_api
+
+app = Flask(<span class="hljs-string">'vuln_app'</span>)
+app.config[<span class="hljs-string">'SECRET_KEY'</span>] = <span class="hljs-string">'F0cUzh8BgYJSLXAU8qDmClM0dE8GJTpsiyVEl3BCqQMCABp1U$f%'</span>
+
+app.register_blueprint(mod_api, url_prefix=<span class="hljs-string">'/api'</span>)
+</code></pre>
+<p><strong>Недостаток:</strong><br>Секретный ключ (<code>SECRET_KEY</code>) захардкожен прямо в исходном коде приложения.</p>
+<p><strong>Риски:</strong></p>
+<ul>
+<li>При утечке исходного кода злоумышленник получает ключ</li>
+<li>Возможна подделка сессионных кук и CSRF-токенов</li>
+<li>Невозможность быстрой ротации ключа без изменения кода и деплоя</li>
+</ul>
+<p><strong>Рекомендации по устранению:</strong></p>
+<ol>
+<li>Хранить <code>SECRET_KEY</code> в переменной окружения:<pre><code class="lang-python">import os
+app<span class="hljs-selector-class">.config</span>[<span class="hljs-string">'SECRET_KEY'</span>] = os<span class="hljs-selector-class">.environ</span><span class="hljs-selector-class">.get</span>(<span class="hljs-string">'SECRET_KEY'</span>)
+</code></pre>
+</li>
+<li>Генерировать ключ через <code>secrets.token_hex(32)</code></li>
+<li>Использовать <code>.env</code> файл (добавить в <code>.gitignore</code>)</li>
+<li>Для production — использовать секрет-менеджер (HashiCorp Vault, AWS Secrets Manager)</li>
+</ol>
+<hr>
+<h3 id="-2-flask-wtf">Фрагмент кода 2: Форма Flask-WTF</h3>
+<pre><code class="lang-python"><span class="hljs-title">from</span> flask_wtf <span class="hljs-keyword">import</span> Form  
+<span class="hljs-title">from</span> wtforms <span class="hljs-keyword">import</span> TextField
+<span class="hljs-class">
+<span class="hljs-keyword">class</span> <span class="hljs-type">LoginForm</span>(<span class="hljs-type">Form</span>):  
+    username = <span class="hljs-type">TextField</span>('<span class="hljs-title">username'</span>)  
+    password = <span class="hljs-type">TextField</span>('<span class="hljs-title">password'</span>)</span>
+</code></pre>
+<p><strong>Недостатки:</strong></p>
+<ol>
+<li>Используется устаревший <code>TextField</code> вместо <code>StringField</code></li>
+<li>Отсутствуют валидаторы (<code>DataRequired</code>, <code>Length</code> и др.)</li>
+<li>Поле <code>password</code> не маскируется при вводе</li>
+<li>Нет явного включения CSRF-защиты</li>
+</ol>
+<p><strong>Рекомендации по устранению:</strong></p>
+<ol>
+<li><p>Использовать актуальные классы и валидаторы:</p>
+<pre><code class="lang-python"><span class="hljs-title">from</span> flask_wtf <span class="hljs-keyword">import</span> FlaskForm
+<span class="hljs-title">from</span> wtforms <span class="hljs-keyword">import</span> StringField, PasswordField
+<span class="hljs-title">from</span> wtforms.validators <span class="hljs-keyword">import</span> DataRequired, Length
+<span class="hljs-class">
+<span class="hljs-keyword">class</span> <span class="hljs-type">LoginForm</span>(<span class="hljs-type">FlaskForm</span>):
+    username = <span class="hljs-type">StringField</span>('<span class="hljs-title">username'</span>, <span class="hljs-title">validators</span>=[<span class="hljs-type">DataRequired</span>(), <span class="hljs-type">Length</span>(<span class="hljs-title">min</span>=3, <span class="hljs-title">max</span>=50)])
+    password = <span class="hljs-type">PasswordField</span>('<span class="hljs-title">password'</span>, <span class="hljs-title">validators</span>=[<span class="hljs-type">DataRequired</span>(), <span class="hljs-type">Length</span>(<span class="hljs-title">min</span>=8)])</span>
+</code></pre>
+</li>
+<li>Включить CSRF-защиту: <code>app.config[&#39;WTF_CSRF_ENABLED&#39;] = True</code></li>
+<li>Добавлять <code>{{ form.csrf_token }}</code> в HTML-формы</li>
+<li>Добавить rate limiting для защиты от брутфорса</li>
+</ol>
+<hr>
+<h3 id="-3-">Фрагмент кода 3: Обработка данных пользователя</h3>
+<pre><code class="lang-python"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">post</span><span class="hljs-params">(<span class="hljs-keyword">self</span>)</span></span>:
+    username = <span class="hljs-keyword">self</span>.get_argument(<span class="hljs-string">'username'</span>)
+    password = <span class="hljs-keyword">self</span>.get_argument(<span class="hljs-string">'password'</span>).encode(<span class="hljs-string">'utf-8'</span>)
+    email = <span class="hljs-keyword">self</span>.get_argument(<span class="hljs-string">'mail'</span>)
+
+    <span class="hljs-symbol">try:</span>
+        username = username.lower()
+        email = email.strip().lower()
+        user = User({<span class="hljs-string">'username'</span>: username, <span class="hljs-string">'password'</span>: password, <span class="hljs-string">'email'</span>: email, <span class="hljs-string">'date_joined'</span>: curtime()})
+        user.validate()
+        save_user(<span class="hljs-keyword">self</span>.db_conn, user)
+    except Exception, <span class="hljs-symbol">e:</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">self</span>.render_template(<span class="hljs-string">"success_create.html"</span>)
+</code></pre>
+<p><strong>Недостатки:</strong></p>
+<ol>
+<li>Пароль не хешируется перед сохранением (<code>encode(&#39;utf-8&#39;)</code> ≠ хеширование)</li>
+<li>Устаревший синтаксис <code>except Exception, e:</code> (Python 2)</li>
+<li>При любой ошибке возвращается страница успеха — пользователь вводится в заблуждение</li>
+<li>Нет валидации формата email и username</li>
+<li>Возможна массовая ассигнмент: передача лишних полей в конструктор <code>User()</code></li>
+</ol>
+<p><strong>Рекомендации по устранению:</strong></p>
+<ol>
+<li>Хешировать пароль:<pre><code class="lang-python"><span class="hljs-keyword">import</span> bcrypt
+password_hash = bcrypt.hashpw(password.encode(<span class="hljs-string">'utf-8'</span>), bcrypt.gensalt())
+</code></pre>
+</li>
+<li>Использовать современный синтаксис: <code>except Exception as e:</code></li>
+<li>Логировать ошибки и возвращать корректные статусы:<pre><code class="lang-python">except ValueError <span class="hljs-keyword">as</span> e:
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">self</span>.render_template(<span class="hljs-string">"error.html"</span>, message=<span class="hljs-keyword">str</span>(e)), <span class="hljs-number">400</span>
+</code></pre>
+</li>
+<li>Валидировать входные данные (regex для email, длина username)</li>
+<li>Использовать whitelist полей при создании объекта:<pre><code class="lang-python">allowed_fields = [<span class="hljs-string">'username'</span>, <span class="hljs-string">'password'</span>, <span class="hljs-string">'email'</span>, <span class="hljs-string">'date_joined'</span>]
+user_data = {<span class="hljs-string">k:</span> v <span class="hljs-keyword">for</span> k, v <span class="hljs-keyword">in</span> input_data.items() <span class="hljs-keyword">if</span> k <span class="hljs-keyword">in</span> allowed_fields}
+</code></pre>
+</li>
+</ol>
+<hr>
+<h2 id="-ii-django">Часть II: Модель безопасности Django</h2>
+<h3 id="-1-django-">Вопрос 1: Какие наиболее распространенные атаки предотвращает Django?</h3>
+<p>Django предоставляет встроенную защиту от следующих атак:</p>
+<table>
+<thead>
+<tr>
+<th>Атака</th>
+<th>Механизм защиты в Django</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>SQL Injection</strong></td>
+<td>ORM автоматически экранирует параметры; raw SQL требует параметризованных запросов</td>
+</tr>
+<tr>
+<td><strong>XSS (Cross-Site Scripting)</strong></td>
+<td>Шаблонизатор авто-экранирует переменные: <code>{{ var }}</code> → <code>&amp;lt;script&amp;gt;</code></td>
+</tr>
+<tr>
+<td><strong>CSRF (Cross-Site Request Forgery)</strong></td>
+<td>Middleware <code>CsrfViewMiddleware</code> требует токена в формах и AJAX-запросах</td>
+</tr>
+<tr>
+<td><strong>Clickjacking</strong></td>
+<td><code>XFrameOptionsMiddleware</code> добавляет заголовок <code>X-Frame-Options: DENY</code></td>
+</tr>
+<tr>
+<td><strong>Session Hijacking</strong></td>
+<td>Куки имеют флаги <code>HttpOnly</code> и <code>Secure</code> (при HTTPS)</td>
+</tr>
+<tr>
+<td><strong>Password Brute-Force</strong></td>
+<td>Хеш паролей через PBKDF2 с солью, 260 000 итераций по умолчанию</td>
+</tr>
+<tr>
+<td><strong>Mass Assignment</strong></td>
+<td>Forms/ModelForms требуют явного указания полей (<code>fields = [...]</code>)</td>
+</tr>
+<tr>
+<td><strong>Open Redirect</strong></td>
+<td>Функции <code>redirect()</code> проверяют, что целевой URL из разрешённых хостов</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Все защиты включены по умолчанию при создании проекта через <code>django-admin startproject</code>.</p>
+</blockquote>
+<hr>
+<h3 id="-2-django-">Вопрос 2: Как устроено управление пользовательскими сессиями в Django?</h3>
+<h4 id="-">Архитектура сессий</h4>
+<ol>
+<li><p><strong>Создание сессии:</strong></p>
+<ul>
+<li>При первом запросе или логине Django генерирует 32-символьный случайный <code>session_key</code></li>
+<li>Данные сессии сохраняются в бэкенд под этим ключом</li>
+<li>Ключ отправляется браузеру в куке <code>sessionid</code></li>
+</ul>
+</li>
+<li><p><strong>Бэкенды хранения:</strong>
+| Бэкенд | Описание |
+|--------|----------|
+| <code>db</code> (по умолчанию) | Сессии в таблице <code>django_session</code> |
+| <code>cache</code> | Сессии в Redis/Memcached |
+| <code>cached_db</code> | Кэш + fallback в БД |
+| <code>signed_cookies</code> | Данные в подписанной куке (без хранения на сервере) |</p>
+</li>
+<li><p><strong>Безопасность кук (настройки по умолчанию):</strong></p>
+<pre><code class="lang-python"><span class="hljs-attr">SESSION_COOKIE_HTTPONLY</span> = <span class="hljs-literal">True</span>      # недоступно для JavaScript
+<span class="hljs-attr">SESSION_COOKIE_SECURE</span> = <span class="hljs-literal">True</span>        # только по HTTPS
+<span class="hljs-attr">SESSION_COOKIE_SAMESITE</span> = <span class="hljs-string">'Lax'</span>     # защита от CSRF
+<span class="hljs-attr">SESSION_COOKIE_AGE</span> = <span class="hljs-number">1209600</span>        # <span class="hljs-number">2</span> недели в секундах
+</code></pre>
+</li>
+<li><p><strong>Работа с сессиями в коде:</strong></p>
+<pre><code class="lang-python"><span class="hljs-meta"># Запись</span>
+request.session[<span class="hljs-string">'user_id'</span>] = user.id
+
+<span class="hljs-meta"># Чтение</span>
+user_id = request.session.<span class="hljs-keyword">get</span>(<span class="hljs-string">'user_id'</span>)
+
+<span class="hljs-meta"># Удаление</span>
+del request.session[<span class="hljs-string">'user_id'</span>]
+request.session.flush()  # полная очистка
+</code></pre>
+</li>
+<li><p><strong>Интеграция с аутентификацией:</strong></p>
+<ul>
+<li>При <code>login(request, user)</code> Django создаёт <strong>новую</strong> сессию (защита от session fixation)</li>
+<li>В сессию сохраняются: <code>_auth_user_id</code>, <code>_auth_user_backend</code>, <code>_auth_user_hash</code></li>
+<li><code>AuthenticationMiddleware</code> при каждом запросе восстанавливает <code>request.user</code></li>
+</ul>
+</li>
+<li><p><strong>Очистка устаревших сессий:</strong></p>
+<pre><code class="lang-bash">python manage<span class="hljs-selector-class">.py</span> clearsessions
+</code></pre>
+<p>(Рекомендуется запускать по cron раз в день для бэкенда <code>db</code>)</p>
+</li>
+</ol>

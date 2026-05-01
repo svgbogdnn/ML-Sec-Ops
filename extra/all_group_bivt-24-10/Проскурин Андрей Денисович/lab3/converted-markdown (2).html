@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code {
+      background: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote {
+      border-left: 4px solid #ddd;
+      margin: 1em 0;
+      padding-left: 20px;
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<p>ЛР 3. Симуляция атаки по уязвимостям OWASP Top 10 REST API</p>
+<h1>Часть I. CVE за последний год, связанные с REST API и OWASP API Top 10</h1>
+<p>В качестве основы для классификации использовался OWASP API Security Top 10 2023.</p>
+<h2>1) CVE-2025-67259 — ClassroomIO v0.1.13</h2>
+<p>Источник: <a href="https://nvd.nist.gov/vuln/detail/CVE-2025-67259">https://nvd.nist.gov/vuln/detail/CVE-2025-67259</a></p>
+<p>Компонент:
+ClassroomIO — приложение/платформа для управления учебными курсами. В уязвимой версии используется REST/PostgREST endpoint /rest/v1/course.</p>
+<p>Суть недостатка:
+Аутентифицированный пользователь с низкими правами, например student, может получить не предназначенную ему информацию о курсах, других студентах, профилях преподавателей/администраторов и внутренние метаданные курса.</p>
+<p>Причина:
+Недостаточная проверка прав доступа на уровне объекта. Сервер доверяет параметрам API-запроса и не проверяет, имеет ли конкретный пользователь право читать конкретный объект курса.</p>
+<p>Классификация OWASP API Top 10:
+API1:2023 — Broken Object Level Authorization.</p>
+<h2>2) CVE-2025-10611 — WSO2 Products</h2>
+<p>Источник: <a href="https://nvd.nist.gov/vuln/detail/CVE-2025-10611">https://nvd.nist.gov/vuln/detail/CVE-2025-10611</a></p>
+<p>Компонент:
+WSO2 Products — набор корпоративных продуктов для API management, интеграции и identity/access management.</p>
+<p>Суть недостатка:
+Из-за недостаточной реализации контроля доступа в некоторых REST API можно обойти проверки аутентификации и авторизации. Успешная эксплуатация может привести к административному доступу и выполнению неавторизованных административных операций.</p>
+<p>Причина:
+На уровне REST API некорректно применяются проверки authentication/authorization. В результате endpoint может быть вызван без должной валидации прав.</p>
+<p>Классификация OWASP API Top 10:
+API2:2023 — Broken Authentication.</p>
+<h2>3) CVE-2025-9209 — RestroPress WordPress plugin</h2>
+<p>Источник: <a href="https://nvd.nist.gov/vuln/detail/CVE-2025-9209">https://nvd.nist.gov/vuln/detail/CVE-2025-9209</a></p>
+<p>Компонент:
+RestroPress — WordPress-плагин для онлайн-заказа еды. Использует REST API WordPress, включая endpoint /wp-json/wp/v2/users.</p>
+<p>Суть недостатка:
+В версиях 3.0.0–3.1.9.2 плагин раскрывает private tokens и API-данные через REST API endpoint. Это позволяет неаутентифицированному атакующему подделывать JWT-токены других пользователей, включая администраторов, и входить от их имени.</p>
+<p>Причина:
+Чувствительные данные пользователя доступны через API без достаточной фильтрации и защиты. </p>
+<p>Классификация OWASP API Top 10:
+API2:2023 — Broken Authentication.</p>
+<h1>Часть II. Симуляция атаки на локальном стенде</h1>
+<h2>1. Запуск стенда</h2>
+<p>Выполнил команды:</p>
+<p>docker pull ket9/otus-devsecops-owasp-rest
+docker run -d -p 8080:8080 ket9/otus-devsecops-owasp-rest:latest</p>
+<p>После запуска открыл приложение:</p>
+<p><a href="http://localhost:8080/">http://localhost:8080/</a></p>
+<p>На главной странице приложение показало доступные endpoint&#39;ы:</p>
+<p>{
+  &quot;создать базу&quot;: &quot;/createdb&quot;,
+  &quot;посмотреть информацию обо всех пользователях&quot;: &quot;/users/v1&quot;,
+  &quot;посмотреть подробную информацию обо всех пользователях&quot;: &quot;/users/v1/_debug&quot;,
+  &quot;регистрация нового пользователя&quot;: &quot;/users/v1/register (HTTP POST)&quot;,
+  &quot;вход в приложение&quot;: &quot;/users/v1/login (HTTP POST)&quot;,
+  &quot;просмотр пользователя по имени&quot;: &quot;/users/v1/{username}&quot;,
+  &quot;удалить пользователя по имени (только для админов)&quot;: &quot;/users/v1/{username} (HTTP DELETE)&quot;,
+  &quot;изменить email пользователя&quot;: &quot;/users/v1/{username}/email (HTTP PUT)&quot;,
+  &quot;изменить пароль пользователя&quot;: &quot;/users/v1/{username}/password (HTTP PUT)&quot;,
+  &quot;все книги&quot;: &quot;/books/v1&quot;,
+  &quot;добавить книгу&quot;: &quot;/books/v1 (HTTP POST)&quot;,
+  &quot;просмотр книги&quot;: &quot;/books/v1/{book}&quot;
+}</p>
+<h2>2. Наполнение базы</h2>
+<p>Перешел по адресу:</p>
+<p><a href="http://localhost:8080/createdb">http://localhost:8080/createdb</a></p>
+<p>Ответ приложения:</p>
+<p>{
+  &quot;message&quot;: &quot;Database populated.&quot;
+}</p>
+<p>Вывод: база заполнена тестовыми пользователями и книгами, можно проверять работу API.</p>
+<h2>3. Первичная проверка пользователей</h2>
+<p>Выполнил GET-запрос:</p>
+<p>curl <a href="http://localhost:8080/users/v1">http://localhost:8080/users/v1</a></p>
+<p>Ответ приложения:</p>
+<p>{
+  &quot;users&quot;: [
+    {&quot;email&quot;:&quot;<a href="mailto:mail1@mail.com">mail1@mail.com</a>&quot;,&quot;username&quot;:&quot;name1&quot;},
+    {&quot;email&quot;:&quot;<a href="mailto:mail2@mail.com">mail2@mail.com</a>&quot;,&quot;username&quot;:&quot;name2&quot;},
+    {&quot;email&quot;:&quot;<a href="mailto:admin@mail.com">admin@mail.com</a>&quot;,&quot;username&quot;:&quot;admin&quot;}
+  ]
+}</p>
+<p>Вывод: обычный endpoint возвращает список пользователей и email. Пароли и роли в этом ответе не отображаются.</p>
+<h2>4. Проверка debug-endpoint</h2>
+<p>Выполнил GET-запрос:</p>
+<p>curl <a href="http://localhost:8080/users/v1/_debug">http://localhost:8080/users/v1/_debug</a></p>
+<p>Ответ приложения:</p>
+<p>{
+  &quot;users&quot;: [
+    {&quot;admin&quot;:false,&quot;email&quot;:&quot;<a href="mailto:mail1@mail.com">mail1@mail.com</a>&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;name1&quot;},
+    {&quot;admin&quot;:false,&quot;email&quot;:&quot;<a href="mailto:mail2@mail.com">mail2@mail.com</a>&quot;,&quot;password&quot;:&quot;pass2&quot;,&quot;username&quot;:&quot;name2&quot;},
+    {&quot;admin&quot;:true,&quot;email&quot;:&quot;<a href="mailto:admin@mail.com">admin@mail.com</a>&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;admin&quot;}
+  ]
+}</p>
+<p>Вывод:
+Endpoint /users/v1/_debug раскрывает внутренние свойства пользователя:</p>
+<ul>
+<li>password;</li>
+<li>admin;</li>
+<li>полный список пользователей.</li>
+</ul>
+<p>Это уже является недостатком: API возвращает чувствительные поля, которые не должны быть доступны клиенту. Также из ответа стало понятно, что у пользователя есть скрытое поле admin.</p>
+<h2>5. Регистрация обычного пользователя</h2>
+<p>Сначала проверил, какие поля нужны для регистрации.</p>
+<p>Запрос без пароля:</p>
+<p>curl -X POST <a href="http://localhost:8080/users/v1/register">http://localhost:8080/users/v1/register</a> <br>  -H &quot;Content-Type: application/json&quot; <br>  -d &#39;{&quot;username&quot;:&quot;user100&quot;,&quot;email&quot;:&quot;<a href="mailto:user100@mail.com">user100@mail.com</a>&quot;}&#39;</p>
+<p>Ответ:</p>
+<p>{
+  &quot;status&quot;: &quot;fail&quot;,
+  &quot;message&quot;: &quot;&#39;password&#39; is a required property&quot;
+}</p>
+<p>Вывод: для регистрации обязательны как минимум username, email и password.</p>
+<p>Затем отправил корректный запрос:</p>
+<p>curl -X POST <a href="http://localhost:8080/users/v1/register">http://localhost:8080/users/v1/register</a> <br>  -H &quot;Content-Type: application/json&quot; <br>  -d &#39;{&quot;username&quot;:&quot;user100&quot;,&quot;password&quot;:&quot;password100&quot;,&quot;email&quot;:&quot;<a href="mailto:user100@mail.com">user100@mail.com</a>&quot;}&#39;</p>
+<p>Ответ:</p>
+<p>{
+  &quot;message&quot;: &quot;Successfully registered. Login to receive an auth token.&quot;,
+  &quot;status&quot;: &quot;success&quot;
+}</p>
+<p>Проверил через debug-endpoint:</p>
+<p>curl <a href="http://localhost:8080/users/v1/_debug">http://localhost:8080/users/v1/_debug</a></p>
+<p>Фрагмент ответа:</p>
+<p>{&quot;admin&quot;:false,&quot;email&quot;:&quot;<a href="mailto:user100@mail.com">user100@mail.com</a>&quot;,&quot;password&quot;:&quot;password100&quot;,&quot;username&quot;:&quot;user100&quot;}</p>
+<p>Вывод: обычный пользователь создается с admin=false.</p>
+<h2>6. Симуляция атаки Mass Assignment</h2>
+<p>После просмотра debug-ответа стало понятно, что в модели пользователя есть поле admin. Я проверил, можно ли передать это поле при регистрации, хотя оно не должно задаваться клиентом.</p>
+<p>Выполнил POST-запрос:</p>
+<p>curl -X POST <a href="http://localhost:8080/users/v1/register">http://localhost:8080/users/v1/register</a> <br>  -H &quot;Content-Type: application/json&quot; <br>  -d &#39;{&quot;username&quot;:&quot;user101&quot;,&quot;password&quot;:&quot;password101&quot;,&quot;email&quot;:&quot;<a href="mailto:user101@mail.com">user101@mail.com</a>&quot;,&quot;admin&quot;:true}&#39;</p>
+<p>Ответ приложения:</p>
+<p>{
+  &quot;message&quot;: &quot;Successfully registered. Login to receive an auth token.&quot;,
+  &quot;status&quot;: &quot;success&quot;
+}</p>
+<p>Затем повторно проверил debug-endpoint:</p>
+<p>curl <a href="http://localhost:8080/users/v1/_debug">http://localhost:8080/users/v1/_debug</a></p>
+<p>Фрагмент ответа:</p>
+<p>{&quot;admin&quot;:true,&quot;email&quot;:&quot;<a href="mailto:user101@mail.com">user101@mail.com</a>&quot;,&quot;password&quot;:&quot;password101&quot;,&quot;username&quot;:&quot;user101&quot;}</p>
+<p>Вывод:
+Приложение приняло поле admin из пользовательского JSON и сохранило нового пользователя как администратора. Это означает, что сервер автоматически связывает входной JSON с внутренней моделью пользователя и не ограничивает список полей, которые разрешено задавать клиенту.</p>
+<h2>7. Описание найденной уязвимости</h2>
+<p>Найдена уязвимость Mass Assignment.</p>
+<p>Суть:
+При регистрации пользователь может передать дополнительное поле admin=true. Приложение не отбрасывает это поле и не проверяет, имеет ли клиент право задавать административный признак. В результате обычный пользователь может создать учетную запись с правами администратора.</p>
+<p>Почему это опасно:</p>
+<ul>
+<li>пользователь получает повышенные права без разрешения администратора;</li>
+<li>появляется возможность выполнять административные функции;</li>
+<li>нарушается модель разграничения доступа;</li>
+<li>при наличии endpoint&#39;ов управления пользователями это может привести к удалению или изменению чужих учетных записей.</li>
+</ul>
+<p>Дополнительно найден недостаток раскрытия чувствительных данных через /users/v1/_debug: endpoint возвращает пароли и служебное поле admin.</p>
+<h2>8. Тип уязвимости по OWASP API Top 10</h2>
+<p>Основной тип:
+API3:2023 — Broken Object Property Level Authorization.</p>
+<p>Обоснование:
+В OWASP API Security Top 10 2023 в эту категорию входят проблемы, связанные с отсутствием или неправильной проверкой доступа на уровне свойств объекта. В данном случае клиент может управлять свойством admin, которое должно задаваться только сервером или администратором.</p>
+<p>Связанные категории:</p>
+<ul>
+<li>API5:2023 — Broken Function Level Authorization, потому что получение admin=true открывает доступ к функциям администратора;</li>
+<li>API8:2023 — Security Misconfiguration, потому что debug-endpoint доступен на стенде без защиты и раскрывает внутренние данные.</li>
+</ul>
+<h2>9. Меры предотвращения</h2>
+<ol>
+<li>Использовать белый список полей при регистрации</li>
+</ol>
+<p>Для endpoint /users/v1/register сервер должен принимать только поля:</p>
+<ul>
+<li>username;</li>
+<li>email;</li>
+<li>password.</li>
+</ul>
+<p>Поле admin должно игнорироваться или приводить к ошибке 400 Bad Request.</p>
+<p>Пример правильной логики:</p>
+<ul>
+<li>если в JSON есть unknown field, например admin, вернуть ошибку;</li>
+<li>не использовать автоматическое связывание всего JSON с внутренней моделью пользователя;</li>
+<li>использовать отдельные DTO/схемы для входных данных.</li>
+</ul>
+<ol start="2">
+<li>Запретить изменение служебных полей со стороны клиента</li>
+</ol>
+<p>Поля вроде admin, role, is_staff, permissions, balance, owner_id должны назначаться только сервером. Клиент не должен иметь возможность передавать их в запросе регистрации или изменения профиля.</p>
+<ol start="3">
+<li>Реализовать проверку авторизации на сервере</li>
+</ol>
+<p>Даже если пользователь отправляет admin=true, сервер должен проверять:</p>
+<ul>
+<li>кто выполняет операцию;</li>
+<li>имеет ли он право назначать роли;</li>
+<li>разрешено ли менять конкретное свойство объекта.</li>
+</ul>
+<ol start="4">
+<li>Удалить или защитить debug-endpoint</li>
+</ol>
+<p>Endpoint /users/v1/_debug не должен быть доступен пользователям. Его нужно:</p>
+<ul>
+<li>удалить из production-сборки;</li>
+<li>закрыть авторизацией;</li>
+<li>ограничить доступом только из внутренней сети;</li>
+<li>не возвращать пароли и служебные поля.</li>
+</ul>
+<ol start="5">
+<li>Не хранить и не возвращать пароли в открытом виде</li>
+</ol>
+<p>Пароли должны храниться только в виде криптографических хешей с солью, например bcrypt, scrypt или Argon2. API никогда не должен возвращать password в ответах.</p>
+<ol start="6">
+<li>Добавить тесты безопасности</li>
+</ol>
+<p>Нужно добавить проверки:</p>
+<ul>
+<li>регистрация с admin=true не должна создавать администратора;</li>
+<li>API не возвращает password;</li>
+<li>обычный пользователь не может выполнять административные действия;</li>
+<li>неизвестные поля в JSON отклоняются.</li>
+</ul>
+<h1>Итог</h1>
+<p>На локальном учебном стенде была найдена уязвимость Mass Assignment: через endpoint регистрации можно передать поле admin=true и создать пользователя с правами администратора.</p>
+<p>Основная классификация: API3:2023 — Broken Object Property Level Authorization.</p>
+<p>Дополнительно обнаружено раскрытие чувствительных данных через /users/v1/_debug, так как endpoint возвращает пароли и служебные поля пользователей.</p>
+<p>Основная причина: отсутствие строгой схемы входных данных, автоматическое связывание пользовательского JSON с внутренней моделью и отсутствие проверки прав на изменение отдельных свойств объекта.</p>
+
+</body>
+</html>

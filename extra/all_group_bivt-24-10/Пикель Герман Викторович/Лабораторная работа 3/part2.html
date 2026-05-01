@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Лаба 3</title>
+</head>
+<body>
+
+  <h2>Лаба 3. часть 1</h2>
+
+  <ol>
+    <li>
+      CVE за 2021 год, которые содержат XSS в компонентах, написанных на PHP (данные с сайта https://nvd.nist.gov): CVE-2021-27190 (PEEL SHOPPING 9.3.0/9.4.0), CVE-2021-27330 (Triconsole Datepicker Calendar &lt; 3.77), CVE-2021-42078 (PHP Event Calendar), CVE-2021-43657 (Sourcecodester Simple Client Management System 1.0), CVE-2021-43683 (pictshare v1.5), CVE-2021-47914 (PHP Melody 3.0), CVE-2021-40927 (Spotify-for-Alfred ≤ 0.13.9)
+    </li>
+
+    <li>
+      <p>Описание двух из них:</p>
+      <ul>
+        <li>
+          PHP Event Calendar - open-source PHP-скрипт для создания и управления несколькими событиями в визуальном календаре. Инструмент для ведения календаря событий. Функционал включает добавление, редактирование, удаление и просмотр событий. Для него зафиксирована XSS-уязвимость CVE-2021-42078. (https://github.com/thetutlage/Php-event-calendar/tree/master/event)
+        </li>
+        <li>
+          PEEL SHOPPING - e-commerce CMS на PHP/MySQL. Предназначен для управления каталогом товаров, текстами сайта и прочими элементами магазина из единого административного интерфейса. То есть, это движок интернет-магазина: каталог, административная панель, оформление и сопровождение продаж. XSS-уязвимость для него зафиксирована как CVE-2021-27190. (https://www.softaculous.com/apps/ecommerce/PEEL_SHOPPING)
+        </li>
+      </ul>
+    </li>
+
+    <li>
+      Всего за 2021 год общее количество CVE составляет 20040.
+    </li>
+  </ol>
+
+  <h2>Лаба 3. часть 2</h2>
+
+  <p>Зашел на локалхост и увидел следующую страничку:</p>
+
+  <p><img src="./photo1.png" alt="example"></p>
+
+  <p>По первой ссылке доступно это:</p>
+
+  <p><img src="./photo2.png" alt="example"></p>
+
+  <p>При нажатии на вторую ничего не происходит. Однако если открыть html-код странички, то видим что она должна перекидывать на index.php (открыл из постмана):</p>
+
+  <p><img src="./photo3.png" alt="example"></p>
+
+  <p>Весь скрипт (просмотр комментов) исполняется по пути http://localhost:8080/XSS-1/index.php Затем я решил вписать коммент hello:</p>
+
+  <p><img src="./photo4.png" alt="example"></p>
+
+  <p>Работает. Так как PHP генерирует JS-код, который выполняется браузером, напишем в комменты скрипт с алертом &lt;script&gt;alert(“abracadabra”)&lt;/script&gt;:</p>
+
+  <p><img src="./photo5.png" alt="example"></p>
+
+  <p>Собственно, наш скрипт выполнился. Перейдем по пути http://localhost:8080/XSS-1/index.php в постмане и посмотрим что имеем:</p>
+
+  <p><img src="./photo6.png" alt="example"></p>
+
+  <p>Как видим, нам удалось вшить наш код в иной сайт. XSS-атака проведена успешно. (ковычку поставил случайно когда вбивал &lt;script&gt;alert(“abracadabra”)&lt;/script&gt; после скрипта)</p>
+
+  <p>Итого: Это уязвимость типа Cross-Site Scripting. Пользовательский ввод передается в PHP-скрипт и выводится в HTML-страницу без безопасного экранирования, из-за чего браузер исполняет внедренный JS код. Меры защиты: Можно обезвредить символы (в первую очреедь нужно кодировать HTML-символы): &amp; → &amp;amp; &lt; → &amp;lt; &gt; → &amp;gt; " → &amp;quot; ' → &amp;#039;</p>
+
+</body>
+</html>

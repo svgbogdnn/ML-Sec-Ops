@@ -1,0 +1,128 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h1 id="-3">Лабораторная работа №3</h1>
+<p>Ананьев Даниил Евгеньевич</p>
+<h1 id="-1">Часть 1</h1>
+<h2 id="-cve-2021-">Задание по CVE за 2021 год</h2>
+<h3 id="-cve-2021-">Общее количество CVE за 2021 год</h3>
+<p>По квартальным отчетам CVE Program за 2021 год получилось:</p>
+<p>Q1 2021  -  4419<br>Q2 2021  -  5000<br>Q3 2021  -  5421<br>Q4 2021  -  5200</p>
+<p>Итого за 2021 год  -  20040 CVE.</p>
+<p>Источники для подсчета общего числа CVE:</p>
+<p><a href="https://www.cve.org/Resources/Media/Archives/Blogs/2021/2021-05-04_CVE-Program-Report-for-Q1-Calendar-Year-2021.pdf">https://www.cve.org/Resources/Media/Archives/Blogs/2021/2021-05-04_CVE-Program-Report-for-Q1-Calendar-Year-2021.pdf</a><br><a href="https://www.cve.org/Resources/Media/Archives/Blogs/2021/2021-08-24_CVE-Program-Report-for-Q2-Calendar-Year-2021.pdf">https://www.cve.org/Resources/Media/Archives/Blogs/2021/2021-08-24_CVE-Program-Report-for-Q2-Calendar-Year-2021.pdf</a><br><a href="https://www.cve.org/Media/News/item/blog/2021/11/16/CVE-Program-Report-for-Q3-Calendar-Year">https://www.cve.org/Media/News/item/blog/2021/11/16/CVE-Program-Report-for-Q3-Calendar-Year</a><br><a href="https://www.cve.org/Media/News/item/blog/2023/03/08/CVE-Program-Report-for-Q4-Calendar-Year">https://www.cve.org/Media/News/item/blog/2023/03/08/CVE-Program-Report-for-Q4-Calendar-Year</a></p>
+<h3 id="-cve-xss-php">Найденные CVE с XSS в компонентах на PHP</h3>
+<ol>
+<li><p>CVE-2021-39201<br>WordPress<br>XSS в редакторе. Пользователь с низкими правами мог выполнить XSS.</p>
+</li>
+<li><p>CVE-2021-39202<br>WordPress<br>Сохраненная XSS в виджете Custom HTML в редакторе виджетов.</p>
+</li>
+<li><p>CVE-2021-40926<br>getID3<br>XSS в <code>demos/demo.mysqli.php</code> через параметр <code>showtagfiles</code>.</p>
+</li>
+<li><p>CVE-2021-43698<br>phpWhois<br>XSS в <code>example.php</code> через параметр <code>query</code>.</p>
+</li>
+<li><p>CVE-2021-43683<br>pictshare<br>XSS в <code>api/info.php</code> через параметр <code>hash</code>.</p>
+</li>
+<li><p>CVE-2021-42662<br>Online Event Booking and Reservation System in PHP/MySQL<br>Сохраненная XSS через параметр <code>Holiday reason</code>.</p>
+</li>
+<li><p>CVE-2021-44114<br>Stock Management System in PHP/OOP<br>XSS в функции создания пользователя.</p>
+</li>
+<li><p>CVE-2021-41731<br>News247 News Magazine CMS PHP 5.6 или выше<br>XSS через имя категории блога.</p>
+</li>
+<li><p>CVE-2021-40909<br>PHP CRUD without Refresh/Reload using Ajax and DataTables<br>XSS через параметры <code>first_name</code>, <code>last_name</code> и <code>email</code>.</p>
+</li>
+</ol>
+<p>Источники по найденным CVE:</p>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-39201">https://nvd.nist.gov/vuln/detail/CVE-2021-39201</a><br><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-39202">https://nvd.nist.gov/vuln/detail/CVE-2021-39202</a><br><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-40926">https://nvd.nist.gov/vuln/detail/CVE-2021-40926</a><br><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-43698">https://nvd.nist.gov/vuln/detail/CVE-2021-43698</a><br><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-43683">https://nvd.nist.gov/vuln/detail/CVE-2021-43683</a><br><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-42662">https://nvd.nist.gov/vuln/detail/CVE-2021-42662</a><br><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-44114">https://nvd.nist.gov/vuln/detail/CVE-2021-44114</a><br><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-41731">https://nvd.nist.gov/vuln/detail/CVE-2021-41731</a><br><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-40909">https://nvd.nist.gov/vuln/detail/CVE-2021-40909</a></p>
+<h3 id="-">Подробно о двух примерах</h3>
+<h4 id="1-cve-2021-39201">1. CVE-2021-39201</h4>
+<p>Источники:</p>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-39201">https://nvd.nist.gov/vuln/detail/CVE-2021-39201</a><br><a href="https://wordpress.org/about/">https://wordpress.org/about/</a></p>
+<p>Описание уязвимости:</p>
+<p>Согласно описанию в NVD, проблема была в редакторе WordPress. Пользователь с низкими правами мог обойти ограничение <code>unfiltered_html</code> и выполнить XSS.</p>
+<p>Назначение компонента:</p>
+<p>WordPress это система управления содержимым сайта. На ней делают блоги, новостные сайты, интернет-журналы и другие веб-проекты.<br>Редактор WordPress нужен для создания и изменения записей и страниц. Через него пользователь вводит текст, вставляет блоки, изображения, ссылки и публикует материал.</p>
+<p>Причина уязвимости:</p>
+<p>Недостаточная обработка HTML в редакторе.</p>
+<p>Последствия:</p>
+<ul>
+<li>выполнение JavaScript в браузере пользователя</li>
+<li>кража куки и других служебных данных</li>
+<li>выполнение действий от имени пользователя</li>
+</ul>
+<h4 id="2-cve-2021-40926">2. CVE-2021-40926</h4>
+<p>Источники:</p>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-40926">https://nvd.nist.gov/vuln/detail/CVE-2021-40926</a><br><a href="https://www.getid3.org/">https://www.getid3.org/</a></p>
+<p>Описание уязвимости:</p>
+<p>Согласно NVD, XSS находилась в <code>demos/demo.mysqli.php</code>. Проблема проявлялась через параметр <code>showtagfiles</code>. Злоумышленник мог внедрить произвольный HTML или JavaScript.</p>
+<p>Назначение компонента:</p>
+<p>getID3 это библиотека на php для разбора медиафайлов. Она извлекает сведения из mp3 и других аудио, видео и графических форматов
+Компонент нужен для чтения метаданных файлов</p>
+<p>Причина уязвимости:</p>
+<p>Параметр <code>showtagfiles</code> выводился без достаточной очистки.</p>
+<p>Последствия:</p>
+<ul>
+<li>выполнение JavaScript в браузере</li>
+<li>кража данных сессии</li>
+<li>подмена содержимого страницы</li>
+<li>выполнение действий от имени пользователя</li>
+</ul>
+<h1 id="-2">Часть 2</h1>
+<h2 id="-">Ход выполнения</h2>
+<p>Во второй части я запустил уязвимый докер образ и открыл стенд в браузере.</p>
+<p>Использовал такие команды:</p>
+<pre><code class="lang-bash">docker pull ket9/otus-devsecops-xss
+docker <span class="hljs-keyword">run</span><span class="bash"> <span class="hljs-_">-d</span> -p 8080:80 ket9/otus-devsecops-xss:latest</span>
+</code></pre>
+<p>После этого открыл адрес:</p>
+<p><code>http://localhost:8080/</code></p>
+<p>На главной странице была ссылка <code>XSS-1</code>. Я перешел в этот раздел и увидел простую форму с полем <code>comment</code> и кнопкой <code>Save Data</code>.</p>
+<p>Сначала я посмотрел, как вообще работает эта страница. Было видно, что комментарий можно отправить через форму, а потом он показывается на той же странице в блоке <code>Comments</code>.</p>
+<p>Дальше я решил проверить, фильтруется ли ввод пользователя. В поле комментария я ввел такой код:</p>
+<pre><code class="lang-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="actionscript">alert(<span class="hljs-string">'XSS'</span>)</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>После нажатия на <code>Save Data</code> страница вернула мой ввод как обычную часть HTML. В ответе страницы появился такой фрагмент:</p>
+<pre><code class="lang-html"><span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>Comments<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="actionscript">alert(<span class="hljs-string">'XSS'</span>)</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">hr</span> /&gt;</span>
+</code></pre>
+<p>Потом я еще раз открыл эту же страницу и увидел, что код остался на месте и снова выводится без изменений. Значит введенная строка не просто отразилась один раз, а сохранилась и показывается повторно</p>
+<p>Из этого я сделал вывод, что здесь есть XSS. Более того, это именно хранимый XSS, потому что вредоносный код сохраняется и потом снова отдается пользователю.</p>
+<p>Дополнительно я посмотрел логику страницы. Комментарий записывается в файл <code>/tmp/comments.txt</code>, а потом читается и выводится на страницу как есть. Очистки специальных символов нет. Из-за этого тег <code>&lt;script&gt;</code> попадает прямо в HTML</p>
+<p>Если такую страницу открыть в обычном браузере, браузер выполнит вставленный JavaScript-код в контексте сайта. В моем примере должен появиться <code>alert</code> с текстом <code>XSS</code></p>
+<h2 id="-">Тип найденной уязвимости</h2>
+<p>Найденная уязвимость это хранимый XSS</p>
+<p>Почему именно хранимый:</p>
+<ul>
+<li>код сначала сохраняется</li>
+<li>потом он снова показывается на странице</li>
+<li>скрипт выполняется уже при открытии страницы с сохраненным комментарием</li>
+</ul>
+<h2 id="-">Почему возникает эта уязвимость</h2>
+<p>Причина в том, что приложение берет ввод пользователя и вставляет его в HTML без обработки.</p>
+<p>Опасные символы:</p>
+<ul>
+<li><code>&lt;</code> и <code>&gt;</code> позволяют вставить штмл тег</li>
+<li><code>&quot;</code> и <code>&#39;</code> помогают ломать атрибуты и вставлять код</li>
+<li><code>&amp;</code> может участвовать в штмл сущностяз</li>
+</ul>
+<p>Если такие символы не экранировать, то браузер воспринимает их не как простой текст, а как часть страницы.</p>
+<h2 id="-">Возможные последствия</h2>
+<ul>
+<li>выполнение произвольного js кода</li>
+<li>кража куки</li>
+<li>подмена содержимого страницы</li>
+<li>выполнение действий от имени пользователя</li>
+<li>перенаправление пользователя на другой сайт</li>
+</ul>
+<h2 id="-">Меры предотвращения</h2>
+<p>Чтобы не было такой уязвимости, я бы сделал следующее:</p>
+<ol>
+<li>Не выводил бы комментарий в HTML как есть.</li>
+<li>Перед выводом заменял бы специальные символы на безопасные значения.</li>
+<li>В PHP использовал бы <code>htmlspecialchars($comment, ENT_QUOTES, &#39;UTF-8&#39;)</code>.</li>
+<li>Если HTML в комментариях не нужен, полностью запрещал бы теги.</li>
+<li>Дополнительно проверял бы ввод на стороне сервера.</li>
+</ol>
+<p>То есть я бы в первую очередь не давал попасть в итоговую страницу символам <code>&lt;</code>, <code>&gt;</code>, <code>&quot;</code>, <code>&#39;</code> и <code>&amp;</code> в их обычном виде. Тогда браузер увидит обычный текст, а не команду на выполнение скрипта.</p>
+<h2 id="-">Вывод</h2>
+<p>Во время проверки стенда удалось провести XSS-атаку через поле комментария. Приложение сохраняет введенный код и потом вставляет его обратно на страницу без какой-либо очистки. Поэтому уязвимость относится к хранимому XSS и может привести к выполнению вредоносного JavaScript-кода в браузере пользователя.</p>
+</body></html>

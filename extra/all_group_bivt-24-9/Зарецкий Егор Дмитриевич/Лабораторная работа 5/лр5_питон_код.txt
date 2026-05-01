@@ -1,0 +1,70 @@
+ЛАБОРАТОРНАЯ РАБОТА 5 РАЗБОР КОДА ПИТОН 
+
+Посмотрим на представленные участки кода в лабе:
+
+1.
+    #!/usr/bin/env python3
+    from flask import Flask
+
+    from mod_api import mod_api
+
+    app = Flask('vuln_app')
+    app.config['SECRET_KEY'] = 'F0cUzh8BgYJSLXAU8qDmClM0dE8GJTpsiyVEl3BCqQMCABp1U$f%'
+
+    app.register_blueprint(mod_api, url_prefix='/api')
+
+Анализ кода:
+    Сразу в глаза бросается секретный ключ который захардкожен - это очевидно плохл, такое лучше задавать через переменные окружения при запуске напрмиер  
+    То есть не надо хранить всякие ключи в опенсорс коде, да и не только опенсорс. Лучше использовать переменные окружения или .env файлик 
+    Можно использовать разные хранилища по типу волта для таких целей например 
+
+
+
+2.
+    from flask_wtf import Form
+    from wtforms import TextField
+
+    class LoginForm(Form):
+        username = TextField('username')
+        password = TextField('password')
+
+    Анализ кода:
+        password объявлен как текстовое поле - плохо, пароль может отображаться на экране открытым текстом что повышает шансы утечки пароля 
+        нет валидации на длину, разрешенные ссимволы и тд - потенциальный риск инъекций 
+        лучше сейчас использовать что то типо: FlaskForm, StringField, PasswordField
+        например:
+            password = PasswordField('password', validators=[DataRequired(), Length(min=8, max=128)])
+
+   
+3.
+
+    def post(self):
+        username = self.get_argument('username')
+        password = self.get_argument('password').encode('utf-8')
+        email = self.get_argument('mail')
+
+        try:
+            username = username.lower()
+            email = email.strip().lower()
+            user = User({'username': username, 'password': password, 'email': email, 'date_joined': curtime()})
+            user.validate()
+            save_user(self.db_conn, user)
+        except Exception, e:
+            return self.render_template("success_create.html")
+    Анализ кода:
+        при любой ошибке возвращается success_createhtml, то есть пользователю показывается что все ок в любом случае 
+        из-за этого может быть проблемно отследить состояние системы и это может случайно скрыть атаки
+        желательно возвращать корректные ответы о состоянии системы юзеру 
+
+        так же ошибки ловятся все без иселючений или разделений на группы - то есть критические ошибки идут на ряду с дефолтными
+        лучше обрабатыватиь разные ошибки по разному 
+
+        так же password = encode('utf-8') это просто преобразование строки в байты а не защита
+        если затем пароль сохраняется как есть, то это критичный риск для учеток 
+        не стоит так хранить пароль - лучше хранить хэш
+
+        Возможно стоит строже валидировать входные данные например на длину + логировать все 
+
+ВЫВОДЫ:
+    Во всех фрагментах кода есть базовые проблемы безопасной разработки 
+    Лучше придерживаться стандартных практик и взять это себе как правило при написании кода 

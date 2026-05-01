@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отчет по лабораторной работе - Безопасность Docker</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --code-bg: #1e1e1e;
+            --card-bg: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        h1 {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+            text-align: center;
+        }
+        h2 {
+            color: var(--primary-color);
+            margin-top: 40px;
+            border-left: 5px solid var(--primary-color);
+            padding-left: 15px;
+        }
+        pre {
+            background: var(--code-bg);
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        code {
+            font-family: 'Consolas', monospace;
+        }
+        .screenshot-box {
+            margin: 25px 0;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f1f5f9;
+        }
+        .screenshot-box img {
+            max-width: 100%;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+        .screenshot-label {
+            display: block;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #64748b;
+            font-style: italic;
+        }
+        .summary-box {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 0.8em;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Лабораторная работа:<br>Настройка безопасности Docker-контейнера</h1>
+
+        <h2>Часть I: Анализ прав пользователя</h2>
+        <p><b>Цель:</b> Узнать, от какого пользователя всё запускается в обычном образе из интернета.</p>
+        <p>Выбранный образ: <code>tensorflow/tensorflow:nightly-jupyter</code></p>
+        
+        <pre><code># Проверка пользователя внутри стандартного контейнера
+docker run -it tensorflow/tensorflow:nightly-jupyter sh
+whoami
+# Результат: root</code></pre>
+
+        <div class="summary-box">
+            <b>Вывод:</b> В обычном образе мы сразу заходим как <b>root</b> (админ). Это опасно: если хакер взломает наше приложение, он сразу получит полные права внутри контейнера и сможет творить что угодно.
+        </div>
+
+        <div class="screenshot-box">
+            <img src="first.png" alt="Скриншот Части 1">
+            <span class="screenshot-label">Рис 1. Проверка прав root в стандартном образе</span>
+        </div>
+
+        <hr>
+
+        <h2>Часть II: Защита через Dockerfile</h2>
+        <p><b>Цель:</b> Сделать свой образ, который запускается от обычного пользователя, а не от админа.</p>
+        
+        <pre><code># Основная инструкция в Dockerfile для смены пользователя:
+USER appuser</code></pre>
+
+        <p>Проверка после сборки:</p>
+        <pre><code>docker run -it tensorflow-secure whoami
+# Результат: appuser</code></pre>
+
+        <div class="summary-box">
+            <b>Вывод:</b> Теперь мы работаем под обычным пользователем. Даже если хакер проберется внутрь, у него не будет прав админа, и он не сможет так просто захватить весь контейнер или сломать систему.
+        </div>
+
+        <div class="screenshot-box">
+            <img src="second.png" alt="Скриншот Части 2">
+            <span class="screenshot-label">Рис 2. Подтверждение работы от имени appuser</span>
+        </div>
+
+        <hr>
+
+        <h2>Часть III: Анализ безопасности (Trivy)</h2>
+        <p><b>Цель:</b> Проверить наш образ на "дыры" (уязвимости) с помощью сканера Trivy.</p>
+        
+        <p>Для получения сводной статистики использовалась команда:</p>
+        <pre><code>docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image tensorflow-secure | Select-String -Pattern "Total:", "Target"</code></pre>
+
+        <h3>Результаты сканирования:</h3>
+        <ul>
+            <li><b>Итоговая статистика ОС:</b> 1974 уязвимости (12 HIGH, 1812 MEDIUM, 150 LOW).</li>
+            <li><b>Критические ошибки:</b> 0.</li>
+            <li><b>Python пакеты:</b> 1 средняя ошибка в библиотеке <code>pip</code>.</li>
+        </ul>
+
+        <div class="summary-box">
+            <b>Вывод:</b> В образе много мелких дыр, так как базовый образ (Ubuntu) содержит много системных файлов. Самых страшных ошибок нет, но 12 опасных (HIGH) требуют внимания. Рекомендуется чаще обновлять зависимости и использовать "легкие" образы.
+        </div>
+
+        <div class="screenshot-box">
+            <img src="third.png" alt="Скриншот Части 3">
+            <span class="screenshot-label">Рис 3. Итоговая статистика сканирования уязвимостей</span>
+        </div>
+
+        <div class="footer">
+            Выполнено в рамках учебного курса по информационной безопасности. 2026.
+        </div>
+    </div>
+</body>
+</html>

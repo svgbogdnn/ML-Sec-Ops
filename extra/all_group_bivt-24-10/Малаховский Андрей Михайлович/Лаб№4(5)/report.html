@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Лабораторная работа 5</title>
+  <style>
+body {
+  font-family: "Times New Roman", Times, serif;
+  line-height: 1.5;
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 24px 48px;
+  color: #111;
+  background: #fff;
+}
+h1, h2, h3 { color: #111; }
+h1 { text-align: center; margin-bottom: 1.2em; }
+h2 { margin-top: 1.8em; border-bottom: 1px solid #ccc; padding-bottom: 0.25em; }
+h3 { margin-top: 1.2em; }
+p { margin: 0.75em 0; }
+ul, ol { margin: 0.5em 0 0.9em 1.6em; }
+pre {
+  background: #f6f8fa;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  padding: 14px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+code {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.95em;
+}
+p code, li code {
+  background: #f6f8fa;
+  padding: 0.1em 0.25em;
+  border-radius: 4px;
+}
+hr {
+  border: none;
+  border-top: 1px solid #ccc;
+  margin: 1.5em 0;
+}
+</style>
+</head>
+<body>
+<h1>Лабораторная работа 5</h1>
+<h2>Часть 1</h2>
+<h3>Фрагмент кода 1</h3>
+<pre><code class="language-python">#!/usr/bin/env python3
+from flask import Flask
+
+from mod_api import mod_api
+
+app = Flask('vuln_app')
+app.config['SECRET_KEY'] = 'F0cUzh8BgYJSLXAU8qDmClM0dE8GJTpsiyVEl3BCqQMCABp1U$f%'
+
+app.register_blueprint(mod_api, url_prefix='/api')
+</code></pre>
+<p><strong>Недостаток</strong>
+Secret key приложения прописан прямо в исходном коде. Это небезопасно, потому что при утечке данных злоумышленник сможет использовать этот ключ для корыстных целей.</p>
+<p><strong>Рекомендации по устранению</strong><br />
+Secret key нужно хранить вне кода: например, в переменных окружения или в отдельном закрытом конфигурационном файле. Также такой ключ нельзя выкладывать в открытый доступ. Если кажется, что ключ уже был раскрыт, его нужно заменить.</p>
+<h3>Фрагмент кода 2</h3>
+<pre><code class="language-python">from flask_wtf import Form  
+from wtforms import TextField
+
+class LoginForm(Form):  
+    username = TextField('username')  
+    password = TextField('password')
+</code></pre>
+<p><strong>Недостаток</strong><br />
+Поле <code>password</code> объявлено как обычное текстовое поле. Это означает, что пароль будет вводиться и отображаться как обычный текст, что небезопасно.</p>
+<p><strong>Рекомендации по устранению</strong><br />
+Для пароля нужно использовать специальное поле <code>PasswordField</code>, чтобы введенные символы не отображались открыто. Также следует добавить проверки: обязательность заполнения, минимальную длину пароля и, при необходимости, другие ограничения.</p>
+<h3>Фрагмент кода 3</h3>
+<pre><code class="language-python">def post(self):
+    username = self.get_argument('username')
+    password = self.get_argument('password').encode('utf-8')
+    email = self.get_argument('mail')
+
+try:
+    username = username.lower()
+    email = email.strip().lower()
+    user = User({'username': username, 'password': password, 'email': email, 'date_joined': curtime()})
+    user.validate()
+    save_user(self.db_conn, user)
+except Exception, e:
+    return self.render_template(&quot;success_create.html&quot;)
+</code></pre>
+<p><strong>Недостатки</strong><br />
+Во первых, не видно явного хеширования пароля перед сохранением. Если оно не выполняется внутри других функций, это может привести к небезопасному хранению паролей.</p>
+<p>Во вторых, обработка ошибок сделана неправильно: перехватывается любое исключение, и даже при ошибке пользователю все равно показывается страница успешного создания. В результате можно скрыть реальную проблему и ввести пользователя в заблуждение.</p>
+<p><strong>Рекомендации по устранению</strong><br />
+Пароль перед сохранением нужно обязательно хешировать с помощью специальных функций для хранения паролей. Перехватывать следует не все исключения подряд, а только ожидаемые ошибки. При сбое нужно возвращать сообщение об ошибке, а не страницу об успешной регистрации. Также полезно отдельно проверять корректность email,  username и пароля до сохранения пользователя.</p>
+<hr />
+<h2>Часть 2</h2>
+<h3>1. Какие наиболее распространенные атаки предотвращает Django?</h3>
+<p>Django помогает защищаться от следующих распространенных атак:</p>
+<ul>
+<li><strong>XSS</strong> — шаблоны Django по умолчанию экранируют HTML-символы.</li>
+<li><strong>CSRF</strong> — используются специальные CSRF-токены для защиты форм и POST-запросов.</li>
+<li><strong>SQL-инъекции</strong> — при работе через ORM запросы формируются безопаснее, без прямой подстановки строк.</li>
+<li><strong>Clickjacking</strong> — можно использовать встроенную защиту через заголовок X-Frame-Options.</li>
+<li><strong>Атаки через поддельный Host-заголовок</strong> — ограничиваются с помощью настройки ALLOWED_HOSTS.</li>
+</ul>
+<p>При этом защита работает только в том случае, если разработчик не отключает встроенные механизмы безопасности.</p>
+<h3>2. Описать, как устроено управление пользовательскими сессиями в Django?</h3>
+<p>Управление сессиями в Django устроено так:</p>
+<ul>
+<li>после входа пользователя создается сессия;</li>
+<li>браузеру обычно передается cookie с идентификатором сессии;</li>
+<li>данные сессии чаще всего хранятся на сервере, обычно в базе данных;</li>
+<li>доступ к данным выполняется через request.session;</li>
+<li>при входе пользователя Django может обновлять ключ сессии для повышения безопасности;</li>
+<li>можно настроить срок жизни сессии, а также параметры cookie: HttpOnly, Secure, SameSite.</li>
+</ul>
+<p>Таким образом, Django предоставляет готовый механизм хранения и обработки пользовательских сессий, который можно дополнительно настраивать под требования безопасности.</p>
+<h3>Список используемой литературы</h3>
+<ol>
+<li>Django Documentation.
+<a href="https://docs.djangoproject.com/en/6.0/">https://docs.djangoproject.com/en/6.0/</a></li>
+<li>Flask Documentation.
+<a href="https://flask.palletsprojects.com/en/stable/">https://flask.palletsprojects.com/en/stable/</a></li>
+<li>OWASP Password Storage Cheat Sheet
+<a href="https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html</a></li>
+</ol>
+
+</body>
+</html>

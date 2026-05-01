@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ЛР 4. Симуляция XSS-атаки</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    max-width: 820px;
+    margin: 40px auto;
+    padding: 0 20px;
+    color: #1a1a1a;
+    line-height: 1.55;
+    font-size: 16px;
+  }
+  h1 { font-size: 26px; margin-top: 0; }
+  h2 { font-size: 21px; margin-top: 36px; border-bottom: 1px solid #e5e5e5; padding-bottom: 6px; }
+  h3 { font-size: 17px; margin-top: 28px; }
+  p { margin: 12px 0; }
+  pre {
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-size: 13.5px;
+    line-height: 1.45;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+  }
+  code {
+    background: #f0f0f0;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 13.5px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  ol, ul { padding-left: 24px; }
+  li { margin: 6px 0; }
+  strong { font-weight: 600; }
+  a { color: #0645ad; }
+  img { max-width: 100%; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0; }
+</style>
+</head>
+<body>
+
+<h1>ЛР 4. Симуляция XSS-атаки</h1>
+
+<h2>1. CVE за 2021 год</h2>
+
+<p>Искал через NVD. Полный год одним запросом API не принимает, максимум 120 дней, поэтому разбил 2021 год на несколько интервалов и считал по ключевому запросу <code>cross-site scripting PHP</code></p>
+
+<p>Команды были такого вида:</p>
+
+<pre><code>curl -s &#x27;https://services.nvd.nist.gov/rest/json/cves/2.0?keywordSearch=cross-site%20scripting%20PHP&amp;pubStartDate=2021-01-01T00:00:00.000&amp;pubEndDate=2021-04-30T23:59:59.999&#x27; | jq -r &#x27;.totalResults&#x27;</code></pre>
+
+<p>Получилось:</p>
+
+<ul>
+
+  <li>01.01.2021 - 30.04.2021: 11</li>
+
+  <li>01.05.2021 - 28.08.2021: 9</li>
+
+  <li>29.08.2021 - 26.12.2021: 6</li>
+
+  <li>27.12.2021 - 31.12.2021: 0</li>
+
+</ul>
+
+<p>Всего по такому поиску вышло 26 CVE. Тут важно, что это не вообще все XSS за 2021 год, а именно найденные NVD по словам <code>cross-site scripting</code> и <code>PHP</code>. Если искать по <code>XSS PHP</code>, результат меньше, потому что часть описаний использует полную фразу, а не сокращение</p>
+
+<h3>CVE-2021-43698, phpWhois</h3>
+
+<p>Ссылка: https://nvd.nist.gov/vuln/detail/CVE-2021-43698</p>
+
+<p>phpWhois - это PHP-библиотека для WHOIS-запросов. Через нее можно из PHP-кода получить данные по домену, IP или AS. В README проекта прямо показан пример с <code>phpWhois\Whois</code>, методом <code>lookup()</code> и выводом результата по домену</p>
+
+<p>В этой CVE проблема была в <code>example.php</code>. По описанию NVD, скрипт завершался через <code>exit</code> и печатал сообщение пользователю, а в это сообщение попадал <code>$_GET[&#x27;query&#x27;]</code>. Если в <code>query</code> передать HTML/JS, сервер вставит его в страницу без нормального экранирования. Это типичный XSS через отражение пользовательского ввода в HTML</p>
+
+<p>Источник по назначению компонента: https://github.com/phpWhois/phpWhois</p>
+
+<h3>CVE-2021-43808, Laravel Blade</h3>
+
+<p>Ссылка: https://nvd.nist.gov/vuln/detail/CVE-2021-43808</p>
+
+<p>Laravel - PHP-фреймворк для веб-приложений, а Blade - его шаблонизатор. Blade-файлы обычно лежат с расширением <code>.blade.php</code>, компилируются в обычный PHP и используются для сборки HTML-представлений</p>
+
+<p>В CVE уязвимость касается Blade в Laravel до версий <code>8.75.0</code>, <code>7.30.6</code> и <code>6.20.42</code>. По описанию NVD, проблема связана с тем, что можно было угадать SHA-1 hash placeholder родительского шаблона через распространенные имена секций. Если родительский шаблон содержит подходящую HTML-структуру, это открывает XSS. Исправление сделали через вычисление placeholder во время запроса и случайный hash, уникальный для каждого запроса.</p>
+
+<p>Источник по назначению Blade: https://laravel-docs.readthedocs.io/en/stable/blade/</p>
+
+<h2>2. Практика на стенде</h2>
+
+<p>Образ скачал:</p>
+
+<pre><code>docker pull ket9/otus-devsecops-xss</code></pre>
+
+<p>При запуске на <code>8080</code> сразу получил ошибку, потому что у меня на этом порту уже висел контейнер из прошлой лабы:</p>
+
+<pre><code>Bind for 0.0.0.0:8080 failed: port is already allocated</code></pre>
+
+<p>тобы не останавливать старый контейнер, стенд XSS запустил на соседнем порту:</p>
+
+<pre><code>docker run -d -p 8081:80 ket9/otus-devsecops-xss:latest</code></pre>
+
+<p>Контейнер поднялся, в логах был Apache:</p>
+
+<pre><code>Apache/2.4.25 (Debian) PHP/7.0.33 configured -- resuming normal operations</code></pre>
+
+<p>Открыл корень:</p>
+
+<pre><code>curl -i http://127.0.0.1:8081/</code></pre>
+
+<p>Ответ был <code>HTTP/1.1 200 OK</code>, на странице ссылка на <code>XSS-1</code>:</p>
+
+<pre><code>&lt;b&gt;&lt;div class=&#x27;item&#x27;&gt;&lt;a href=&#x27;XSS-1&#x27;&gt;XSS-1&lt;/a&gt;&lt;/div&gt;&lt;/b&gt;</code></pre>
+
+<p>Дальше открыл форму:</p>
+
+<pre><code>curl -i http://127.0.0.1:8081/XSS-1/</code></pre>
+
+<p>Там обычная форма комментария:</p>
+
+<pre><code>&lt;form method=&quot;POST&quot; action=&quot;index.php&quot;&gt;
+    comment? &lt;br/&gt;
+    &lt;input type=&quot;textarea&quot; rows=&quot;4&quot; cols=&quot;90&quot; name=&quot;comment&quot;&gt;
+    &lt;input type=&quot;submit&quot; name=&quot;submit&quot; value=&quot;Save Data&quot;&gt;
+&lt;/form&gt;</code></pre>
+
+<p>Сначала проверил логику по исходнику внутри контейнера. В <code>index.php</code> комментарий берется из <code>$_POST[&quot;comment&quot;]</code>, пишется в <code>/tmp/comments.txt</code>, потом файл читается обратно и каждый кусок печатается прямо в HTML:</p>
+
+<pre><code>echo &quot;&lt;p&gt;$comments[$i]&lt;/p&gt;&lt;hr /&gt;\n&quot;;</code></pre>
+
+<p>Тут уже видно слабое место: перед выводом нет <code>htmlspecialchars</code>, поэтому браузер воспримет введенный HTML как разметку страницы, а не как текст комментария</p>
+
+<p>Проверил это payload с <code>script</code>:</p>
+
+<pre><code>curl -i -X POST \
+  --data-urlencode &quot;comment=&lt;script&gt;alert(&#x27;xss-lab-4&#x27;)&lt;/script&gt;&quot; \
+  http://127.0.0.1:8081/XSS-1/index.php</code></pre>
+
+<p>Ответ приложения:</p>
+
+<pre><code>&lt;h2&gt;Comments&lt;/h2&gt;&lt;p&gt;&lt;script&gt;alert(&#x27;xss-lab-4&#x27;)&lt;/script&gt;
+
+&lt;/p&gt;&lt;hr /&gt;</code></pre>
+
+<p>После открытия <code>http://127.0.0.1:8081/XSS-1/</code> в браузере скрипт выполняется и появляется alert с текстом <code>xss-lab-4</code>. Тут атака не одноразовая: payload сохранился в <code>/tmp/comments.txt</code>, поэтому он срабатывает при каждом следующем открытии страницы комментариев</p>
+
+<h2>Тип уязвимости</h2>
+
+<p>Это stored XSS, он же persistent XSS. Пользовательский ввод сохраняется на сервере, потом без экранирования попадает в HTML-ответ и выполняется в браузере клиента</p>
+
+<p>По CWE это CWE-79, Improper Neutralization of Input During Web Page Generation</p>
+
+<p>Конкретное место в стенде:</p>
+
+<pre><code>echo &quot;&lt;p&gt;$comments[$i]&lt;/p&gt;&lt;hr /&gt;\n&quot;;</code></pre>
+
+<p>Проблема не в самом сохранении комментария, а в выводе. Значение из файла считается доверенным, хотя туда до этого попал ввод пользователя</p>
+
+<h2>Как предотвращать</h2>
+
+<p>Самое прямое исправление для этого стенда - экранировать комментарий перед выводом:</p>
+
+<pre><code>$safeComment = htmlspecialchars($comments[$i], ENT_QUOTES | ENT_SUBSTITUTE, &#x27;UTF-8&#x27;);
+echo &quot;&lt;p&gt;{$safeComment}&lt;/p&gt;&lt;hr /&gt;\n&quot;;</code></pre>
+
+<p>Какие символы нужно нейтрализовать в HTML-контексте:</p>
+
+<ul>
+
+  <li><code>&lt;</code> и <code>&gt;</code> - чтобы пользователь не мог открыть тег <code>script</code>, <code>img</code>, <code>svg</code>, <code>iframe</code></li>
+
+  <li><code>&quot;</code> и <code>&#x27;</code> - чтобы нельзя было вылезти из HTML-атрибута и добавить обработчик вроде <code>onerror</code></li>
+
+  <li><code>&amp;</code> - чтобы нельзя было собирать HTML-сущности и обходить часть фильтрации</li>
+
+</ul>
+
+<p>Я бы не делал защиту через черный список слов <code>script</code>, <code>alert</code>, <code>onerror</code>. Это быстро ломается вариантами вроде <code>&lt;img src=x onerror=...&gt;</code>, SVG, смешанным регистром и кодировками. Нормальный вариант - выводить пользовательский комментарий как текст, а не как HTML. Для PHP это <code>htmlspecialchars</code> с <code>ENT_QUOTES</code> и явной кодировкой <code>UTF-8</code></p>
+
+<p>Дополнительно:</p>
+
+<ul>
+
+  <li>ограничить длину комментария, например 1000-2000 символов</li>
+
+  <li>если HTML в комментариях не нужен, не разрешать его вообще</li>
+
+  <li>если HTML нужен, использовать проверенный sanitizer с allowlist тегов и атрибутов</li>
+
+  <li>поставить CSP, например запретить inline script, но это уже второй слой, а не замена экранированию</li>
+
+  <li>для cookie ставить <code>HttpOnly</code> и <code>SameSite</code>, чтобы XSS было сложнее использовать для кражи сессии</li>
+
+</ul>
+
+</body>
+</html>

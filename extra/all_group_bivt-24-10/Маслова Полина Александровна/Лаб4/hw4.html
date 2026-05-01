@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h3>Часть 1</h3>
+<p>1. </p>
+<pre><code>#!/usr/bin/env python3
+from flask import Flask
+
+from mod_api import mod_api
+
+app = Flask(&#39;vuln_app&#39;)
+app.config[&#39;SECRET_KEY&#39;] = &#39;F0cUzh8BgYJSLXAU8qDmClM0dE8GJTpsiyVEl3BCqQMCABp1U$f%&#39;
+
+app.register_blueprint(mod_api, url_prefix=&#39;/api&#39;)
+</code></pre>
+<p>Здесь SECRET_KEY прописан явно. Если такой код запушить в репозиторий, то все увидят ключ, что может привести к тому, что кто угодно может подделывать сессии и расшифровывать данные.
+Чтобы устранить этот недостаток, можно использовать переменные окружения </p>
+<pre><code>import os
+app.config[&#39;SECRET_KEY&#39;] = os.environ.get(&#39;SECRET_KEY&#39;)
+</code></pre>
+<p>2. </p>
+<pre><code>from flask_wtf import Form  
+from wtforms import TextField
+
+class LoginForm(Form):  
+username = TextField(&#39;username&#39;)  
+password = TextField(&#39;password&#39;)
+</code></pre>
+<p>Поле пароля определено, как текстовое. Основные причины, почему так не стоит делать: при вводе пароль будет отображаться текстом, а не какими-то символами (точки или звёздочки), пароль может сохраниться в кеше. 
+Устранить недостаток можно, если использовать формат поля PasswordField: </p>
+<pre><code>from flask_wtf import Form  
+from wtforms import TextField
+
+class LoginForm(Form):  
+username = TextField(&#39;username&#39;)  
+password = PasswordField(&#39;password&#39;)
+</code></pre>
+<p>3. </p>
+<pre><code>def post(self):
+    username = self.get_argument(&#39;username&#39;)
+    password = self.get_argument(&#39;password&#39;).encode(&#39;utf-8&#39;)
+    email = self.get_argument(&#39;mail&#39;)
+
+
+
+try:
+    username = username.lower()
+    email = email.strip().lower()
+    user = User({&#39;username&#39;: username, &#39;password&#39;: password, &#39;email&#39;: email, &#39;date_joined&#39;: curtime()})
+    user.validate()
+    save_user(self.db_conn, user)
+except Exception, e:
+    return self.render_template(&quot;success_create.html&quot;)
+</code></pre>
+<p>Пароль записывается в явном виде, никак не шифруется. Нет проверки почты на формат. При ошибке в процессе регистрации пользователь попадает на страницу success_create.html, хотя так не должно быть, ведь случилась ошибка, значит, create не success. 
+Решения проблем:</p>
+<ul>
+<li>хешировать или как-то шифровать пароли</li>
+<li>проверять формат почты </li>
+<li>при ошибке регистрации выдавать какую-то не успешную страницу (а success_create.html можно показывать при успешной регистрации)</li>
+</ul>
+<hr>
+<h3>Часть 2</h3>
+<ol>
+<li>Django: <ul>
+<li>защищает от XSS атак</li>
+<li>защищает от SQL- инъекций</li>
+<li>обрабатывает пароли (хеширует)</li>
+<li>использует HTTPS</li>
+</ul>
+</li>
+<li>Управление пользовательскими сессиями в Django:</li>
+</ol>
+<ul>
+<li>два компонента: SessionMiddleware - управление запросом между сессиями; AuthenticationMiddleware - связывает пользователя и сессию </li>
+<li>данные сессии храняться в БД (по умолчанию), кэше, Cookies и файловой системе </li>
+<li>Django позволяет настраивать различные параметры поведения сессий, например:
+- SESSION_COOKIE_AGE — устанавливает время истечения сессии в секундах.
+- SESSION_COOKIE_SECURE — требует передачи сессий по HTTPS.
+- SESSION_EXPIRE_AT_BROWSER_CLOSE — завершает сессию при закрытии браузера.</li>
+<li>Безопасность: <ul>
+<li>безопасная обработка куков</li>
+<li>требование использования HTTPS</li>
+<li>настройка истечения сессий</li>
+</ul>
+</li>
+</ul>
+
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<hr>
+<p>jupyter:
+  language_info:
+    name: python
+  nbformat: 4</p>
+<h2>  nbformat_minor: 5</h2>
+<p>::: {#4255232e-f43c-41a2-b854-55058d5d1a39 .cell .markdown}</p>
+<h1>Лабораторная работа №6:</h1>
+<h2>Провести симуляцию XSS-атаки</h2>
+<p><strong>Цель:</strong></p>
+<ol>
+<li>найти CVE за 2021 год, содержащие XSS в компонентах, написанных на
+php.</li>
+<li>на предоставленном стенде провести XSS-атаку и убедиться в
+выполнении JS-скрипта</li>
+</ol>
+<h3>Часть I</h3>
+<p>Общее количество CVE, опубликованных в 2021 году, согласно отчёту Stack
+Watch, составило <strong>21 115</strong>.</p>
+<h3>Первая уязвимость: CVE-2021-41139 (Anuko Time Tracker)</h3>
+<ul>
+<li><strong>Название уязвимого компонента:</strong> Anuko Time Tracker</li>
+<li><strong>Назначение и функционал:</strong> Это веб-приложение для учёта рабочего
+времени с открытым исходным кодом, написанное на PHP. Позволяет
+пользователям регистрировать отработанные часы, создавать проекты и
+задачи, а также формировать отчёты.</li>
+<li><strong>Описание XSS-уязвимости:</strong> Отражённая XSS (Reflected XSS).
+Уязвимость присутствует в файле <code>time.php</code> и связана с некорректной
+обработкой параметра <code>date</code>, передаваемого в URL. Когда авторизованный
+пользователь выбирает дату в интерфейсе, она передаётся через этот
+параметр без должной проверки. Злоумышленник может создать вредоносную
+ссылку с JavaScript-кодом в этом параметре и с помощью социальной
+инженерии убедить жертву перейти по ней. Вредоносный скрипт выполнится
+в браузере пользователя в контексте его сессии, что может привести к
+краже данных или выполнению действий от его имени. Уязвимость
+исправлена в версии 1.19.30.5600.</li>
+</ul>
+<h3>Вторая уязвимость: CVE-2021-43683 (Pictshare)</h3>
+<ul>
+<li><strong>Название уязвимого компонента:</strong> Pictshare</li>
+<li><strong>Назначение и функционал:</strong> Это веб-приложение для быстрого и
+анонимного хостинга изображений. Позволяет загружать изображения и
+получать прямые ссылки на них для вставки на сайты или в сообщения.</li>
+<li><strong>Описание XSS-уязвимости:</strong> Отражённая XSS (Reflected XSS),
+обнаруженная в файле <code>api/info.php</code>. Уязвимость возникает из-за того,
+что скрипт напрямую выводит содержимое параметра <code>$_REQUEST[&#39;hash&#39;]</code>
+без какой-либо фильтрации или экранирования. Атакующий может вставить
+вредоносный HTML или JavaScript в этот параметр, и он будет выполнен в
+браузере жертвы при переходе по специально сформированной ссылке.</li>
+</ul>
+<h4>Дополнительные примеры CVE (2021 год)</h4>
+<ul>
+<li>CVE-2021-28280 (PHPFusion 9.03.110): Обнаружена в search.php и
+представляет собой комбинацию CSRF и XSS. Позволяет удалённо внедрить
+произвольный скрипт или HTML-код через CSRF-атаку.</li>
+<li>CVE-2021-28424 (Teachers Record Management System 1.0): Хранимая
+(Stored) XSS в файле adminprofile.php. Уязвимость позволяет
+авторизованному пользователю внедрить скрипт через POST-параметр
+email.</li>
+<li>CVE-2021-32106 (ICEcoder 8.0): Это отражённая (Reflected) XSS в файле
+multipe-results.php. Возникает из-за недостаточной фильтрации
+переменной $_GET[&#39;replace&#39;].</li>
+</ul>
+<h3>Часть II</h3>
+<p>Проверим возможна ли XSS-атака. Введём <code>&lt;b&gt;</code>{=html}test<code>&lt;/b&gt;</code>{=html}.
+Если текст станет жирным --- значит, теги интерпретируются как HTML, и
+XSS возможна. В нашем случае так и произошло.</p>
+<p>Начнём проводит атаку. Введём <code>&lt;script&gt;alert(&#39;XSS&#39;)&lt;/script&gt;</code>. Если
+появится всплывающее окно с текстом XSS, то атака оказалось успешной. В
+нашем случае так и произошло. Mы нашли уязвимость: Stored (Persistent)
+Cross-Site Scripting (XSS) --- хранимая межсайтовая скриптовая
+уязвимость.</p>
+<h3>Меры предотвращения</h3>
+<p>Для защиты от данной уязвимости необходимо: - Всегда экранировать
+(escape) выводимые в HTML данные, полученные от пользователя. -
+Использовать функции, преобразующие специальные HTML-символы в
+сущности: - Избегать попадания в HTML следующих символов: &lt;, &gt;, &amp;, &quot;,
+&#39;. - В PHP для этого применяется htmlspecialchars() с параметром
+ENT_QUOTES и указанием кодировки, например:
+htmlspecialchars($user_input, ENT_QUOTES, &#39;UTF-8&#39;); - Дополнительно
+можно настроить Content Security Policy (CSP) для ограничения выполнения
+встроенных скриптов. - Проводить валидацию входных данных по белому
+списку допустимых символов (если формат известен).
+:::</p>
+
+</body>
+</html>

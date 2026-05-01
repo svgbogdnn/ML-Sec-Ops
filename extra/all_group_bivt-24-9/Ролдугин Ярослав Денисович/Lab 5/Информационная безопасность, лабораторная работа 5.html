@@ -1,0 +1,130 @@
+<h1 id="часть-1">Часть 1</h1>
+<h2 id="задание-1">Задание 1</h2>
+<pre><code>#!/usr/bin/env python3
+from flask import Flask
+
+from mod_api import mod_api
+
+app = Flask(&#39;vuln_app&#39;)
+app.config[&#39;SECRET_KEY&#39;] = &#39;F0cUzh8BgYJSLXAU8qDmClM0dE8GJTpsiyVEl3BCqQMCABp1U$f%&#39;
+
+app.register_blueprint(mod_api, url_prefix=&#39;/api&#39;)</code></pre>
+<p><strong>Недостаток:</strong> секретный ключ (<code>SECRET_KEY</code>)
+прописан в коде приложения. Это создает проблему слива секретного ключа.
+Рекомендация: хранить ключи и секретные токены в переменных окружения.
+Пример исправления</p>
+<pre><code>import os
+#!/usr/bin/env python3
+from flask import Flask
+
+from mod_api import mod_api
+
+app = Flask(&#39;vuln_app&#39;)
+app.config[&#39;SECRET_KEY&#39;] = os.environ[&#39;SECRET_KEY&#39;]
+
+app.register_blueprint(mod_api, url_prefix=&#39;/api&#39;)</code></pre>
+<h2 id="задание-2">Задание 2</h2>
+<pre><code>from flask_wtf import Form
+from wtforms import TextField
+
+class LoginForm(Form):
+    username = TextField(&#39;username&#39;) 
+    password = TextField(&#39;password&#39;)</code></pre>
+<p><strong>Недостаток:</strong> поле пароля объявлено как
+<code>TextField</code>, а не как <code>PasswordField</code>. Это
+приводит к тому, что оно рендерится как
+<code>&lt;input type="text"&gt;</code>, и вводимый пароль отображается в
+открытом виде на экране пользователя. Рекомендация: заменить
+<code>TextField</code> на <code>PasswordField</code></p>
+<h2 id="задание3">Задание3</h2>
+<pre><code>def post(self):
+    username = self.get_argument(&#39;username&#39;)
+    password = self.get_argument(&#39;password&#39;).encode(&#39;utf-8&#39;)
+    email = self.get_argument(&#39;mail&#39;)
+try:
+    username = username.lower()
+    email = email.strip().lower()
+    user = User({&#39;username&#39;: username, &#39;password&#39;: password, &#39;email&#39;: email, &#39;date_joined&#39;: curtime()})
+    user.validate()
+    save_user(self.db_conn, user)
+except Exception, e:
+    return self.render_template(&quot;success_create.html&quot;)</code></pre>
+<p>Недостаток: пароль сохраняется в открытом виде в бд. Рекомендация:
+перед сохранением в бд делать хэширование с помощью различных алгоритмов
+Также при ошибке регистрации происходит рендер страницы успешного
+создания, что неправильно (тут могу ошибаться, весь контекст не знаю)
+Недостаток: отсутствует валидации входных данных (как минимум почта).
+Рекомендация: сделать функцию валидации почты/использовать тип EmailStr
+у pydantic.</p>
+<h1 id="часть-2">Часть 2</h1>
+<h3
+id="вопрос-1-какие-наиболее-распространенные-атаки-предотвращает-django">Вопрос
+1: Какие наиболее распространенные атаки предотвращает django?</h3>
+<ol type="1">
+<li>Защита от атак на основе инъекций (- Django ORM автоматически
+экранирует пользовательский ввод и предотвращает SQL-инъекции.</li>
+<li>Защита от XSS атак. Шаблонизатор Django <strong>автоматически
+экранирует</strong> специальные HTML-символы (<code>&lt;</code>,
+<code>&gt;</code>, <code>&amp;</code>, <code>'</code>, <code>"</code>)
+при выводе переменных.</li>
+<li>Cross-Site Request Forgery (CSRF). При загрузке страницы с формой
+Django генерирует уникальный секретный токен и вставляет его в скрытое
+поле формы через тег <code>{% csrf_token %}</code>. Когда форма
+отправляется, middleware <code>CsrfViewMiddleware</code> сверяет токен
+из тела запроса с токеном, который хранится в cookie.</li>
+<li>Защита от кликджекинга - Django по умолчанию передает заголовок
+X-Frame-Options: DENY на все запросы. Это нужно для того, чтобы сайт
+нельзя было встроить в iframe. Это защищает от атаки, при которой
+злоумышленник встраивает целевой сайт в невидимый iframe на своей
+странице и накладывает поверх элементы-приманки.</li>
+<li>SSL/HTTPS - помогает встраивать HTTPS в сервис а)
+<code>SECURE_SSL_REDIRECT = True</code> - автоматический редирект с HTTP
+на HTTPS. б) <code>SECURE_HSTS_SECONDS</code>- заголовок, который
+сообщает браузеру, что сайт работает только по HTTPS. в)
+<code>SESSION_COOKIE_SECURE = True</code> - cookie сессии передаются
+только по HTTPS. г) <code>CSRF_COOKIE_SECURE = True</code> - CSRF-cookie
+только по HTTPS.</li>
+</ol>
+<p>Источники: 1) https://django.fun/docs/django/5.2/topics/security/ 2)
+https://habr.com/ru/companies/vk/articles/823740/</p>
+<h3
+id="вопрос-2-описать-как-устроено-управление-пользовательскими-сессиями-в-django">Вопрос
+2: Описать, как устроено управление пользовательскими сессиями в
+django</h3>
+<p>HTTP - <strong>stateless-протокол</strong>: каждый запрос независим,
+сервер не помнит предыдущих взаимодействий. Сессии решают эту проблему.
+Сессии позволяют сохранять состояние между запросами.</p>
+<p>При первом обращении Django генерирует уникальный session ID и
+отправляет его браузеру, сохраняем в cookie. Сами данные сессии (кто
+пользователь, его настройки, содержимое корзины) хранятся на сервере, по
+умолчанию - в таблице django_session</p>
+<p>Если обновляете какие-либо данные при помощи ключа сессии тогда не
+надо беспокоиться о процессе сохранении</p>
+<pre><code># Данное присваивание распознается как обновление сессии
+# и данные будут сохранены
+request.session[&#39;my_car&#39;] = &#39;mini&#39;</code></pre>
+<p>Если обновите информацию <em>внутри</em> данных сессии, тогда Django
+не распознает эти изменения и не выполнит сохранение данных. В таких
+случаях вам надо явно указывать, что сессия была изменена.</p>
+<pre><code># Объект сессии модифицируется неявно.
+# Изменения НЕ БУДУТ сохранены!
+request.session[&#39;my_car&#39;][&#39;wheels&#39;] = &#39;alloy&#39;
+
+# Явное указание, что данные изменены.
+# Сессия будет сохранена, куки обновлены (если необходимо).
+request.session.modified = True</code></pre>
+<p>Помимо БД, данные сессий можно хранить в кэше (Redis/Memcached),
+файлах или в подписанных cookie. Также Django предоставляет несколько
+настроек для управления временем жизни сессий: 1) SESSION_COOKIE_AGE -
+время жизни cookie сессии в секундах (по умолчанию 1209600) 2)
+SESSION_EXPIRE_AT_BROWSER_CLOSE - если True, то сессия истекает при
+закрытии браузера (по умолчание False) 3) SESSION_SAVE_EVERY_REQUEST -
+если True, то сессия пересохраняется при каждом запросе (по умолчание
+False) 4) SESSION_COOKIE_SECURE - если <code>True</code>, браузер будет
+отправлять cookie сессии только по HTTPS. 5) SESSION_COOKIE_DOMAIN -
+определяет для какого домена действует cookie (по умолчанию None =&gt;
+cookie привязана только к текущему домену) Стоит помнить, что истекшие
+сессии не удаляются автоматически из БД. Для очистки нужно периодически
+запускать ``</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> manage.py clearsessions</span></code></pre></div>

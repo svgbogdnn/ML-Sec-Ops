@@ -1,0 +1,63 @@
+<h1 id="-1">Часть 1</h1>
+<p>По данным National Vulnerability Database общее количество уязвимостей составляет 20140 за 2021 год. За период
+    2021-2024 общее количество CVE XSS составляет 11300. </p>
+<p>Источники:</p>
+<ol>
+    <li><a
+            href="https://nvd.nist.gov/vuln/search#/nvd/home?resultType=records">https://nvd.nist.gov/vuln/search#/nvd/home?resultType=records</a>
+    </li>
+    <li><a
+            href="https://medium.com/s2wblog/detailed-analysis-of-recent-vulnerability-trends-and-attack-patterns-742d37ff4ced">https://medium.com/s2wblog/detailed-analysis-of-recent-vulnerability-trends-and-attack-patterns-742d37ff4ced</a>
+    </li>
+    <li><a
+            href="https://cve.komodosec.com/cve-list?cvss_score_range=&amp;search=PHP&amp;page_number=552&amp;sort_by=cwe_id&amp;order=descending&amp;sort=cvss_score2">https://cve.komodosec.com/cve-list?cvss_score_range=&amp;search=PHP&amp;page_number=552&amp;sort_by=cwe_id&amp;order=descending&amp;sort=cvss_score2</a>
+    </li>
+</ol>
+<h2 id="1-php-event-calendar">1. PHP Event Calendar</h2>
+<p>В компоненте для системы управления событиями и календарями PHP Event Calendar. Функционал календаря с возможностью
+    создавать, редактировать, удалять события. Позволяет внедрить свой JS-код через параметр title в файле
+    /server/ajax/events_manager.php . Далее скрипт будет отображаться и выполнятся в браузере каждого пользователя,
+    зашедшего на зараженное событие. </p>
+<p>Последствия: </p>
+<ol>
+    <li>Выполнение действие от акков других юзеров</li>
+    <li>Изменение внешнего вида сайта</li>
+    <li>кража куков и метаданных сессии</li>
+</ol>
+<p>Источник: <a href="https://vulners.com/cve/CVE-2021-42078">https://vulners.com/cve/CVE-2021-42078</a></p>
+<h2 id="2-phpgurukul-shopping-shopping-cart-system-">2. PHPGurukul Shopping (Shopping Cart System)</h2>
+<p>Система интернет-магазина, написанная на пхп. Функционал просмотра товаров, корзины, заказов и админка. Включает
+    JSONP-эндпоинты для AJAX-запросов, поддержку редактирования записей и CAPTCHA-механизмы. Можно внедрить свой JS-код
+    в URL параметры, который будет отображен в ответе от сервера и выполнится в браузере жертвы, при формировании спец.
+    ссылки. </p>
+<p>Последсвтия: </p>
+<ol>
+    <li>Кража куков</li>
+    <li>Обход каптчи </li>
+    <li>Сбор данных польователей </li>
+</ol>
+<p>Источник: <a
+        href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-39412">https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-39412</a>
+</p>
+<h1 id="-2">Часть 2</h1>
+<p>Запустил докер, нажал на XSS-1. В поле для коммента ввел alert(&#39;Попытка исполнить код &#39;)
+    <script>alert(&#39;Попытка исполнить код &#39;)</script>.
+</p>
+<p><img src="image.png" alt="alt text"></p>
+<p>Появилось окно </p>
+<p><img src="image-1.png" alt="alt text"></p>
+<p>При обновлении оно так же поялвяется. </p>
+<p>Ввод никак не валидируется и напрямую вставляется в хтмл как есть . Тип уязвимости - межсайтовая атака с
+    использованием скрипотов (Reflected Cross-Site Scripting (XSS)) - подкатегория инъекций. </p>
+<p>Последсвия: </p>
+<ol>
+    <li>Выполнение произвольных скриптов.</li>
+    <li>Кража куки и метаданных и данных пользователя. </li>
+    <li>Подмена информации страницы. </li>
+</ol>
+<p>Меры предотвращения:</p>
+<ol>
+    <li>Экранирование через спец. символы (&quot;, &#39;, &lt;, &gt;)</li>
+    <li>Валидация вставленных данных.</li>
+    <li>Не использовать опасный функционал </li>
+</ol>

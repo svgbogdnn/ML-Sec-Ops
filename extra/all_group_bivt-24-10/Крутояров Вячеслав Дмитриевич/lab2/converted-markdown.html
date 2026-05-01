@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h2>Часть 1</h2>
+<h1>1) CVE-2025-12030 (Уязвимость в плагине ACF to REST API для WordPress)</h1>
+<p>Источник: <a href="https://nvd.nist.gov/vuln/detail/CVE-2025-12030">https://nvd.nist.gov/vuln/detail/CVE-2025-12030</a></p>
+<p>Тип по OWASP: API1:2023 — Broken Object Level Authorization (BOLA)</p>
+<p>Недостаток: Авторизованный пользовательможет изменять права доступа к объектам, которые ему не принадлежат, отправляя специальный REST API запрос</p>
+<p>Причина: Недостаточная проверка прав на стороне сервера. Метод update_item_permissions_check() проверяет только то, что у пользователя в принципе есть право edit_posts, но система забывает проверить, является ли запрашивающий пользователь истинным владельцем конкретного объекта, айдишник которого он передает в запросе</p>
+<h1>2) CVE-2025-61928 (Уязвимость в библиотеке авторизации Better Auth)</h1>
+<p>Источник: <a href="https://nvd.nist.gov/vuln/detail/CVE-2025-61928">https://nvd.nist.gov/vuln/detail/CVE-2025-61928</a></p>
+<p>Тип по OWASP: API2:2023 — Broken Authentication</p>
+<p>Недостаток: Критический обход аутентификации. То есть неаутентифицированный злоумышленник может сгенерить валидный апи ключ для абсолютно любого пользователя системы и получить полный доступ к чужому аккаунту для выполнения несанкционированных действий</p>
+<p>Причина: Фатальная логическая ошибка на бэкенде аутентификации. Если сессия отсутствует, но злоумышленник вручную подставляет чужой userId в тело запроса, переменная authRequired переключается в значение false. Сервер слепо доверяет переданному id и выполняет запрос к базе данных без проверки пароля или токена</p>
+<h1>3) CVE-2025-66573 (Уязвимость в Solstice Pod API)</h1>
+<p>Источник: <a href="https://nvd.nist.gov/vuln/detail/CVE-2025-66573">https://nvd.nist.gov/vuln/detail/CVE-2025-66573</a></p>
+<p>Тип по OWASP: API5:2023 — Broken Function Level Authorization</p>
+<p>Недостаток: Любой неавторизованный пользователь из сети может извлечь активные ключи сессий, версии сервера и другие критические системные данные, просто обратившись к эндпоинту /api/config</p>
+<p>Причина: Полное отсутствие механизма контроля доступа на административном уровне api. Эндпоинт, который по бизнес логике должен отдавать конфигурацию системы только доверенным административным узлам, оставлен открытым для любых входящих запросов</p>
+<h2>Часть 2</h2>
+<p>Зашел на <a href="http://localhost:8080/">http://localhost:8080/</a>, увидел там все эндпоинты:
+{ &quot;создать базу&quot;: &quot;/createdb&quot;,     &quot;посмотреть информацию обо всех пользователях&quot;: &quot;/users/v1&quot;,     &quot;посмотреть подробную информацию обо всех пользователях&quot;: &quot;/users/v1/_debug&quot;,     &quot;регистрация нового пользователя&quot;: &quot;/users/v1/register (HTTP POST)&quot;,     &quot;вход в приложение&quot;: &quot;/users/v1/login (HTTP POST)&quot;,     &quot;просмотр пользователя по имени&quot;: &quot;/users/v1/{username}&quot;,     &quot;удалить пользователя по имени (только для админов)&quot;: &quot;/users/v1/{username} (HTTP DELETE)&quot;,     &quot;изменить email пользователя&quot;: &quot;/users/v1/{username}/email (HTTP PUT)&quot;,     &quot;изменить пароль пользователя&quot;: &quot;/users/v1/{username}/password (HTTP PUT)&quot;,     &quot;все книги&quot;: &quot;/books/v1&quot;,     &quot;добавить книгу&quot;: &quot;/books/v1 (HTTP POST)&quot;,     &quot;просмотр книги&quot;: &quot;/books/v1/{book}&quot;,      } </p>
+<p>Инициализировал бд, отправив запрос на /createdb. Получил: { &quot;message&quot;: &quot;Database populated.&quot; }</p>
+<p>Дальше сделал базовый get запрос на /users/v1, чтобы посмотреть список пользователей. Приложение вернуло 3 учетные записи (name1, name2, admin), но только с публичной информацией (email и username)</p>
+<p>&quot;посмотреть подробную информацию обо всех пользователях&quot;: &quot;/users/v1/_debug&quot; выглядит подозридельно, поэтому ч решил отправит get запрос по этому адресу. Получил полный дамп базы пользователей, который включал скрытые поля</p>
+<p>{&quot;admin&quot;: false,
+&quot;email&quot;: &quot;<a href="mailto:mail1@mail.com">mail1@mail.com</a>&quot;,
+&quot;password&quot;: &quot;pass1&quot;,
+&quot;username&quot;: &quot;name1&quot;}</p>
+<p>Значит обычный пользователь, даже неавторизованный, имеет прямой доступ к отладочному эндпоинту, который раскрывает конфиденциальные данные всей системы. Приложение возвращает полные объекты пользователей, включая их пароли в открытом виде и внутренние флаги привилегий. Это критическая утечка информации</p>
+<p>Это API3:2023 — Broken Object Property Level Authorization (это ситуация, когда api неправильно контролирует доступ к отдельным свойствам объекта, отдавая клиенту избыточные данные, которые не требуются для работы бизнес-логики)</p>
+<h1>Меры предотвращения:</h1>
+<ol>
+<li><p>Ограничение отладочных функций: Полностью удалить или жёстко закрыть авторизацией _debug-эндпоинты перед релизом приложения</p>
+</li>
+<li><p>Использование DTO (Data Transfer Objects): Настроить сервер так, чтобы для ответа клиенту формировался специальный безопасный объект, содержащий только разрешенные поля (например, только username), а системные свойства (такие как password или флаг admin) отфильтровывались на уровне бэкенда</p>
+</li>
+<li><p>Единый слой контроля доступа: внедрить обязательную проверку прав (например, наличие сессии и роли администратора) для любых эндпоинтов, раскрывающих массивы пользовательских данных</p>
+</li>
+</ol>
+
+</body>
+</html>

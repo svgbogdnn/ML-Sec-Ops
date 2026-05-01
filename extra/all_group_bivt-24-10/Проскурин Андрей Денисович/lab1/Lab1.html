@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>Часть 1</h1>
+<h3>Доля атак на организации через веб-уязвимости и распределение по конкретным уязвимостям</h3>
+<p>Для этой части я посмотрел несколько российских и зарубежных источников. Сразу нужно сказать, что в них немного разная методика подсчёта (единицы измерения). Где-то считают именно подтверждённые инциденты, где-то успешные атаки, а где-то просто статистику по расследованиям или по веб-приложениям. Поэтому цифры отличаются, и это нормально.
+В отчётах используются разные единицы измерения: <strong>IR-проекты</strong>, <strong>breaches</strong>, <strong>WAF-события</strong>, <strong>обнаруженные уязвимости</strong>. Поэтому проценты <strong>нельзя напрямую складывать</strong> — их надо сравнивать только с учётом scope исследования. Похожая логика уже есть в твоём шаблоне.</p>
+<h3>Ссылки на источники</h3>
+<h4>РФ</h4>
+<ul>
+<li><p><a href="https://content.kaspersky-labs.com/se/media/en/business-security/enterprise/kaspersky-incident-response-report.pdf">https://content.kaspersky-labs.com/se/media/en/business-security/enterprise/kaspersky-incident-response-report.pdf</a></p>
+</li>
+<li><p><a href="https://ptsecurity.com/research/analytics/results-of-incident-investigation-and-retrospective-analysis-projects-2024-2025">https://ptsecurity.com/research/analytics/results-of-incident-investigation-and-retrospective-analysis-projects-2024-2025</a></p>
+</li>
+<li><p><a href="https://rt-solar.ru/analytics/reports/5335/">https://rt-solar.ru/analytics/reports/5335/</a> (2024)</p>
+</li>
+<li><p><a href="https://rt-solar.ru/analytics/reports/6432">https://rt-solar.ru/analytics/reports/6432</a> (2025)</p>
+</li>
+<li><p><a href="https://ptsecurity.com/research/analytics/aktual-nye-kiberugrozy-i-ii-kvartaly-2025-goda/">https://ptsecurity.com/research/analytics/aktual-nye-kiberugrozy-i-ii-kvartaly-2025-goda/</a></p>
+</li>
+<li><p>[BI.ZONE — Threat Zone 2025](<a href="https://bi.zone/expertise/research/threat-zone-2025">https://bi.zone/expertise/research/threat-zone-2025</a></p>
+</li>
+</ul>
+<h4>Мировые</h4>
+<ul>
+<li><p><a href="https://www.ibm.com/thought-leadership/institute-business-value/en-us/report/2025-threat-intelligence-index">https://www.ibm.com/thought-leadership/institute-business-value/en-us/report/2025-threat-intelligence-index</a></p>
+</li>
+<li><p><a href="https://www.verizon.com/business/resources/reports/2025-dbir-executive-summary.pdf">https://www.verizon.com/business/resources/reports/2025-dbir-executive-summary.pdf</a></p>
+</li>
+<li><p><a href="https://www.microsoft.com/en-us/corporate-responsibility/cybersecurity/microsoft-digital-defense-report-2025">https://www.microsoft.com/en-us/corporate-responsibility/cybersecurity/microsoft-digital-defense-report-2025</a></p>
+</li>
+<li><p><a href="https://www.crowdstrike.com/en-us/resources/reports/global-threat-report-executive-summary-2025">https://www.crowdstrike.com/en-us/resources/reports/global-threat-report-executive-summary-2025</a></p>
+</li>
+<li><p><a href="https://www.edgescan.com/wp-content/uploads/2025/04/2024-Vulnerability-Statistics-Report.pdf">https://www.edgescan.com/wp-content/uploads/2025/04/2024-Vulnerability-Statistics-Report.pdf</a></p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Источник</th>
+<th>Период / выборка</th>
+<th>Что именно считали</th>
+<th>Доля</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><a href="https://ptsecurity.com/research/analytics/itogi-proektov-po-rassledovaniyu-inczidentov-i-retrospektivnomu-analizu-2023-2024/">Positive Technologies (PT ESC IR), итоги расследований 2023–2024</a></strong> (<a href="https://ptsecurity.com/research/analytics/itogi-proektov-po-rassledovaniyu-inczidentov-i-retrospektivnomu-analizu-2023-2024/?utm_source=chatgpt.com" title="Итоги проектов по расследованию инцидентов">ptsecurity.com</a>)</td>
+<td>IR-проекты, IV кв. 2023 — III кв. 2024</td>
+<td>Точка входа в инфраструктуру — веб-приложения на сетевом периметре</td>
+<td><strong>44%</strong></td>
+</tr>
+<tr>
+<td><strong><a href="https://ptsecurity.com/research/analytics/results-of-incident-investigation-and-retrospective-analysis-projects-2024-2025/">Positive Technologies (PT ESC IR), итоги расследований 2024–2025</a></strong> (<a href="https://ptsecurity.com/research/analytics/results-of-incident-investigation-and-retrospective-analysis-projects-2024-2025/?utm_source=chatgpt.com" title="Итоги проектов по расследованию инцидентов и ...">ptsecurity.com</a>)</td>
+<td>IR-проекты, IV кв. 2024 — III кв. 2025, 100+ проектов</td>
+<td>Самый распространённый способ первоначального доступа — эксплуатация уязвимостей в веб-приложениях, доступных из интернета</td>
+<td><strong>36%</strong></td>
+</tr>
+<tr>
+<td><strong><a href="https://rt-solar.ru/events/news/5745/">Solar 4RAYS, хроники DFIR в первом полугодии 2025 года</a></strong></td>
+<td>DFIR/IR-кейсы, первое полугодие 2025 года</td>
+<td>В большинстве расследованных атак злоумышленники использовали уязвимости в веб-приложениях</td>
+<td><strong>46%</strong></td>
+</tr>
+<tr>
+<td><strong><a href="https://www.verizon.com/business/resources/reports/2025-dbir-executive-summary.pdf">Verizon DBIR 2025</a></strong> (<a href="https://www.verizon.com/business/resources/T16f/reports/2025-dbir-data-breach-investigations-report.pdf?utm_source=chatgpt.com" title="2025 Data Breach Investigations Report">Verizon</a>)</td>
+<td>Глобальный датасет breaches</td>
+<td>Exploitation of vulnerabilities as initial access vector in breaches</td>
+<td><strong>20%</strong></td>
+</tr>
+<tr>
+<td><strong><a href="https://www.verizon.com/business/resources/reports/2024-dbir-data-breach-investigations-report.pdf">Verizon DBIR 2024</a></strong> (<a href="https://www.verizon.com/business/resources/reports/2024-dbir-data-breach-investigations-report.pdf?utm_source=chatgpt.com" title="2024 Data Breach Investigations Report">Verizon</a>)</td>
+<td>30,458 incidents и 10,626 confirmed breaches</td>
+<td>Exploitation of vulnerabilities as critical-path action to initiate a breach; рост на 180% г/г</td>
+<td><strong>точная доля в summary не дана, но фиксируется резкий рост</strong></td>
+</tr>
+</tbody></table>
+<h3>Почему цифры расходятся</h3>
+<table>
+<thead>
+<tr>
+<th>Источник / диапазон</th>
+<th>Почему отличается</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>PT ESC IR (36–44%)</strong> (<a href="https://ptsecurity.com/research/analytics/results-of-incident-investigation-and-retrospective-analysis-projects-2024-2025/?utm_source=chatgpt.com" title="Итоги проектов по расследованию инцидентов и ...">ptsecurity.com</a>)</td>
+<td>Это не весь рынок, а выборка уже расследованных серьёзных инцидентов, где веб-периметр и публичные сервисы закономерно дают более высокую долю первоначального проникновения</td>
+</tr>
+<tr>
+<td><strong>Solar 4RAYS (46%)</strong></td>
+<td>Это тоже DFIR/IR-выборка, то есть статистика по уже успешным атакам, а не по всему потоку веб-событий</td>
+</tr>
+<tr>
+<td><strong>Verizon DBIR (20%)</strong> (<a href="https://www.verizon.com/business/resources/T16f/reports/2025-dbir-data-breach-investigations-report.pdf?utm_source=chatgpt.com" title="2025 Data Breach Investigations Report">Verizon</a>)</td>
+<td>Это глобальный массив breaches, где считаются все основные initial access vectors, поэтому доля эксплуатации уязвимостей ниже, чем в узких IR-кейсах</td>
+</tr>
+</tbody></table>
+<h2>Распределение по конкретным уязвимостям</h2>
+<h4>2.1. Распределение внутри веб-атак (по технике / классу действий) — Verizon DBIR 2024</h4>
+<table>
+<thead>
+<tr>
+<th>Метрика</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Use of stolen credentials</td>
+<td><strong>77%</strong></td>
+</tr>
+<tr>
+<td>Brute force</td>
+<td><strong>21%</strong></td>
+</tr>
+<tr>
+<td>Exploit vulnerability</td>
+<td><strong>13%</strong></td>
+</tr>
+<tr>
+<td>Financial &amp; Insurance</td>
+<td><strong>18%</strong></td>
+</tr>
+<tr>
+<td>Information</td>
+<td><strong>14%</strong></td>
+</tr>
+<tr>
+<td>Professional / Scientific / Technical Services</td>
+<td><strong>13%</strong></td>
+</tr>
+<tr>
+<td>Это распределение <strong>внутри паттерна Basic Web Application Attacks</strong>, а не доля всех успешных атак на организации. Основа этой части уже есть в твоём шаблоне.</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3>2.2. Распределение по категориям OWASP Top 10 — Positive Technologies</h3>
+<table>
+<thead>
+<tr>
+<th>Категория OWASP Top 10</th>
+<th>Доля приложений с этим классом проблем</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A01 Broken Access Control</td>
+<td><strong>100%</strong></td>
+</tr>
+<tr>
+<td>A05 Security Misconfiguration</td>
+<td><strong>83%</strong></td>
+</tr>
+<tr>
+<td>A07 Identification &amp; Authentication Failures</td>
+<td><strong>79%</strong></td>
+</tr>
+<tr>
+<td>A04 Insecure Design</td>
+<td><strong>79%</strong></td>
+</tr>
+<tr>
+<td>A03 Injection</td>
+<td><strong>66%</strong></td>
+</tr>
+<tr>
+<td>A02 Cryptographic Failures</td>
+<td><strong>48%</strong></td>
+</tr>
+<tr>
+<td>A06 Vulnerable &amp; Outdated Components</td>
+<td><strong>34%</strong></td>
+</tr>
+<tr>
+<td>A08 Software &amp; Data Integrity Failures</td>
+<td><strong>21%</strong></td>
+</tr>
+<tr>
+<td>A09 Security Logging &amp; Monitoring Failures</td>
+<td><strong>17%</strong></td>
+</tr>
+<tr>
+<td>A10 SSRF</td>
+<td><strong>16%</strong></td>
+</tr>
+</tbody></table>
+<h4>2.3. Распределение по техникам сложных веб-атак — Ростелеком-Солар</h4>
+<p>По отчёту Solar о веб-атаках на онлайн-ресурсы российских компаний в 2024 году в подмножестве <strong>сложных атак высокого уровня</strong> лидировали <strong>Malformed Request Line</strong>, <strong>DNS Rebinding</strong>, <strong>HTTP Verb Tampering</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Техника</th>
+<th>Доля внутри сложных веб-атак</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Malformed Request Line</td>
+<td><strong>21%</strong></td>
+</tr>
+<tr>
+<td>DNS Rebinding</td>
+<td><strong>19%</strong></td>
+</tr>
+<tr>
+<td>HTTP Verb Tampering</td>
+<td><strong>18%</strong></td>
+</tr>
+<tr>
+<td>Denial of Service</td>
+<td><strong>10%</strong></td>
+</tr>
+<tr>
+<td>Abuse of Functionality</td>
+<td><strong>8%</strong></td>
+</tr>
+<tr>
+<td>SQL Injection</td>
+<td><strong>6%</strong></td>
+</tr>
+<tr>
+<td>Cross Site Scripting</td>
+<td><strong>4%</strong></td>
+</tr>
+<tr>
+<td>Slow Body</td>
+<td><strong>3%</strong></td>
+</tr>
+<tr>
+<td>Path Traversal</td>
+<td><strong>3%</strong></td>
+</tr>
+<tr>
+<td>Blacklisted By Host</td>
+<td><strong>2%</strong></td>
+</tr>
+<tr>
+<td>Это <strong>распределение внутри WAF-детекций сложных веб-атак</strong>, а не внутри успешных взломов.</td>
+<td></td>
+</tr>
+</tbody></table>
+<h4>2.4. Распределение по конкретным типам веб-уязвимостей — Edgescan</h4>
+<table>
+<thead>
+<tr>
+<th>Уязвимость / тип</th>
+<th>Доля</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SQL Injection</td>
+<td><strong>19.47%</strong></td>
+</tr>
+<tr>
+<td>Stored XSS</td>
+<td><strong>10.50%</strong></td>
+</tr>
+<tr>
+<td>Malicious File Upload</td>
+<td><strong>7.25%</strong></td>
+</tr>
+<tr>
+<td>Reflected XSS</td>
+<td><strong>5.53%</strong></td>
+</tr>
+<tr>
+<td>Brute Forcing Weakness</td>
+<td><strong>4.20%</strong></td>
+</tr>
+<tr>
+<td>File Path Traversal</td>
+<td><strong>2.67%</strong></td>
+</tr>
+<tr>
+<td>Sensitive File Disclosure</td>
+<td><strong>2.67%</strong></td>
+</tr>
+<tr>
+<td>User Enumeration</td>
+<td><strong>2.29%</strong></td>
+</tr>
+<tr>
+<td>CSRF</td>
+<td><strong>2.10%</strong></td>
+</tr>
+<tr>
+<td>Authorization Issue / Privileges Bypass</td>
+<td><strong>1.91%</strong></td>
+</tr>
+</tbody></table>
+<h4>2.5. Распределение на уровне CWE / общих опасных слабостей — MITRE CWE Top 25</h4>
+<table>
+<thead>
+<tr>
+<th>CWE</th>
+<th>Название</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CWE-79</td>
+<td>Cross-Site Scripting (XSS)</td>
+</tr>
+<tr>
+<td>CWE-89</td>
+<td>SQL Injection</td>
+</tr>
+<tr>
+<td>CWE-352</td>
+<td>Cross-Site Request Forgery (CSRF)</td>
+</tr>
+<tr>
+<td>CWE-862</td>
+<td>Missing Authorization</td>
+</tr>
+</tbody></table>
+<h3>Итоговый вывод по части 1</h3>
+<table>
+<thead>
+<tr>
+<th>Вопрос</th>
+<th>Вывод</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Какую долю атак на организации проводят через эксплуатацию веб-уязвимостей?</td>
+<td>По глобальным breach-данным Verizon — около <strong>20%</strong> initial access vectors, а по российским IR/DFIR-исследованиям — примерно <strong>36–46%</strong> случаев первоначального проникновения через веб-приложения или их уязвимости. (<a href="https://ptsecurity.com/research/analytics/results-of-incident-investigation-and-retrospective-analysis-projects-2024-2025/?utm_source=chatgpt.com" title="Итоги проектов по расследованию инцидентов и ...">ptsecurity.com</a>)</td>
+</tr>
+<tr>
+<td>Почему данные разные?</td>
+<td>Потому что одни источники считают <strong>глобальные breaches</strong>, а другие — <strong>уже расследованные успешные инциденты</strong>, где веб-периметр обычно играет большую роль. (<a href="https://ptsecurity.com/research/analytics/results-of-incident-investigation-and-retrospective-analysis-projects-2024-2025/?utm_source=chatgpt.com" title="Итоги проектов по расследованию инцидентов и ...">ptsecurity.com</a>)</td>
+</tr>
+<tr>
+<td>Какие уязвимости и техники встречаются чаще всего?</td>
+<td>Наиболее важные категории: <strong>SQL Injection</strong>, <strong>XSS</strong>, <strong>RCE</strong>, <strong>опасная загрузка файлов</strong>, <strong>path traversal</strong>, <strong>ошибки доступа</strong> и <strong>ошибки конфигурации</strong>. В WAF-статистике Solar также заметны <strong>Malformed Request Line</strong>, <strong>DNS Rebinding</strong> и <strong>HTTP Verb Tampering</strong>. (<a href="https://www.edgescan.com/wp-content/uploads/2025/04/2024-Vulnerability-Statistics-Report.pdf?utm_source=chatgpt.com" title="2024 Vulnerability Statistics Report">Edgescan</a>)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Часть 2</h2>
+<h4>Шаг 1. Исследование параметра и определение типа уязвимости</h4>
+<h3>Действие</h3>
+<p>Начал с передачи значения <code>id=1</code>:</p>
+<p><a href="http://localhost:8080/task/?id=1">http://localhost:8080/task/?id=1</a></p>
+<p>Приложение вернуло информацию о задаче. Чтобы проверить наличие SQL-инъекции, попробовал добавить к <code>id</code> строку с целью получить название базы данных:</p>
+<p><a href="http://localhost:8080/task/?id=1">http://localhost:8080/task/?id=1</a>&#39; UNION SELECT DATABASE() --+</p>
+<h3>Результат</h3>
+<p>Приложение выдало ошибку. В тексте ошибки было упоминание <code>MySQL</code> и фрагмент запроса, содержащий <code>LIMIT 0, 1</code>. Это позволило сделать два вывода:</p>
+<ol>
+<li><p>Используется СУБД <strong>MySQL</strong>.</p>
+</li>
+<li><p>Запрос на сервере имеет вид:</p>
+<p> SELECT * FROM table WHERE id = ... LIMIT 0, 1</p>
+<p> Такая конструкция ограничивает вывод только одной строкой.</p>
+</li>
+</ol>
+<h3>Вывод</h3>
+<p>Параметр <code>id</code> уязвим для SQL-инъекций, но наличие <code>LIMIT</code> требует его обхода.</p>
+<hr>
+<h2>Шаг 2. Обход ограничения <code>LIMIT</code></h2>
+<h3>Действие</h3>
+<p>Чтобы сервер не добавлял <code>LIMIT</code> к нашему внедрённому запросу, решил использовать комментарий. В MySQL комментарий начинается с <code>--</code> . Первоначально пробела не поставил, что вызвало ошибку. После промпта в GPT добавил пробел:</p>
+<p><a href="http://localhost:8080/task/?id=1">http://localhost:8080/task/?id=1</a>&#39; --+</p>
+<h3>Результат</h3>
+<p>Ошибка исчезла, приложение вернуло обычный ответ. Это подтвердило, что теперь <code>LIMIT</code> отключён, и мы можем выполнять произвольные SQL-запросы через <code>UNION</code>.</p>
+<h3>Вывод</h3>
+<p>Комментарий <code>--+</code> (где <code>+</code> заменяет пробел) успешно обрезает исходный запрос, позволяя управлять дальнейшим выполнением.</p>
+<hr>
+<h2>Шаг 3. Определение количества столбцов в исходном запросе</h2>
+<h3>Действие</h3>
+<p>Для успешного использования <code>UNION</code> необходимо, чтобы количество столбцов в подзапросе совпадало с количеством столбцов в исходном запросе. Провёл серию запросов с разным числом столбцов:
+<a href="http://localhost:8080/task/?id=3%27UNION+SELECT+1,1,1--+">http://localhost:8080/task/?id=3%27UNION+SELECT+1,1,1--+</a>
+ошибки нет, значит три колонки у первого запроса</p>
+<h3>Результат</h3>
+<p>Запрос с тремя столбцами выполнился без ошибок, значит исходный запрос возвращает <strong>три столбца</strong>.</p>
+<h3>Вывод</h3>
+<p>Исходный запрос имеет структуру:</p>
+<p>SELECT column1, column2, column3 FROM ... WHERE id = ... LIMIT 0,1</p>
+<hr>
+<h2>Шаг 4. Определение имени базы данных</h2>
+<h3>Действие</h3>
+<p>Попытался получить имя текущей базы данных через <code>DATABASE()</code>. Однако прямой запрос <code>UNION SELECT DATABASE()</code> не сработал из-за несоответствия числа столбцов. Вместо этого использовал попытку вывести данные из таблицы <code>tasks</code>:</p>
+<p><a href="http://localhost:8080/task/?id=2%27UNION+ALL+SELECT+*+FROM+tasks--+">http://localhost:8080/task/?id=2%27UNION+ALL+SELECT+*+FROM+tasks--+</a></p>
+<h3>Результат</h3>
+<p>Получил ошибку:</p>
+<p>Table &#39;security.tasks&#39; doesn&#39;t exist</p>
+<p>Из ошибки стало ясно, что имя базы данных — <strong><code>security</code></strong>.</p>
+<h3>Вывод</h3>
+<p>База данных называется <code>security</code>. Это знание пригодится для дальнейшего перебора таблиц.</p>
+<hr>
+<h2>Шаг 5. Извлечение данных из таблицы <code>users</code></h2>
+<h3>Действие</h3>
+<p>Зная имя базы, попробовал вытащить пароли из таблицы <code>users</code>. Использовал <code>UNION</code> с подбором условий, чтобы получить конкретную запись:</p>
+<p><a href="http://localhost:8080/task/?id=300%27+and+1=1+union+select+password,1,1+from+users+where+id=9+--+">http://localhost:8080/task/?id=300%27+and+1=1+union+select+password,1,1+from+users+where+id=9+--+</a></p>
+<h3>Результат</h3>
+<p>Приложение вывело:</p>
+<p>Ваш id: Wa spoiuuuuu
+Ваш логин: 1</p>
+<p>Здесь вместо <code>id</code> отобразился пароль пользователя с <code>id=9</code>. Это значит, что данные успешно извлечены, но интерфейс отображает только первую строку результирующего набора. При попытке просто <code>SELECT * FROM users</code> отображается только первая запись (admin).</p>
+<h3>Вывод</h3>
+<ul>
+<li><p>Данные из таблицы <code>users</code> доступны.</p>
+</li>
+<li><p>Интерфейс показывает только первую строку, поэтому для получения всех записей необходимо использовать <code>WHERE</code> или <code>LIMIT</code> внутри внедрённого запроса.</p>
+</li>
+</ul>
+<hr>
+<h2>Шаг 6. Получение структуры базы данных</h2>
+<h3>Действие</h3>
+<p>Чтобы узнать, какие ещё таблицы есть в <code>security</code>, отправил запрос к системной таблице <code>information_schema.tables</code>:</p>
+<p><a href="http://localhost:8080/task/?id=-1'+UNION+SELECT+table_name,NULL,NULL,NULL+FROM+information_schema.tables+WHERE+table_schema='security'--+">http://localhost:8080/task/?id=-1&#39;+UNION+SELECT+table_name,NULL,NULL,NULL+FROM+information_schema.tables+WHERE+table_schema=&#39;security&#39;--+</a></p>
+<h3>Результат</h3>
+<p>В ответе отобразилось:</p>
+<p>Ваш id: emails</p>
+<p>Таким образом, обнаружена таблица <strong><code>emails</code></strong>.</p>
+<h3>Вывод</h3>
+<p>В базе <code>security</code> существует как минимум таблицы <code>users</code> и <code>emails</code>. Это расширяет возможности для дальнейшей эксфильтрации данных.</p>
+<hr>
+<h2>Шаг 7. Извлечение данных из таблицы <code>emails</code></h2>
+<h3>Действие</h3>
+<p>Для получения данных из <code>emails</code> использовал тот же приём с условием, чтобы гарантировать вывод нужной строки:</p>
+<p><a href="http://localhost:8080/task/?id=300%27+and+1=1+union+select+*,1+from+emails+where+id=4+--+">http://localhost:8080/task/?id=300%27+and+1=1+union+select+*,1+from+emails+where+id=4+--+</a></p>
+<h3>Результат</h3>
+<p>Приложение вернуло:</p>
+<p>Ваш id: 4
+Ваш логин: <a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a></p>
+<p>Электронный адрес успешно извлечён.</p>
+<h3>Вывод</h3>
+<p>Данные из таблицы <code>emails</code> также доступны через SQL-инъекцию.</p>
+<hr>
+<h2>Заключение</h2>
+<p>В ходе лабораторной работы была выявлена SQL-инъекция в параметре <code>id</code> веб-приложения. С помощью метода <code>UNION</code> и обхода ограничения <code>LIMIT</code> удалось:</p>
+<ol>
+<li><p>Определить тип СУБД (MySQL).</p>
+</li>
+<li><p>Узнать структуру исходного запроса (3 столбца).</p>
+</li>
+<li><p>Выяснить имя базы данных (<code>security</code>).</p>
+</li>
+<li><p>Получить список таблиц в базе (<code>users</code>, <code>emails</code>).</p>
+</li>
+<li><p>Извлечь конфиденциальные данные (пароли, email-адреса).</p>
+</li>
+</ol>
+<p>Работа показала важность фильтрации входных данных и использования подготовленных запросов (prepared statements) для предотвращения SQL-инъекций.</p>
+<p><strong>Использованные техники:</strong></p>
+<ul>
+<li><p>Обход <code>LIMIT</code> с помощью комментария.</p>
+</li>
+<li><p>Определение количества столбцов через <code>ORDER BY</code> и <code>UNION SELECT</code>.</p>
+</li>
+<li><p>Получение метаинформации из <code>information_schema</code>.</p>
+</li>
+<li><p>Эксфильтрация данных с использованием <code>UNION</code> и условий <code>WHERE</code>.</p>
+</li>
+</ul>
+<h3>Вывод по части 2</h3>
+<p>В практической части была подтверждена уязвимость класса <strong>SQL Injection</strong>. Основанием для этого стало поведение приложения и появление SQL-ошибок при обработке входного параметра <code>id</code>. Такая уязвимость опасна тем, что позволяет нарушить конфиденциальность данных и получить несанкционированный доступ к содержимому базы данных. Основной способ защиты — это параметризованные запросы и безопасная обработка пользовательского ввода.</p>
+<hr>
+<h2>Общий вывод</h2>
+<p>В ходе работы было рассмотрено, какую роль играют веб-уязвимости в атаках на организации, а также какие типы уязвимостей встречаются чаще всего. По разным источникам доля атак через эксплуатацию уязвимостей составляет от <strong>15%</strong> до <strong>44%</strong> в зависимости от выборки и методики подсчёта. Наиболее заметными остаются <strong>SQL Injection</strong>, <strong>XSS</strong>, <strong>RCE</strong>, ошибки доступа и ошибки конфигурации.</p>
+<p>Практическая часть показала, что SQL Injection остаётся реальной и опасной проблемой. Даже простая ошибка в обработке одного параметра может привести к серьёзным последствиям, включая утечку данных и компрометацию приложения.</p>
+
+</body>
+</html>

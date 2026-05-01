@@ -1,0 +1,56 @@
+<h1 id="docker">Лабораторная работа: Базовая настройка безопасности Docker-контейнера</h1>
+<h2 id="i">Часть I: Проверка пользователя по умолчанию</h2>
+<h3 id="">Результат</h3>
+<p><strong>На хосте:</strong></p>
+<pre><code class="bash language-bash">$ whoami
+user
+</code></pre>
+<p><strong>Внутри контейнера:</strong></p>
+<pre><code class="bash language-bash">$ docker run -it alpine:3.19 sh
+/ # whoami
+root
+</code></pre>
+<p><strong>Вывод:</strong> Контейнеры по умолчанию запускаются от <code>root</code> — это риск безопасности.</p>
+<hr />
+<h2 id="iidockerfilenonroot">Часть II: Создание Dockerfile с non-root пользователем</h2>
+<h3 id="dockerfile">Dockerfile</h3>
+<pre><code class="dockerfile language-dockerfile">FROM alpine:3.19
+
+# Создаём non-root пользователя
+RUN addgroup -g 1000 appgroup &amp;&amp; \
+    adduser -D -u 1000 -G appgroup appuser
+
+WORKDIR /app
+RUN chown -R appuser:appgroup /app
+
+# Переключаемся на non-root пользователя
+USER appuser
+
+EXPOSE 8080
+CMD ["sh", "-c", "whoami &amp;&amp; id &amp;&amp; echo 'SUCCESS: Running as non-root user!'"]
+
+# ДОП. МЕРЫ БЕЗОПАСНОСТИ (комментарии):
+# --read-only --no-new-privileges --cap-drop=ALL
+# --memory 512m --cpus 1.0
+# -p 127.0.0.1:8080:8080
+</code></pre>
+<h3 id="-1">Результат запуска</h3>
+<pre><code class="bash language-bash">$ docker build -t my-secure-app:latest .
+$ docker run -it my-secure-app:latest
+appuser
+uid=1000(appuser) gid=1000(appgroup)
+SUCCESS: Running as non-root user!
+</code></pre>
+<p><strong>Вывод:</strong> Контейнер успешно запускается от <code>appuser</code>, а не от <code>root</code>.</p>
+<hr />
+<h2 id="iiitrivy">Часть III: Сканирование образа через Trivy</h2>
+<h3 id="-2">Результат сканирования</h3>
+<p><img src="image-1.png" alt="Сканирование Trivy" /></p>
+<p><img src="image-2.png" alt="Детали уязвимостей" /></p>
+<h3 id="-3">Выводы</h3>
+<ul>
+    <li>Нет критических уязвимостей</li>
+    <li>Обнаружены уязвимости высокой и средней степени</li>
+    <li>Образ использует minimal Alpine + non-root пользователь</li>
+</ul>
+<p>```</p>

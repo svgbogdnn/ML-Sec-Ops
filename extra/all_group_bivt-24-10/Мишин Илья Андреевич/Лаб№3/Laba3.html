@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>Часть 1</h1>
+<h4>1) CVE‑2021‑24545 : HTML Author Bio WordPress Plugin</h4>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-24545">https://nvd.nist.gov/vuln/detail/CVE-2021-24545</a></p>
+<p>HTML Author Bio - плагин для CMS WordPress, написанный на PHP, который добавляет на сайт настраиваемый HTML‑блок профиля автора (биографию, ссылки, оформление) и отображает его на страницах записей. Уязвимость связана с обработкой поля description на странице /wp-admin/profile.php: введённые данные не проходят достаточной фильтрации и экранирования, поэтому атакующий может сохранить в этом поле произвольный HTML/JavaScript‑код. При выводе блока “об авторе” на странице записи этот код встраивается в HTML‑страницу и выполняется в браузере посетителя, что приводит к stored XSS и позволяет атакующему выполнять действия в контексте сессии жертвы или похищать её данные.</p>
+<h4>2) CVE‑2021‑41169 : Sulu (Symfony‑based PHP CMS)</h4>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-41169">https://nvd.nist.gov/vuln/detail/CVE-2021-41169</a></p>
+<p>Sulu - это система управления контентом на PHP, построенная на базе фреймворка Symfony.В рамках CVE‑2021‑41169 некоторые поля, редактируемые через админку Sulu, выводятся без корректного HTML‑экранирования, что позволяет злоумышленнику, обладающему правами на изменение контента, внедрить в них JavaScript‑код. При последующем открытии страницы с этим контентом в интерфейсе Sulu внедрённый скрипт выполняется в браузере пользователя (stored XSS), что даёт атакующему возможность выполнять действия от имени жертвы в административной панели или похищать данные её сессии.</p>
+<h4>Общее количество CVE за 2021 год</h4>
+<p>По данным официальной базы CVE (cve.org / NVD), в 2021 году было зарегистрировано 20 161 уникальных идентификаторов уязвимостей (CVE).
+C 2021 по 2024 год общее количество CVE, связанных с XSS - 11245</p>
+<h1>Часть 2</h1>
+<p>Зашел на <a href="http://localhost:8080">http://localhost:8080</a> , там две ссылки на <a href="http://localhost:8080/XSS-1/">http://localhost:8080/XSS-1/</a> и <a href="http://localhost:8080/index.php">http://localhost:8080/index.php</a></p>
+<p>На <a href="http://localhost:8080/XSS-1/">http://localhost:8080/XSS-1/</a> в окно comment? ввел <code>&lt;script&gt;alert(&#39;Опасность&#39;)&lt;/script&gt;</code> и нажал Save Data
+После этого высветилось окно с текстом Опасность. При перегрузке станицы также высвечивалось это окошко
+Получается, что код добавился в код страницы. .То есть при каждом обновлении скрипты выполнятся заново</p>
+<p>Эта уязвимость называется Межсайтовый скриптинг (Cross-Site Scripting,XSS).
+Приложение принимает данные от пользователя без нужной проверки. В результате браузер интерпретирует текст не как обычную строку, а как javascript код, и запускает его.</p>
+<p>Меры предотвращения:</p>
+<ol>
+<li>Экранирование спецсимволов</li>
+<li>Санитизация HTML</li>
+<li>Не вставлять ввод напрямую в код страницы</li>
+</ol>
+
+</body>
+</html>

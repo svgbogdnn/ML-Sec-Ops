@@ -1,0 +1,57 @@
+<h1 id="-1">Часть 1</h1>
+<p><img src="part1.png" alt="Скриншот"><br>Команда <code>whoami</code> подтверждает, что контейнер запускается от <code>root</code> (небезопасно).</p>
+<h1 id="-2">Часть 2</h1>
+<p>Dockerfile  </p>
+<pre><code class="lang-dockerfile">FROM ket9/otus-devsecops-owasp-rest:latest
+
+<span class="hljs-meta"># Создаём отдельного пользователя без root-прав</span>
+RUN echo <span class="hljs-string">"appuser:x:10001:10001:appuser:/home/appuser:/bin/sh"</span> &gt;&gt; /etc/passwd &amp;&amp; \
+    echo <span class="hljs-string">"appgroup:x:10001:"</span> &gt;&gt; /etc/group &amp;&amp; \
+    mkdir -p /home/appuser &amp;&amp; \
+    chown -R <span class="hljs-number">10001</span>:<span class="hljs-number">10001</span> /home/appuser
+
+<span class="hljs-meta"># Открываем порт приложения</span>
+EXPOSE <span class="hljs-number">8080</span>
+
+<span class="hljs-meta"># Запускаем контейнер не от root</span>
+USER <span class="hljs-number">10001</span>:<span class="hljs-number">10001</span>
+
+<span class="hljs-meta"># Дополнительные настройки безопасности, которые можно использовать при запуске:</span>
+<span class="hljs-meta"># docker run --rm -p 8080:8080 \</span>
+<span class="hljs-meta">#   --read-only \</span>
+<span class="hljs-meta">#   --cap-drop=ALL \</span>
+<span class="hljs-meta">#   --security-opt=no-new-privileges \</span>
+<span class="hljs-meta">#   --pids-limit=100 \</span>
+<span class="hljs-meta">#   --memory=512m \</span>
+<span class="hljs-meta">#   secure-owasp-rest:1.0</span>
+</code></pre>
+<p><img src="part2.png" alt="Скриншот"><br>Команда <code>whoami</code> подтверждает, что контейнер запускается не от <code>root</code></p>
+<h1 id="-3">Часть 3</h1>
+<p>Для проверки безопасности созданного Docker-образа я использовала сканер уязвимостей Trivy.</p>
+<p>Команда для сканирования образа:</p>
+<pre><code class="lang-bash">docker <span class="hljs-keyword">run</span> --<span class="hljs-keyword">rm</span> -v /<span class="hljs-keyword">var</span>/<span class="hljs-keyword">run</span>/docker.sock:/<span class="hljs-keyword">var</span>/<span class="hljs-keyword">run</span>/docker.sock aquasec/trivy:latest image secure-owasp-rest:1.0
+</code></pre>
+<p>В результате сканирования Trivy обнаружил много разных уязвимостей (в базовой системе контейнера, в Python-зависимостях приложения).</p>
+<p>Для базового образа secure-owasp-rest:1.0 на основе Alpine 3.14.2 было найдено:</p>
+<p>Total: 72<br>MEDIUM: 16<br>HIGH: 48<br>CRITICAL: 8  </p>
+<p><img src="part3_1.png" alt="Скриншот">  </p>
+<p>Также Trivy отдельно проверил Python-зависимости и обнаружил:</p>
+<p>Total: 41<br>LOW: 4<br>MEDIUM: 23<br>HIGH: 14<br>CRITICAL: 0  </p>
+<p><img src="part3_2.png" alt="Скриншот">  </p>
+<p>Образ содержит большое количество известных уязвимостей. Наиболее опасными являются уязвимости уровня <code>CRITICAL</code> и <code>HIGH</code>.</p>
+<p>Критические уязвимости в системных пакетах:</p>
+<ul>
+<li>expat</li>
+<li>zlib</li>
+</ul>
+<p>Уязвимости высокого уровня в пакетах и библиотеках:</p>
+<ul>
+<li>busybox</li>
+<li>openssl</li>
+<li>Flask</li>
+<li>PyJWT</li>
+<li>Werkzeug</li>
+<li>setuptools</li>
+<li>urllib3</li>
+</ul>
+<p>Это говорит о том, что образ небезопасен для использования. Основная причина большого количества уязвимостей - устаревший базовый образ и старые версии библиотек. В образе используется Alpine 3.14.2, а также Python 3.7 и устаревшие Python-зависимости.</p>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h2>Часть 1</h2>
+<h1>1. CVE-2021-29624 (Уязвимость в phpMyAdmin)</h1>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-29624">https://nvd.nist.gov/vuln/detail/CVE-2021-29624</a></p>
+<p>Назначение компонента: phpMyAdmin — это самое популярное веб-приложение с открытым исходным кодом, написанное на PHP. Оно предназначено для администрирования баз данных MySQL и MariaDB через браузер. Функционал включает создание таблиц, выполнение SQL-запросов, управление пользователями и экспорт/импорт данных</p>
+<p>Описание уязвимости: Была обнаружена Reflected XSS. В панели поиска (при специфическом URL) пользовательский ввод не экранировался, что позволяло злоумышленнику сформировать вредоносную ссылку. При переходе по ней администратором, в его браузере выполнялся JS-код</p>
+<h1>2. CVE-2021-21311 (Уязвимость в Adminer)</h1>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-21311">https://nvd.nist.gov/vuln/detail/CVE-2021-21311</a></p>
+<p>Назначение компонента: Adminer (ранее phpMinAdmin) — это легковесный инструмент управления базами данных, написанный в виде одного PHP-файла. Это более легкая альтернатива phpMyAdmin. Он поддерживает MySQL, PostgreSQL, SQLite и другие СУБД, предоставляя интерфейс для работы с таблицами и запросами</p>
+<p>Описание уязвимости: В компоненте была найдена XSS в механизме вывода сообщений об ошибках базы данных. Если сервер базы данных возвращал ошибку, содержащую HTML-теги, Adminer выводил её без предварительной очистки</p>
+<h1>3. Подсчет общего количества CVE за 2021 год</h1>
+<p>За 2021 год в Национальной базе данных уязвимостей (NVD) было зарегистрировано 20 169 новых CVE (согласно статистике NIST). Из них несколько тысяч (более 2500) относятся к различным видам XSS (Cross-Site Scripting), что доказывает: несмотря на возраст уязвимости, она по-прежнему остается одной из самых массовых в веб-разработке</p>
+<h2>Часть 2</h2>
+<p>Зашел на <a href="http://localhost:8080/">http://localhost:8080/</a>, увидел там ссылки на XSS-1 и index.php</p>
+<p>Перешел по ссылке <a href="http://localhost:8080/XSS-1/">http://localhost:8080/XSS-1/</a> и увидел поле коммента</p>
+<p>В поле ввел: <script>alert('Попытка исполнить код')</script></p>
+<p>Нажал Save Data, после чего в браузере сразу высветилось всплывающее окно с текстом &quot;Попытка исполнить код&quot;</p>
+<p>При перезагрузке страницы это окно появлялось снова. Из этого я сделал вывод, что введенный скрипт сохранился на стороне сервера (в БД или файле) и теперь автоматически встраивается в исходный код страницы при каждом ее запросе</p>
+<p>Тип уязвимости - Stored XSS (Хранимая межсайтовая уязвимость)
+Приложение принимает данные от пользователя без должной проверки и очистки. В результате браузер интерпретирует выводимый текст не как обычную строку, а как исполняемый JS код, и запускает его в контексте сессии клиента</p>
+<h1>Меры предотвращения</h1>
+<p>Основная защита — строгое экранирование спецсимволов перед тем, как выводить пользовательские данные на страницу. Необходимо преобразовывать опасные символы в безопасные HTML-сущности:
+Символ &lt; заменять на &lt;
+Символ &gt; заменять на &gt;
+Символ &quot; заменять на &quot;
+Символ &#39; заменять на &#x27;
+Символ &amp; заменять на &amp;</p>
+
+</body>
+</html>

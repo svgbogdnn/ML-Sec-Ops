@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h3>Часть 1</h3>
+<ol>
+<li>Смотрю образы, которые у меня уже есть<pre><code> docker image ls
+                                                                                                 i Info →   U  In Use
+</code></pre>
+</li>
+</ol>
+<p>IMAGE                                   ID             DISK USAGE   CONTENT SIZE   EXTRA
+ket9/otus-devsecops-owasp-rest:latest   9da7b7d1e2a8        451MB          120MB    U
+ket9/otus-devsecops:latest              a85cce3b4064        720MB          163MB    U
+mysql:5.7                               4bc6bc963e6d        700MB          149MB    U</p>
+<pre><code>2. Выполняю команду whoami
+3. Запускаю командную оболочку с помощью команды docker run -it ket9/otus-devsecops:latest sh и вижу #, что говорит о том, что я внутри образа
+4. Запускаю команду whoami снова, уже внутри образа и вижу root
+Скриншот с проделанной работой: 
+(фото 1)
+
+---
+
+### Часть 2
+1. Для этого же образа собираю Dockerfile. Здесь я создаю системного пользователя myuser с помощью команды RUN и задаю ему id 500. И с помощью команды USER myuser переключаюсь на пользователя myuser, чтобы запустить образ от его имени. 
+</code></pre>
+<p>FROM ket9/otus-devsecops:latest</p>
+<p>RUN adduser --system --uid 500 myuser</p>
+<p>USER myuser</p>
+<p>EXPOSE 8080</p>
+<pre><code>2. Собираю образ и запускаю его в терминале, внутри образа даю команду whoami и получаю myuser, это значит, что всё получилось, ура
+   (фото 2)
+3. Доп настройки и утилиты, с которыми можно более безопасно запускать файл: 
+</code></pre>
+<p>#Доп настройки</p>
+<p>#- COPY --chown=myuser:myuser . /app</p>
+<p>#копирование файлов с пользователем myuser</p>
+<h1></h1>
+<p>#- WORKDIR /papka</p>
+<h1>указать рабочую директорию, где должно быть приложение, чтобы оно не ушло, куда не стоило бы</h1>
+<h1></h1>
+<p>#Утилиты для запуска:</p>
+<p>    # --user 500 (явно указать пользователя)</p>
+<p>    # --read-only (только чтение, без записи)</p>
+<p>    # --security-opt=no-new-privileges (запретить повышение привилегий)</p>
+<pre><code>
+---
+
+### Часть 3
+1. Прогоняю образ через сканер trivy. Запускаю его командой docker run --rm aquasec/trivy image --severity CRITICAL,HIGH ket9/otus-devsecops:latest &gt; trivy-report.txt, чтобы вывод сохранился в текстовый файл. Так как в консоль весь он не помещается. 
+2. В файле получаю длинный вывод, но ошибки везде одинаковые, просто они встречаются в разных библиотеках apache2. Все ошибки есть на скриншоте
+(фото 3)
+
+**Критические уязвимости:**
+- **CVE-2017-3167** - обход аутентификации
+- **CVE-2017-3169** - ошибка в mod_ssl 
+- **CVE-2017-7679** - переполнение буфера в mod_mime
+- **CVE-2017-9788** - чтение неинициализированной памяти
+- **CVE-2018-1312** - слабая генерация Digest-аутентификации
+**Высокий уровень уязвимости:**
+- **CVE-2016-874** - обход аутентификации, доступ к запрещённым ресурсам
+- **CVE-2017-15710** - отказ в обслуживании, DoS
+- **CVE-2017-15715** - Выполнение PHP-кода
+- **CVE-2017-7668** - DoS, утечка памяти
+- **CVE-2017-9798** - Утечка данных из памяти
+- **CVE-2018-17199** - Продление атаки
+- **CVE-2019-0217** - Обход пароля
+</code></pre>
+
+</body>
+</html>

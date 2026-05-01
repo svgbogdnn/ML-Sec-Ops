@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>Часть 1</h1>
+<p><em><strong>Фрагмент 1</strong></em></p>
+<p>В коде используется захардкоженный SECRET_KEY, который хранится прямо в исходном файле. Такой ключ может попасть в Git, логи, резервные копии или стать известен любому, кто получил доступ к коду.</p>
+<p>Исправления: использовать переменные окружения или хранилища секретов</p>
+<p><em><strong>Фрагмент 2</strong></em></p>
+<p>Поле password объявлено как TextField, то есть пароль вводится как обычный текст. Это означает, что символы пароля будут отображаться на экране открыто и не валидироваьться.</p>
+<p>Исправления: использовать PasswordField для поля с паролем.</p>
+<p><em><strong>Фрагмент 3</strong></em></p>
+<p>При возникновении любого исключения выполняется возврат страницы success_create.html, то есть приложение показывает успешное создание пользователя даже в случае ошибки. 
+Из кода не видно безопасного хэширования пароля перед сохранением; пароль просто берётся из запроса и передаётся дальше в объект User. Если он сохраняется как есть, это критическая ошибка хранения чувствительных данных.</p>
+<p>Исправления: хэшировать пароль перед сохранением. Добавить обработку разных ошибок(для базы и для валидации).</p>
+<h1>Часть 2</h1>
+<p>Django из коробки помогает защищаться от нескольких распространённых веб‑атак, если использовать его механизмы правильно.</p>
+<ol>
+<li>Cross-Site Scripting (XSS)</li>
+<li>Cross-Site Request Forgery (CSRF)</li>
+<li>SQL Injection через ORM Django</li>
+<li>Clickjacking:</li>
+<li>Host header attacks</li>
+<li>Open redirect и некоторые ошибки HTTPS/куки‑настроек</li>
+</ol>
+<p>При первом посещении Django создаёт идентификатор сессии и отправляет его браузеру в cookie. Обычно сами данные сессии хранятся на стороне сервера, чаще всего в базе данных, а при каждом следующем запросе Django получает cookie с sessionid, находит соответствующую запись сессии и проверяет, существует ли она и не истёк ли её срок действия.</p>
+<p>По умолчанию срок жизни сессии составляет 14 дней , но его можно изменить в настройках. Django сохраняет сессию при изменении её данных, а при включённой настройке может обновлять её на каждом запросе.</p>
+<p>Для защиты сессионных cookie используются настройки HttpOnly, Secure и SameSite: HttpOnly запрещает доступ к cookie из JavaScript, Secure разрешает передавать cookie только по HTTPS, а SameSite снижает риск CSRF‑атак.</p>
+
+</body>
+</html>

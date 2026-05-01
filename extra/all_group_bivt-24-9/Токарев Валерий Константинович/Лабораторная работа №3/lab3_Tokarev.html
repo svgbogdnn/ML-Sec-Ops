@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отчет по лабораторной работе №3</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 40px; line-height: 1.6; color: #333; background-color: #fcfcfc; }
+        .container { max-width: 850px; margin: auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; text-align: center; }
+        h2 { color: #2980b9; margin-top: 30px; border-left: 4px solid #3498db; padding-left: 15px; }
+        h3 { color: #444; margin-top: 20px; }
+        p { margin-bottom: 15px; }
+        ul { margin-bottom: 15px; }
+        li { margin-bottom: 8px; }
+        hr { border: 0; border-top: 1px solid #eee; margin: 30px 0; }
+        code { background: #f4f4f4; padding: 2px 4px; border-radius: 4px; font-family: 'Consolas', monospace; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Отчет по лабораторной работе №3</h1>
+        <p style="text-align: center; color: #7f8c8d;">Симуляция XSS-атаки и анализ CVE</p>
+
+        <h2>Часть I. Анализ CVE за 2021 год</h2>
+        <p>Для анализа были выбраны две уязвимости в компонентах на PHP, которые наглядно показывают проблемы с фильтрацией ввода.</p>
+
+        <h3>1. CVE-2021-43698 — phpWhois</h3>
+        <p>Библиотека <strong>phpWhois</strong> используется для получения регистрационных данных доменов. Уязвимость была найдена в демонстрационном файле, где параметр поискового запроса выводился обратно пользователю без экранирования. Это позволяло внедрить вредоносный JavaScript.</p>
+
+        <h3>2. CVE-2021-24444 — TaxoPress</h3>
+        <p>Это популярный плагин для WordPress, отвечающий за работу с тегами. Проблема заключалась в недостаточной проверке прав и очистке данных при обновлении настроек, что позволяло сохранить XSS-скрипт прямо в базе данных сайта.</p>
+
+        <p><strong>Итог по статистике:</strong> Всего за 2021 год было зарегистрировано более 4000 случаев XSS. Это подтверждает, что данная проблема остается одной из самых массовых в веб-разработке.</p>
+
+        <hr>
+
+        <h2>Часть II. Практика на стенде</h2>
+        <p>Работа велась с уязвимым приложением в Docker-контейнере (<code>ket9/otus-devsecops-xss</code>).</p>
+
+        <h3>Ход рассуждений</h3>
+        <p>Сначала я проверил форму на базовую обработку HTML. После ввода <code>&lt;h1&gt;test&lt;/h1&gt;</code> стало ясно, что сервер никак не очищает входящий текст — заголовок отрендерился браузером. </p>
+        <p>Затем был применен классический пейлоад для проверки XSS: <code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code>. Скрипт успешно выполнился, показав модальное окно. Тот факт, что алерт появлялся и при повторном заходе на страницу, говорит о сохранении скрипта на сервере.</p>
+
+        <h3>Тип найденной уязвимости</h3>
+        <p>Найденная проблема классифицируется как <strong>Stored XSS (Хранимая XSS)</strong>. Она опасна тем, что вредоносный код сохраняется на стороне сервера и атакует всех пользователей, просматривающих страницу, без необходимости присылать им специальную ссылку.</p>
+
+        <h3>Меры предотвращения</h3>
+        <ul>
+            <li><strong>Экранирование (Output Encoding):</strong> При выводе любых данных в HTML-контекст нужно заменять опасные символы на их безопасные аналоги.</li>
+            <li><strong>Content Security Policy (CSP):</strong> Запрет на выполнение встроенных скриптов через заголовки безопасности.</li>
+            <li><strong>Флаг HttpOnly:</strong> Ограничение доступа JavaScript к сессионным кукам для защиты от угона аккаунта.</li>
+            <li><strong>Использование библиотек-санитайзеров:</strong> Обработка входных данных проверенными инструментами, которые вырезают опасные теги.</li>
+        </ul>
+    </div>
+</body>
+</html>

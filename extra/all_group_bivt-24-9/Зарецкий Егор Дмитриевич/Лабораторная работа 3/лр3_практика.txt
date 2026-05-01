@@ -1,0 +1,147 @@
+ЛАБОРАТОРНАЯ РАБОТА 3 REST API УЯЗВИМОСТИ 
+
+ВЫПОЛНЕНИЕ: 
+1. Запуск бд с помощью указанного эндпоинта
+  1) docker pull ket9/otus-devsecops-owasp-rest:latest
+  2) docker run -d --name owasp-rest-lab -p 8080:8080 ket9/otus-devsecops-owasp-rest:latest
+  3) curl -i http://localhost:8080/
+  4) curl -i http://localhost:8080/createdb
+
+  Все получилось  
+
+2. Посмотрим на эндпоинты и как к ним обращаться, введем:
+  curl -s http://localhost:8080/
+
+  Вывод команды:
+    { "создать базу": "/createdb",     
+    "посмотреть информацию обо всех пользователях": "/users/v1",     
+    "посмотреть подробную информацию обо всех пользователях": "/users/v1/_debug",  
+    "регистрация нового пользователя": "/users/v1/register (HTTP POST)",    
+    "вход в приложение": "/users/v1/login (HTTP POST)",     
+    "просмотр пользователя по имени": "/users/v1/{username}",    
+    "удалить пользователя по имени (только для админов)": "/users/v1/{username} (HTTP DELETE)",     
+    "изменить email пользователя": "/users/v1/{username}/email (HTTP PUT)",    
+    "изменить пароль пользователя": "/users/v1/{username}/password (HTTP PUT)",    
+    "все книги": "/books/v1",     "добавить книгу": "/books/v1 (HTTP POST)",    
+    "просмотр книги": "/books/v1/{book}", } 
+
+
+Будем проверять эндпоинты и искать уязвимости, сразу заметил дебаг режим, начну с него, тк это плохая практика оставлять это на проде  
+
+3. Проверяем дебаг эндпоинт (API3 и API7):
+  curl -i -s http://localhost:8080/users/v1/_debug
+
+  Вывод команды:
+    {"users":[{"admin":false,"email":"mail1@mail.com","password":"pass1","username":"name1"},
+    {"admin":false,"email":"mail2@mail.com","password":"pass2","username":"name2"},
+    {"admin":true,"email":"admin@mail.com","password":"pass1","username":"admin"},
+    {"admin":false,"email":"hack@mail.com","password":"hack123","username":"hacker"}]}
+
+  по эндпоинту доступны все пароли и имена без авторизации + теперь известен админ 
+
+  Это большая проблема в безопасности, дальше из нее буду раскручивать другие проблемы  
+  Тк теперь известны имена юзеров и их роль, то проверим доступ информации за другого пользоватеоля
+
+
+4. Проверим доступ к объектам пользователей (BOLA/IDOR) (API1)
+
+  curl -i -s http://localhost:8080/users/v1/name1
+  curl -i -s http://localhost:8080/users/v1/name2
+  curl -i -s http://localhost:8080/users/v1/admin
+
+  команды возвращают имя и почту соответствующего юзера {"username": "admin", "email": "admin@mail.com"}%      
+
+  То есть чтение профилей по идентификатору разрешено без какого либо токена - потенциальная проблема (хотя уже есть эндпоинт "посмотреть информацию обо всех пользователях": "/users/v1", который выводит все)
+  Это слабый объектный контроль доступа
+
+
+5. Проверим вход в систему +  DELETE 
+  У нас известны имена всех юзеров + пароли - проверим вход в систему: 
+    curl -i -s -X POST http://localhost:8080/users/v1/login -H 'Content-Type: application/json' -d '{"username":"name1","password":"pass1"}'
+  Вывод команды:
+    {"auth_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NzcxMTM3NzcsImlhdCI6MTc3NzExMzcxNywic3ViIjoibmFtZTEifQ.RHNTFTNECTPU97Ui1N6d4e_zq0nSC77SYIEYXRn4jJ0", 
+    "message": "Successfully logged in.", "status": "success"}%  
+
+  Аналогично с админом - тоже все получилось без проблем  
+
+  Теперь попробуем удалить юзера:
+    curl -i -s -X DELETE http://localhost:8080/users/v1/name2
+    Вывод команды:
+      { "status": "fail", "message": "Invalid token"}%       
+    
+  Получается чтобы удалить пользователя нужен токен - хорошая практика чтобы любой человек не смог удалить кого угодно
+
+  Пробуем:
+    curl -i -s -X DELETE http://localhost:8080/users/v1/name2 -H 'Authorization-Token: "токен"'
+    Вывод команды:
+      UNAUTHORIZED, "Invalid token"
+
+  Пробуем другой хедер:
+    curl -i -s -X DELETE http://localhost:8080/users/v1/name2 -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NzcxMTIwNzAsImlhdCI6MTc3NzExMjAxMCwic3ViIjoibmFtZTEifQ.KXmCZxU2ZMR0AjMnJ4IA527ZxuXw9EqOWOYiqW962KY'
+    Вывод команды:
+      { "status": "fail", "message": "Signature expired. Please log in again."}
+
+    Токен имеет время жизни - это хорошо, создадим новый и попробуем еще раз
+      { "status": "fail", "message": "Only Admins may delete users!"}% 
+
+    Это хорошо - только юзер имеет такие права, сделаем такие же шаги с юезром admin 
+    Вывод команды: 
+      {"message": "User deleted.", "status": "success"}% 
+
+    То есть удаление доступно только админу - интересный факт, что админ может удалить сам себя
+    При этом формат токена критичен, работает только Authorization: Bearer <JWT>
+    Заполним бд заново после удаления
+
+
+6. Mass Assignment 
+  Пробуем самим накинуть админские права:
+    curl -i -s -X POST http://localhost:8080/users/v1/register -H 'Content-Type: application/json' -d '{"username":"hacker","password":"hack123","email":"hack@mail.com","admin":true}'
+  Вывод команды:
+    {"message": "Successfully registered. Login to receive an auth token.", "status": "success"}
+
+  Получаем токен хакера через эндпоинтl login
+
+  Пробуем эскалацию:
+      curl -i -s -X DELETE http://localhost:8080/users/v1/admin -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NzcxMTIwODUsImlhdCI6MTc3NzExMjAyNSwic3ViIjoiaGFja2VyIn0.4NiAds_V4ZaB7PMe52RFWGCABBQVG-LOG0vm97a2BV0'
+    Вывод:
+      "Only Admins may delete users!"
+
+  То есть у меня не получилось накинуть себе админских прав и попытка эскалации сорвалась - это хорошо 
+
+
+7. Injection (API8)
+
+  Пробуем делать скл инъекцию и вставить в путь что то типо 1=1 чтобы потенциальный where в запросе всегда срабатывал
+    curl -i -s "http://localhost:8080/users/v1/%27%20OR%20%271%27=%271"
+
+    Вывод команды:
+      {"username": "name1", "email": "mail1@mail.com"}
+
+  Получилось - значит есть потенциал для скл инъекций, не используются плейсхолдеры - плохо  
+
+
+ОБЩИЕ ВЫВОДЫ:
+
+Найденные проблемы:
+  1) SQL Injection на /users/v1/{username} - Категория: API8 (Injection, OWASP API Security Top 10 2019)
+  2) Неавторизованный debug endpoint /users/v1/_debug с утечкой паролей и admin-флагов - Категория: API3 (Excessive Data Exposure, 2019) + API7 (Security Misconfiguration)
+  3) Слабая объектная защита чтения профилей через /users/v1/{username} - Категория: API1 (BOLA/IDOR)
+
+Но например эскалация прав через Mass Assignment в этой сборке не сработала
+
+Что нужно сделать чтобы учулшить систему?
+  1) Для SQL Injection:
+  - Плейсхолдеры
+  - Полный отказ от конкатенации пользовательского ввода в запрос
+
+  2) Для утечки debug:
+  - Убрать /users/v1/_debug из прода
+  - не возвращать password/hash в API
+
+  3) Для BOLA:
+  - Проверять право доступа к объекту на уровне каждой операции 
+  - Использовать policy-check на владельца ресурса и роль
+
+  4) Для общей защиты API:
+  - Логирование и всякие алерты  
+  - Валидация входа и различные тесты  

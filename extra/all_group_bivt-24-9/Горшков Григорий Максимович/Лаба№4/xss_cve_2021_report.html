@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Отчет: симуляция XSS-атаки</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --paper: #ffffff;
+      --text: #18202a;
+      --muted: #5f6b7a;
+      --border: #d9dee7;
+      --accent: #1463ff;
+      --code-bg: #f0f3f8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.58;
+    }
+
+    main {
+      width: min(980px, calc(100% - 32px));
+      margin: 32px auto;
+      padding: 40px;
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.25;
+      margin: 0 0 14px;
+    }
+
+    h1 {
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      margin-top: 34px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      font-size: 24px;
+    }
+
+    h3 {
+      margin-top: 24px;
+      font-size: 19px;
+    }
+
+    p {
+      margin: 10px 0;
+    }
+
+    .date {
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    code {
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: var(--code-bg);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95em;
+    }
+
+    pre {
+      overflow-x: auto;
+      padding: 14px 16px;
+      border-radius: 6px;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+    }
+
+    pre code {
+      padding: 0;
+      background: transparent;
+    }
+
+    a {
+      color: var(--accent);
+    }
+
+    ul, ol {
+      padding-left: 24px;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Отчет по домашнему заданию: симуляция XSS-атаки</h1>
+    <p class="date">Дата выполнения: 30.04.2026</p>
+
+    <h2>Часть I. Поиск CVE за 2021 год</h2>
+
+    <h3>Методика</h3>
+    <ul>
+      <li>В качестве основной базы использовалась NVD.</li>
+      <li>Поиск выполнялся по ключевым словам <code>php xss</code>. В документации NVD указано, что несколько слов в <code>keywordSearch</code> работают как AND, то есть в описание должны попасть оба слова.</li>
+      <li>Для подсчета я выгрузил записи NVD по <code>keywordSearch=php xss</code>, затем отфильтровал идентификаторы, начинающиеся с <code>CVE-2021-</code>.</li>
+    </ul>
+
+    <h3>Результат</h3>
+    <ul>
+      <li>Найдено 18 CVE с идентификаторами <code>CVE-2021-*</code>, в описании которых встречаются <code>php</code> и <code>xss</code>.</li>
+      <li>Список: <code>CVE-2021-26303</code>, <code>CVE-2021-26304</code>, <code>CVE-2021-26938</code>, <code>CVE-2021-29625</code>, <code>CVE-2021-30134</code>, <code>CVE-2021-32696</code>, <code>CVE-2021-35438</code>, <code>CVE-2021-38143</code>, <code>CVE-2021-39201</code>, <code>CVE-2021-39202</code>, <code>CVE-2021-39249</code>, <code>CVE-2021-40541</code>, <code>CVE-2021-41236</code>, <code>CVE-2021-43698</code>, <code>CVE-2021-44911</code>, <code>CVE-2021-44912</code>, <code>CVE-2021-46426</code>, <code>CVE-2021-46709</code>.</li>
+      <li>Дополнительно: если считать не по году в идентификаторе CVE, а по дате публикации записи в NVD за календарный 2021 год, то по тому же запросу получается 12 записей.</li>
+    </ul>
+
+    <h3>Пример 1: CVE-2021-29625, Adminer</h3>
+    <p>Adminer - это open-source средство администрирования баз данных, распространяемое как один PHP-файл. Компонент используется для подключения к СУБД и управления ими через веб-интерфейс: выбор и создание баз данных, просмотр таблиц, индексов и внешних ключей, изменение структуры таблиц, выполнение SQL-запросов, экспорт данных, управление пользователями и правами.</p>
+    <p>Уязвимость <code>CVE-2021-29625</code> описывает XSS в Adminer 4.6.1-4.8.0. Она затрагивала пользователей MySQL, MariaDB, PgSQL и SQLite при определенных условиях, была закрыта в версии 4.8.1.</p>
+
+    <h3>Пример 2: CVE-2021-39201, WordPress</h3>
+    <p>WordPress - это свободная CMS, написанная на PHP и обычно работающая с MySQL или MariaDB. Компонент используется для публикации и управления сайтами: записи, страницы, медиа, темы, плагины, пользователи и редактор контента.</p>
+    <p>Уязвимость <code>CVE-2021-39201</code> позволяла аутентифицированному пользователю с низкими правами, например contributor/author, выполнить XSS в редакторе, обходя ограничение на <code>unfiltered_html</code>. Исправление вошло в WordPress 5.8 и минорные обновления старых веток.</p>
+
+    <h2>Часть II. Практическая проверка XSS на стенде</h2>
+
+    <h3>Подготовка стенда</h3>
+    <ul>
+      <li>Выполнена команда:</li>
+    </ul>
+    <pre><code>docker pull ket9/otus-devsecops-xss</code></pre>
+    <ul>
+      <li>Порт <code>8080</code> уже был занят другим контейнером, <code>8081</code> тоже был занят, поэтому лабораторный образ был запущен на свободном порту <code>18080</code>:</li>
+    </ul>
+    <pre><code>docker run -d -p 18080:80 --name otus-devsecops-xss-lab-18080 ket9/otus-devsecops-xss:latest</code></pre>
+    <ul>
+      <li>Страница открывалась по адресу <code>http://localhost:18080/XSS-1/</code>.</li>
+    </ul>
+
+    <h3>Ход рассуждений и проверки</h3>
+    <ol>
+      <li>При открытии главной страницы приложение показало ссылку <code>XSS-1</code>.</li>
+      <li>На странице <code>XSS-1</code> была форма комментария: <code>input name="comment"</code>, отправка методом POST на <code>index.php</code>.</li>
+      <li>Сначала был отправлен безопасный тестовый комментарий <code>hello-test</code>.</li>
+      <li>В ответ приложение вернуло HTML, где <code>hello-test</code> был вставлен в страницу как содержимое комментария. Это показало, что пользовательский ввод выводится обратно в HTML.</li>
+      <li>Затем был отправлен учебный payload:</li>
+    </ol>
+    <pre><code>&lt;script&gt;document.body.insertAdjacentHTML("beforeend","&lt;div id=xss-proof&gt;XSS_JS_EXECUTED&lt;/div&gt;");console.log("XSS_JS_EXECUTED");&lt;/script&gt;</code></pre>
+    <ol start="6">
+      <li>В ответе приложения payload появился как настоящий тег <code>&lt;script&gt;</code>, а не как текст <code>&amp;lt;script&amp;gt;...</code>.</li>
+      <li>После загрузки страницы через headless Chrome итоговый DOM содержал строку:</li>
+    </ol>
+    <pre><code>&lt;div id="xss-proof"&gt;XSS_JS_EXECUTED&lt;/div&gt;</code></pre>
+    <ol start="8">
+      <li>Этот <code>div</code> добавлялся JavaScript-кодом из payload. Значит, скрипт выполнился в контексте браузера клиента.</li>
+    </ol>
+
+    <h3>Вывод</h3>
+    <ul>
+      <li>Найдена хранимая XSS-уязвимость, то есть Stored/Persistent XSS.</li>
+      <li>Класс уязвимости: CWE-79, Improper Neutralization of Input During Web Page Generation.</li>
+      <li>Причина: приложение сохраняет комментарий и затем выводит его в HTML без контекстного экранирования.</li>
+    </ul>
+
+    <h2>Меры предотвращения</h2>
+
+    <h3>1. Экранирование при выводе в HTML-контекст</h3>
+    <p>Комментарий должен выводиться как текст, а не как HTML. Для PHP при выводе между тегами нужно использовать:</p>
+    <pre><code>htmlspecialchars($comment, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')</code></pre>
+    <p>В первую очередь нужно кодировать символы, меняющие структуру HTML:</p>
+    <ul>
+      <li><code>&amp;</code> -&gt; <code>&amp;amp;</code></li>
+      <li><code>&lt;</code> -&gt; <code>&amp;lt;</code></li>
+      <li><code>&gt;</code> -&gt; <code>&amp;gt;</code></li>
+      <li><code>"</code> -&gt; <code>&amp;quot;</code></li>
+      <li><code>'</code> -&gt; <code>&amp;#039;</code> или <code>&amp;#x27;</code></li>
+    </ul>
+
+    <h3>2. Контекстное экранирование</h3>
+    <p>Нельзя использовать одно и то же правило для всех мест вывода. Если данные попадают:</p>
+    <ul>
+      <li>в HTML-текст - HTML entity encoding;</li>
+      <li>в HTML-атрибут - attribute encoding и обязательные кавычки вокруг значения;</li>
+      <li>в URL-параметр - percent encoding через <code>rawurlencode</code>/<code>urlencode</code>, затем attribute encoding при вставке в <code>href</code>;</li>
+      <li>в JavaScript-строку - JS string encoding; лучше вообще не вставлять пользовательские данные в inline JS;</li>
+      <li>в CSS - CSS encoding или отказ от пользовательского CSS.</li>
+    </ul>
+
+    <h3>3. Валидация входных данных</h3>
+    <p>Для комментария можно ограничить длину, кодировку и набор допустимых символов. Например, разрешить буквы, цифры, пробелы, переносы строк и обычную пунктуацию, но не принимать управляющие символы и NUL. Важно: валидация не заменяет экранирование вывода, а только уменьшает риск и мусор во входных данных.</p>
+
+    <h3>4. Если нужен форматированный HTML</h3>
+    <p>Нельзя просто разрешать произвольный HTML от пользователя. Нужно использовать HTML sanitizer с allowlist-подходом. Разрешать только безопасные теги вроде <code>b</code>, <code>i</code>, <code>strong</code>, <code>em</code>, <code>p</code>, <code>ul</code>, <code>ol</code>, <code>li</code>, <code>br</code>, <code>a</code> с проверенными атрибутами.</p>
+    <p>Запрещать:</p>
+    <ul>
+      <li><code>script</code>, <code>iframe</code>, <code>object</code>, <code>embed</code>, <code>svg</code>, <code>math</code>;</li>
+      <li>любые атрибуты <code>on*</code>: <code>onclick</code>, <code>onerror</code>, <code>onload</code>, <code>onmouseover</code> и т.п.;</li>
+      <li>URL-схемы <code>javascript:</code>, опасные <code>data:</code> и другие нестандартные схемы;</li>
+      <li>inline style, если нет отдельного безопасного CSS sanitizer.</li>
+    </ul>
+
+    <h3>5. Content Security Policy</h3>
+    <p>Настроить CSP как дополнительный барьер, например запретить inline-скрипты и разрешать скрипты только с собственного домена или по nonce/hash. CSP не должна быть единственной защитой, но она снижает ущерб, если где-то пропущено экранирование.</p>
+
+    <h3>6. Защита cookie и сессий</h3>
+    <p>Для сессионных cookie включить <code>HttpOnly</code>, <code>Secure</code> и <code>SameSite</code>, чтобы XSS не мог напрямую прочитать cookie через <code>document.cookie</code> и чтобы снизить риск связанных атак.</p>
+
+    <h3>7. Тесты</h3>
+    <p>Добавить регрессионные тесты на вывод комментариев с payload вроде <code>&lt;script&gt;alert(1)&lt;/script&gt;</code>, <code>&lt;img src=x onerror=alert(1)&gt;</code>, кавычками, угловыми скобками и амперсандом. Ожидаемый результат: эти строки отображаются как текст, а не исполняются браузером.</p>
+
+    <h2>Источники</h2>
+    <ul>
+      <li><a href="https://nvd.nist.gov/developers/vulnerabilities">NVD API documentation</a></li>
+      <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-29625">NVD CVE-2021-29625</a></li>
+      <li><a href="https://www.adminer.org/">Adminer official site</a></li>
+      <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-39201">NVD CVE-2021-39201</a></li>
+      <li><a href="https://wordpress.org/about/">WordPress official About page</a></li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html">OWASP XSS Prevention Cheat Sheet</a></li>
+      <li><a href="https://www.php.net/manual/en/function.htmlspecialchars.php">PHP htmlspecialchars manual</a></li>
+    </ul>
+  </main>
+</body>
+</html>

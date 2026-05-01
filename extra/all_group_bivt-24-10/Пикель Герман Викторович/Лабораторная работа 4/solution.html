@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Лаба 5</title>
+</head>
+<body>
+
+<h2>Лаба 5.</h2>
+
+<h3>Часть 1.</h3>
+
+<p><strong>Фрагмент кода 1:</strong></p>
+
+<pre><code class="language-python">#!/usr/bin/env python3
+from flask import Flask
+
+from mod_api import mod_api
+
+app = Flask('vuln_app')
+app.config['SECRET_KEY'] = 'F0cUzh8BgYJSLXAU8qDmClM0dE8GJTpsiyVEl3BCqQMCABp1U$f%'
+
+app.register_blueprint(mod_api, url_prefix='/api')
+</code></pre>
+
+<p>Недостаток в том, что секретный ключ указан явно прямо в коде. Если злоумышленник получит доступ к исходному коду нашего приложения, то он получит и секретный ключ. А получив его, недоброжелатель сможет подделывать подписанные данные.</p>
+
+<p>В качестве рекомендаций по защите секретных ключей могу предложить хранить секретные ключи в переменных окружения.</p>
+
+<p><strong>Фрагмент кода 2:</strong></p>
+
+<pre><code class="language-python">from flask_wtf import Form  
+from wtforms import TextField
+
+class LoginForm(Form):  
+username = TextField('username')  
+password = TextField('password')
+</code></pre>
+
+<p>Недостатков тут несколько. Во-первых, форма LoginForm не содержит валидации входных данных (то есть можно передать потенциально некорректный ввод). Во-вторых, пароль будет храниться в виде обычного текста. В третьих, flask_wtf - устаревший вариант использования форм и надо использовать современный FlaskForm.</p>
+
+<p>Рекомендации по улушению кода: добавить валидацию полей и использовать специальное поле для ввода пароля PasswordField.</p>
+
+<p><strong>Фрагмент кода 3:</strong></p>
+
+<pre><code class="language-python">def post(self):
+    username = self.get_argument('username')
+    password = self.get_argument('password').encode('utf-8')
+    email = self.get_argument('mail')
+
+...
+
+try:
+    username = username.lower()
+    email = email.strip().lower()
+    user = User({'username': username, 'password': password, 'email': email, 'date_joined': curtime()})
+    user.validate()
+    save_user(self.db_conn, user)
+except Exception, e:
+    return self.render_template("success_create.html")
+</code></pre>
+
+<p>Недостатки для этого фрагмента кода:</p>
+
+<ul>
+    <li>пароль опять сохраняется в исходном виде</li>
+    <li>отсутствие валидации при получении <code>usermame</code> и <code>email</code></li>
+    <li>неправильный синтаксис обработки исключения</li>
+    <li>слишком обобщенный перехват исключений, который сильно затруднит разработку</li>
+    <li>при ошибке возвращают успешную страничку <code>success_create.html</code></li>
+</ul>
+
+<p>Рекомендации по улучшению кода:</p>
+
+<ul>
+    <li>хешировать пароль</li>
+    <li>валидировать входные параметры <code>usermame</code> и <code>email</code>, особенно <code>email</code></li>
+    <li>синтаксис try-except блока должен быть следующим:</li>
+</ul>
+
+<pre><code>try:
+    ...
+except Exception as e:
+    ...
+</code></pre>
+
+<ul>
+    <li>не делать такой обобщенный перехват исключений, расписать как можно больше ошибок</li>
+    <li>при ошибке не возвращать <code>success_create.html</code>. можно возвращать детальную информацию об ошибке</li>
+</ul>
+
+<h3>Часть 2.</h3>
+
+<p><em>Какие наиболее распространенные атаки предотвращает django?</em></p>
+
+<ol>
+    <li>SQL-инъекции. От них защищает встроенный ORM.</li>
+    <li>XSS-атаки. Шаблонизатор джанго автоматически экранирует все введенное.</li>
+    <li>CSRF-атаки. Если в форме не прописать {% csrf_token %}, то запрос даже не получится отправить.</li>
+    <li>Атаки через подделку заголовка Host в запросе.</li>
+    <li>Можно самостоятельно и быстро настроить зашиту от небезопасных кук и сессий</li>
+</ol>
+
+<p><em>Описать, как устроено управление пользовательскими сессиями в django</em></p>
+
+<p>Пользователь заходит на сайт, и сразу же джанго создает для него сессию. После этого в браузер пользователя отправляется этот куки с идентификатором сессии.
+При следующих пользовательских запросах браузер отправляет этот куки обратно. Джанго по предоставленному идентификатору находит данные сессии в хранилище (в кэше, бд, а может и вовсе в файлах на серваке) и понимает, кто пользователь и какие данные его.</p>
+
+</body>
+</html>

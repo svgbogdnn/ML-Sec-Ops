@@ -1,0 +1,91 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h1 id="cve-rest-api-owasp-api-top-10">CVE, связанные с REST API и OWASP API Top 10</h1>
+<p>Ниже приведены 3 CVE за последний год, которые связаны с проблемами REST API и подходят под категории из OWASP API Top 10.</p>
+<table>
+<thead>
+<tr>
+<th>Название CVE</th>
+<th>Источник</th>
+<th>Тип (OWASP API Top 10)</th>
+<th>Недостаток</th>
+<th>Причина</th>
+<th>Последствия</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CVE-2025-14777 (Keycloak)</strong></td>
+<td><a href="https://github.com/keycloak/keycloak/issues/45650">https://github.com/keycloak/keycloak/issues/45650</a></td>
+<td>Broken Object Level Authorization</td>
+<td>Пользователь с правами на один клиент может через Admin API изменить или удалить ресурсы другого клиента, если подставит чужой <code>resourceId</code></td>
+<td>Проверка прав идет по <code>resourceServer</code>, но реальные действия в базе выполняются только по <code>resourceId</code>. Из-за этого возникает несоответствие проверки и самого доступа к объекту</td>
+<td>Доступ к чужим объектам, изменение или удаление данных другого клиента, нарушение изоляции между объектами</td>
+</tr>
+<tr>
+<td><strong>CVE-2025-20348 (Cisco Nexus Dashboard)</strong></td>
+<td><a href="https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-nshs-urapi-gJuBVFpu">https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-nshs-urapi-gJuBVFpu</a></td>
+<td>Broken Function Level Authorization</td>
+<td>Пользователь с низкими правами может через REST API выполнять функции, которые должны быть доступны только администратору</td>
+<td>На части REST API endpoint не хватало проверки прав доступа. Поэтому низкопривилегированный пользователь мог отправлять специальные запросы и получать доступ к административным возможностям</td>
+<td>Просмотр служебной информации, загрузка и изменение файлов, частичная эскалация привилегий</td>
+</tr>
+<tr>
+<td><strong>CVE-2026-31818 (Budibase)</strong></td>
+<td><a href="https://github.com/advisories/GHSA-7r9j-r86q-7g45">https://github.com/advisories/GHSA-7r9j-r86q-7g45</a></td>
+<td>Server Side Request Forgery (SSRF)</td>
+<td>Сервер выполняет запросы по адресам, которые приходят через REST datasource connector</td>
+<td>Защита от SSRF была настроена небезопасно по умолчанию. Переменная <code>BLACKLIST_IPS</code> не была задана в стандартных конфигурациях, поэтому blacklist фактически не работал</td>
+<td>Обращение к внутренним сервисам, обход сетевых ограничений, утечка данных из внутренней сети</td>
+</tr>
+</tbody>
+</table>
+<h2 id="-">Краткий вывод</h2>
+<p>Во всех трех случаях проблема связана не просто с ошибкой в коде, а с неверной логикой защиты API.</p>
+<ul>
+<li>В Keycloak плохо проверялся доступ к конкретному объекту.</li>
+<li>В Cisco плохо проверялся доступ к функциям REST API.</li>
+<li>В Budibase серверу доверяли слишком широкий набор адресов для исходящих запросов.</li>
+</ul>
+<p>Это показывает, что при защите REST API важно проверять не только вход в систему, но и права на каждый объект, каждую функцию и каждый внешний запрос.</p>
+<h2 id="-2">Часть 2</h2>
+<p>Во второй части я выбрал вариант с самостоятельным поиском недостатка в уязвимом приложении.</p>
+<p>Сначала после запуска контейнера я открыл приложение по адресу <code>http://localhost:8080/</code>, а затем перешел по ссылке <code>http://localhost:8080/createdb</code>, чтобы наполнить базу тестовыми данными.</p>
+<p>Дальше я начал проверять, какие данные можно получить через API без авторизации.</p>
+<p>Запрос к адресу <code>http://localhost:8080/users/v1</code> вернул список пользователей:</p>
+<pre><code class="lang-json">{<span class="hljs-attr">"users"</span>:[{<span class="hljs-attr">"email"</span>:<span class="hljs-string">"mail1@mail.com"</span>,<span class="hljs-attr">"username"</span>:<span class="hljs-string">"name1"</span>},{<span class="hljs-attr">"email"</span>:<span class="hljs-string">"mail2@mail.com"</span>,<span class="hljs-attr">"username"</span>:<span class="hljs-string">"name2"</span>},{<span class="hljs-attr">"email"</span>:<span class="hljs-string">"admin@mail.com"</span>,<span class="hljs-attr">"username"</span>:<span class="hljs-string">"admin"</span>}]}
+</code></pre>
+<p>После этого я попробовал открыть данные конкретного пользователя по имени в URL. Например, запрос к <code>http://localhost:8080/users/v1/name1</code> вернул:</p>
+<pre><code class="lang-json">{<span class="hljs-attr">"username"</span>:<span class="hljs-string">"name1"</span>,<span class="hljs-attr">"email"</span>:<span class="hljs-string">"mail1@mail.com"</span>}
+</code></pre>
+<p>Аналогично удалось получить данные и по другим пользователям. Из этого я сделал вывод, что приложение позволяет читать пользовательские данные только по значению <code>username</code> в адресе запроса.</p>
+<p>Потом я проверил другие доступные данные. Запрос к <code>http://localhost:8080/books/v1</code> вернул:</p>
+<pre><code class="lang-json">{<span class="hljs-attr">"Books"</span>:[{<span class="hljs-attr">"book_title"</span>:<span class="hljs-string">"bookTitle82"</span>,<span class="hljs-attr">"user"</span>:<span class="hljs-string">"name1"</span>},{<span class="hljs-attr">"book_title"</span>:<span class="hljs-string">"bookTitle98"</span>,<span class="hljs-attr">"user"</span>:<span class="hljs-string">"name2"</span>},{<span class="hljs-attr">"book_title"</span>:<span class="hljs-string">"bookTitle68"</span>,<span class="hljs-attr">"user"</span>:<span class="hljs-string">"admin"</span>}]}
+</code></pre>
+<p>Это подтвердило, что API отдает связанные данные без проверки прав доступа.</p>
+<p>Далее я решил проверить, можно ли не только читать, но и изменять данные пользователя. Для этого я отправил запрос на изменение email:</p>
+<pre><code class="lang-bash">curl -X PUT <span class="hljs-string">"http://localhost:8080/users/v1/name1/email"</span> -H <span class="hljs-string">"Content-Type: application/json"</span> -d <span class="hljs-string">"{<span class="hljs-subst">\"</span>email<span class="hljs-subst">\"</span>:<span class="hljs-subst">\"</span>hacker@mail.com<span class="hljs-subst">\"</span>}"</span>
+</code></pre>
+<p>Сервер ответил так:</p>
+<pre><code class="lang-json">{<span class="hljs-attr">"status"</span>:<span class="hljs-string">"fail"</span>,<span class="hljs-attr">"message"</span>:<span class="hljs-string">"Invalid token"</span>}
+</code></pre>
+<p>После повторной проверки <code>http://localhost:8080/users/v1/name1</code> оказалось, что email не изменился. Значит, изменение данных защищено, но чтение чужих данных остается доступным.</p>
+<h2 id="-">Найденная уязвимость</h2>
+<p>В приложении обнаружена уязвимость типа Broken Object Level Authorization (BOLA).</p>
+<p>Суть проблемы в том, что сервер позволяет получить доступ к объекту только по идентификатору в URL, но не проверяет, имеет ли пользователь право видеть именно этот объект. В данном случае таким идентификатором выступает <code>username</code>.</p>
+<p>Из-за этого можно перебирать имена пользователей и получать их данные без аутентификации. Это уже является нарушением разграничения доступа, даже если изменение данных дополнительно защищено токеном.</p>
+<h2 id="-">К какому типу относится недостаток</h2>
+<p>Найденный недостаток относится к категории OWASP API Top 10 <code>Broken Object Level Authorization</code>.</p>
+<p>Причина в том, что приложение не выполняет проверку доступа на уровне конкретного объекта и просто отдает данные по параметру из URL.</p>
+<h2 id="-">Меры предотвращения</h2>
+<ol>
+<li>Проверять права доступа к каждому объекту при каждом запросе.</li>
+<li>Требовать аутентификацию перед просмотром данных пользователей.</li>
+<li>Не отдавать данные пользователя только по значению <code>username</code> в URL.</li>
+<li>Ограничить или полностью убрать выдачу списка всех пользователей.</li>
+<li>Возвращать только минимально необходимые данные, чтобы уменьшить риск утечки информации.</li>
+</ol>
+<h2 id="-2">Вывод по части 2</h2>
+<p>Во время проверки приложения удалось найти уязвимость BOLA. Через API можно просматривать данные разных пользователей без авторизации, если подставлять их имена в адрес запроса. Это показывает, что даже при защите операций изменения данных REST API может оставаться уязвимым, если нет проверки доступа на уровне объектов.</p>
+</body></html>

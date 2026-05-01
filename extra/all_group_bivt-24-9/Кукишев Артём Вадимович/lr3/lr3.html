@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>Содержание</h1>
+<ol>
+<li><a href="#%D1%87%D0%B0%D1%81%D1%82%D1%8C-i-%D0%B0%D0%BD%D0%B0%D0%BB%D0%B8%D0%B7-%D0%BA%D1%80%D0%B8%D1%82%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D1%85-%D1%83%D1%8F%D0%B7%D0%B2%D0%B8%D0%BC%D0%BE%D1%81%D1%82%D0%B5%D0%B9-cve-%D0%B2-rest-api-20252026">Часть I. Анализ критических уязвимостей (CVE) в REST API (2025–2026)</a></li>
+<li><a href="#%D1%87%D0%B0%D1%81%D1%82%D1%8C-ii-%D0%BF%D1%80%D0%B0%D0%BA%D1%82%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D0%B9-%D0%B0%D1%83%D0%B4%D0%B8%D1%82-%D1%81%D1%82%D0%B5%D0%BD%D0%B4-ket9otus-devsecops-owasp-rest">Часть II. Практический аудит: Стенд ket9/otus-devsecops-owasp-rest</a><ul>
+<li><a href="#1-%D1%80%D0%B0%D0%B7%D0%B2%D0%B5%D1%80%D1%82%D1%8B%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-%D0%B8-%D0%B8%D0%BD%D0%B8%D1%86%D0%B8%D0%B0%D0%BB%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F">1. Развертывание и инициализация</a></li>
+<li><a href="#2-%D1%85%D0%BE%D0%B4-%D1%80%D0%B0%D1%81%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BD%D0%B5%D1%83%D0%B4%D0%B0%D1%87%D0%BD%D1%8B%D0%B5-%D0%BF%D0%BE%D0%BF%D1%8B%D1%82%D0%BA%D0%B8">2. Ход рассуждений и неудачные попытки</a></li>
+<li><a href="#3-%D0%BE%D0%B1%D0%BD%D0%B0%D1%80%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5-%D0%BC%D0%B0%D1%80%D1%88%D1%80%D1%83%D1%82%D0%BE%D0%B2">3. Обнаружение маршрутов</a></li>
+<li><a href="#4-%D1%8D%D0%BA%D1%81%D0%BF%D0%BB%D1%83%D0%B0%D1%82%D0%B0%D1%86%D0%B8%D1%8F-%D0%BD%D0%B0%D0%B9%D0%B4%D0%B5%D0%BD%D0%BD%D1%8B%D1%85-%D1%83%D1%8F%D0%B7%D0%B2%D0%B8%D0%BC%D0%BE%D1%81%D1%82%D0%B5%D0%B9-owasp-api">4. Эксплуатация найденных уязвимостей (OWASP API)</a></li>
+</ul>
+</li>
+<li><a href="#%D1%87%D0%B0%D1%81%D1%82%D1%8C-iii-%D0%BC%D0%B5%D1%80%D1%8B-%D0%BF%D1%80%D0%B5%D0%B4%D0%BE%D1%82%D0%B2%D1%80%D0%B0%D1%89%D0%B5%D0%BD%D0%B8%D1%8F-%D0%B8-devsecops">Часть III. Меры предотвращения и DevSecOps</a></li>
+<li><a href="#%D0%B2%D1%8B%D0%B2%D0%BE%D0%B4">Вывод</a></li>
+</ol>
+<p>В современных условиях разработки REST API является основным каналом обмена данными. Это сместило фокус атак с классических инъекций на сложные логические уязвимости и ошибки контроля доступа. Настоящий отчет опирается на <a href="https://owasp.org/www-project-api-security/">стандарты OWASP</a> и разделен на теоретический разбор актуальных CVE за 2025–2026 годы и практический аудит тестового стенда.</p>
+<h2>Часть I. Анализ критических уязвимостей (CVE) в REST API (2025–2026)</h2>
+<p>Анализ реальных инцидентов показывает, что недостаточная аутентификация и провалы в авторизации объектов остаются главными рисками. Ниже представлен краткий разбор трех показательных уязвимостей.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Идентификатор</th>
+<th align="left">Продукт</th>
+<th align="left">Оценка</th>
+<th align="left">Категория (CWE)</th>
+<th align="left">OWASP API Top 10</th>
+<th align="left">Источник</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>CVE-2026-39351</strong></td>
+<td align="left">Frappe Framework</td>
+<td align="left">Medium</td>
+<td align="left">CWE-862 (Missing Auth)</td>
+<td align="left">API1:2023 (BOLA)</td>
+<td align="left"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-39351">NIST</a></td>
+</tr>
+<tr>
+<td align="left"><strong>CVE-2025-20348</strong></td>
+<td align="left">Cisco Nexus Dashboard</td>
+<td align="left">Medium</td>
+<td align="left">CWE-201 (Info Exposure)</td>
+<td align="left">API5:2023 (BFLA)</td>
+<td align="left"><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-20348">NIST</a></td>
+</tr>
+<tr>
+<td align="left"><strong>CVE-2026-33580</strong></td>
+<td align="left">OpenClaw</td>
+<td align="left">-</td>
+<td align="left">CWE-307 (Rate Limit)</td>
+<td align="left">API4:2023 (Consumption)</td>
+<td align="left"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-33580">NIST</a></td>
+</tr>
+</tbody></table>
+<ul>
+<li><strong>CVE-2026-39351 (Frappe):</strong> Ошибка в механизме REST API (Link Expansion). Сервер не проверял права доступа при раскрытии ссылочных связей. Это позволяло неавторизованным пользователям получать доступ к защищенным моделям данных (Doctypes).</li>
+<li><strong>CVE-2025-20348 (Cisco):</strong> Уязвимость авторизации на уровне функций. API проверял наличие активной сессии, но не роль пользователя. В результате пользователи с низкими привилегиями могли вызывать админ-эндпоинты для выгрузки логов и образов.</li>
+<li><strong>CVE-2026-33580 (OpenClaw):</strong> Отсутствие лимитов на количество запросов (Rate Limiting) в эндпоинте веб-хуков Nextcloud. Позволяло злоумышленникам применять брутфорс для подбора общих секретов (shared secrets).</li>
+</ul>
+<h2>Часть II. Практический аудит: Стенд <code>ket9/otus-devsecops-owasp-rest</code></h2>
+<h3>1. Ход рассуждений и неудачные попытки</h3>
+<p>Первоначальный тест базировался на классических векторах для веб-приложений, которые оказались неэффективны против REST-архитектуры:</p>
+<ul>
+<li><strong>SQL-инъекции (SQLi):</strong> Попытки отправить <code>&#39; OR 1=1 --</code> возвращали статусы <code>400</code> или <code>404</code>. Встроенный ORM-фреймворк успешно блокировал нетипизированный ввод.</li>
+<li><strong>XSS-атаки:</strong> Внедрение <code>&lt;script&gt;</code> в параметры игнорировалось сервером. REST API отдает <code>application/json</code>, который браузер не исполняет как разметку, что делает XSS-векторы на бекенде бессмысленными.</li>
+<li><strong>Командные инъекции (CMDi):</strong> Слепой фаззинг (Blind Fuzzing) с операторами <code>| ls -la</code> не дал результатов.</li>
+</ul>
+<h3>3. Обнаружение маршрутов</h3>
+<p>Изучение HTML-кода заглушки на <code>localhost:8080/</code> раскрыло список доступных API-маршрутов:</p>
+<ul>
+<li><code>/users/v1</code></li>
+<li><code>/users/v1/{username}</code></li>
+<li><code>/users/v1/_debug</code></li>
+</ul>
+<h3>3. Эксплуатация найденных уязвимостей (OWASP API)</h3>
+<p><strong>Уязвимость №1: Утечка отладочных данных (API8 + API3)</strong></p>
+<ul>
+<li><strong>Вектор:</strong> <code>GET http://localhost:8080/users/v1/_debug</code> (без токенов и аутентификации).</li>
+<li><strong>Ответ:</strong> Возвращен полный дамп БД. Объекты включали скрытые поля: <code>password</code> (в открытом виде) и логический флаг <code>isAdmin: true</code>.</li>
+<li><strong>Классификация:</strong> <ul>
+<li><a href="https://owasp.org/API-Security/">API8:2023 Security Misconfiguration</a>: Оставленный в production отладочный эндпоинт.</li>
+<li><a href="https://owasp.org/API-Security/">API3:2023 Broken Object Property Level Authorization</a>: Сервер слепо сериализует все свойства объекта базы данных, включая пароли, не проверяя права клиента на просмотр этих свойств.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Уязвимость №2: Broken Object Level Authorization (API1)</strong></p>
+<ul>
+<li><strong>Вектор:</strong> <code>GET http://localhost:8080/users/v1/admin</code></li>
+<li><strong>Ответ:</strong> Возврат приватных данных профиля пользователя &quot;admin&quot;.</li>
+<li><strong>Классификация:</strong> <a href="https://owasp.org/API-Security/">API1:2023 Broken Object Level Authorization</a>. Приложение принимает ID ресурса (<code>username</code>), ищет его и возвращает, полностью игнорируя проверку принадлежности этого ресурса запрашивающему субъекту (которого здесь вообще нет, так как доступ анонимный). Это позволяет спарсить (enumerating) всю базу пользователей.</li>
+</ul>
+<h2>Часть III. Меры предотвращения и DevSecOps</h2>
+<p>Для защиты REST API недостаточно установки WAF. Требуется следование принципам безопасного дизайна и интеграция практик согласно <a href="https://owasp.org/www-project-devsecops-guideline/">OWASP DevSecOps Guideline</a>.</p>
+<p><strong>Защита архитектуры (BOLA и BOPLA):</strong></p>
+<ul>
+<li>Обязательная аутентификация (JWT/OAuth2) для всех бизнес-маршрутов.</li>
+<li>Сверка ID запрашиваемого объекта с ID владельца внутри сессионного токена в каждом контроллере.</li>
+<li>Использование DTO (Data Transfer Objects) для контроля возвращаемых свойств, чтобы пароли и флаги администратора физически не могли попасть в JSON-ответ.</li>
+</ul>
+<p><strong>Устранение ошибок конфигурации:</strong></p>
+<ul>
+<li>Хранение паролей исключительно в виде криптографических хешей (argon2/bcrypt).</li>
+<li>Жесткое разделение конфигураций сред (отключение <code>_debug</code> маршрутов в Production).</li>
+</ul>
+<p><strong>Безопасный CI/CD:</strong></p>
+<ul>
+<li>Интеграция SAST/DAST сканеров в сборочный конвейер для автоматического выявления забытых отладочных маршрутов и уязвимых зависимостей до релиза.</li>
+</ul>
+<h3>Вывод</h3>
+<p>Практический аудит подтверждает, что логические уязвимости BOLA и BOPLA доминируют в REST API. Отсутствие контроля на уровне свойств объектов и оставленные разработчиками отладочные бэкдоры приводят к полному компрометированию баз данных без использования сложных инструментов взлома.</p>
+
+</body>
+</html>

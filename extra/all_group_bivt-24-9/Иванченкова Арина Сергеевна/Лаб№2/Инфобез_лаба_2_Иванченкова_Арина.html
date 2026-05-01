@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>1 часть</h1>
+<p>Поскольку OWASP обновляет топ раз в 3-4 года, я буду смотреть по топу за 2023 год(топ за 2026 пока находится на стадии разработки)</p>
+<p>OWASP API Security Top 2023
+<a href="https://owasp.org/www-project-api-security/">https://owasp.org/www-project-api-security/</a></p>
+<h4>1 уязвимость - CVE-2026-24134</h4>
+<p>   <a href="https://nvd.nist.gov/vuln/detail/CVE-2026-24134">https://nvd.nist.gov/vuln/detail/CVE-2026-24134</a></p>
+<p>   Тип :  API1:2023 - Broken Object Level Authorization</p>
+<p>   Суть недостатка: Пользователь с ролью &quot;Посетитель&quot; может получить доступ к черновикам контента, который был создан пользователями с ролями &quot;Редактор&quot;, &quot;Администратор&quot; или &quot;Владелец&quot;.  Пользователь может подставить id черновика, после этого сервер не проверит права доступа к черновику, а пользователь получит доступ.</p>
+<p>   Причина: Эндпоинты проверяют только аутентификацию, но не авторизацию пользователя на уровне определённого объекта. Владелец черновика не сравнивается с текущим пользователем перед выдачей прав доступа к объекту.</p>
+<h4>2 уязвимость - CVE-2025-65742</h4>
+<p>   <a href="https://nvd.nist.gov/vuln/detail/CVE-2025-65742">https://nvd.nist.gov/vuln/detail/CVE-2025-65742</a>
+   Тип:  API5:2023 - Broken Function Level Authorization</p>
+<p>   Суть: Эндпоинты, которые отвечают за управление учётными записями и доступ к конфиденциальной информации, не требуют аутентификации. Мошенник может получить доступ к учётной записи пользователя с помощью запроса API, не имея никакого логина.</p>
+<p>   Причина: Проверка авторизации на уровне функций либо неправильно реализована, либо её нет. Эндпоинты, которые должны быть доступны только аутентифицированным пользователям, не защищены.</p>
+<h4>3 уязвимость - CVE-2025-69014</h4>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-69014">https://nvd.nist.gov/vuln/detail/CVE-2025-69014</a>
+Тип: API7:2023 - Server Side Request Forgery</p>
+<p>Суть: Мошенник может заставить сервер отправлять произвольные HTTP-запросы. Можно указать URL, который сервер запросит без проверок , и получить доступ к внутренним сервисам.</p>
+<p>Причина:  Эндпоинты не проверяют URL от пользователя на валидность, прежде чем передать в функции выполнения HTTP-запросов.</p>
+<hr>
+<h1>2 часть</h1>
+<p>Итак, докер образ был скачан, запущен, возможные действия в приложении были просмотрены, база данных наполнена. Самое время искать уязвимости.</p>
+<p>Сначала было бы неплохо посмотреть подробную информацию обо всех пользователях(если её вообще можно смотреть неавторизованными пользователям)
+Используем команду 
+<a href="http://localhost:8080/users/v1/_debug">http://localhost:8080/users/v1/_debug</a></p>
+<p>В базе данных у нас всего 3 пользователя
+{&quot;users&quot;:[{&quot;admin&quot;:false,&quot;email&quot;:&quot;<a href="mailto:mail1@mail.com">mail1@mail.com</a>&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;name1&quot;},{&quot;admin&quot;:false,&quot;email&quot;:&quot;<a href="mailto:mail2@mail.com">mail2@mail.com</a>&quot;,&quot;password&quot;:&quot;pass2&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;admin&quot;:true,&quot;email&quot;:&quot;<a href="mailto:admin@mail.com">admin@mail.com</a>&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;admin&quot;}]}</p>
+<p>один из них админ</p>
+<h3>Уязвимость 1</h3>
+<p>Описание уязвимости: </p>
+<ul>
+<li>Тип:   API8:2023- Security Miscofiguration</li>
+<li>Первое, что мы видим, - приложение возвращает пароли пользователей в открытом виде. Такого быть не должно. Данные всех пользователей у злоумышленника как на ладони. После дачи этой команды он может использовать любую учётную запись в корыстных целях.</li>
+</ul>
+<p>Меры предотвращения: </p>
+<ul>
+<li>Не возвращать пароли в ответах API даже в debug режиме</li>
+<li>Надо хранить пароли в зашифрованном виде</li>
+<li>Настроить вывод сообщений безопасности без вывода конфиденциальных данных</li>
+</ul>
+<h3>Уязвимость 2</h3>
+<p>Описание уязвимости:</p>
+<ul>
+<li>Тип:   API5:2023-Broken Function Level Authorization</li>
+<li>Помимо этого, команда дебаг была дана без авторизации, то есть неавторизованный пользователь может видеть всю информацию обо всех пользователях, даже роль(администратор или нет). Далее были даны следующие команды:
+<a href="http://localhost:8080/users/v1/admin">http://localhost:8080/users/v1/admin</a>
+<a href="http://localhost:8080/users/v1/name1">http://localhost:8080/users/v1/name1</a>
+Можно просматривать информацию об отдельных пользователях !без авторизации! Нельзя, чтобы любой неавторизованный пользователь мог просмотреть всю информацию о любом другом пользователе системы. Злоумышленник может просто вбить имя пользователя в url и получить конфиденциальные данные пользователя.</li>
+</ul>
+<p>Меры предотвращения:</p>
+<ul>
+<li>добавить проверку авторизации на все эндпоинты, которые должны возвращать данные пользователей</li>
+<li>сделать так, чтобы обычные пользователя могли видеть только свой профиль, а администраторы - все</li>
+</ul>
+
+</body>
+</html>

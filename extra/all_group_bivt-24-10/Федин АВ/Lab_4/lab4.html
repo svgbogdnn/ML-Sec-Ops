@@ -1,0 +1,68 @@
+<h1 id="-1">Часть 1</h1>
+<h3 id="-1-">Фрагмент кода 1:</h3>
+<p>```#!/usr/bin/env python3
+from flask import Flask
+from mod_api import mod_api</p>
+<p>app = Flask(&#39;vuln_app&#39;)
+app.config[&#39;SECRET_KEY&#39;] = &#39;F0cUzh8BgYJSLXAU8qDmClM0dE8GJTpsiyVEl3BCqQMCABp1U$f%&#39;</p>
+<p>app.register_blueprint(mod_api, url_prefix=&#39;/api&#39;)</p>
+<pre><code>
+Проблема: secret key захардкожен. Если будет найден исходный код, то будет слит и ключ.
+
+### Фрагмент кода <span class="hljs-number">2</span>:
+
+``` #!/usr/bin/env python3
+<span class="hljs-keyword">from</span> flask_wtf <span class="hljs-keyword">import</span> Form  
+<span class="hljs-keyword">from</span> wtforms <span class="hljs-keyword">import</span> TextField
+
+<span class="hljs-keyword">class</span> LoginForm(Form):  
+username = TextField(<span class="hljs-string">'username'</span>)  
+password = TextField(<span class="hljs-string">'password'</span>)
+</code></pre><p>Проблемы:</p>
+<ul>
+<li>нет проверки текстовых данных</li>
+<li>пароль хранится в открытом виде</li>
+</ul>
+<h3 id="-3">Фрагмент кода 3</h3>
+<p>```#!/usr/bin/env python3
+def post(self):
+    username = self.get_argument(&#39;username&#39;)
+    password = self.get_argument(&#39;password&#39;).encode(&#39;utf-8&#39;)
+    email = self.get_argument(&#39;mail&#39;)</p>
+<p>try:
+    username = username.lower()
+    email = email.strip().lower()
+    user = User({&#39;username&#39;: username, &#39;password&#39;: password, &#39;email&#39;: email, &#39;date_joined&#39;: curtime()})
+    user.validate()
+    save_user(self.db_conn, user)
+except Exception, e:
+    return self.render_template(&quot;success_create.html&quot;)
+```</p>
+<p>Проблемы: </p>
+<ul>
+<li><p>Текстовые данные не валидируется</p>
+</li>
+<li><p>В случае Exception всё равно возвращается сообщение об успешном создании пользователя</p>
+</li>
+<li><p>Пароль по факту хранится в открытом виде (encoding =/= хэширование)</p>
+</li>
+</ul>
+<h1 id="-2">Часть 2</h1>
+<p>Django защищает от следующих уязвимостей:</p>
+<ul>
+<li>XSS (используется url encoding)</li>
+<li>CSRF (используется токен пользователя)</li>
+<li>SQLi (ORM + prepared statements)</li>
+</ul>
+<p>В Django используются user sessions. Когда пользователь подключается к серверу в первый раз происходит следующее:</p>
+<p>1) Django создает случайный session_id 
+2) Отправляет его пользователю
+3) Пользователь хранит только свой session_id
+4) Django хранит всю информации о сессии и каждый раз обращается в БД по session_id</p>
+<p>Почему это безопасно:</p>
+<ul>
+<li>session_id - случайное значение</li>
+<li>кука HttpOnly, то есть она не доступна для JS</li>
+<li>работает по https</li>
+<li>сессии хранятся только определенное время, а потом стираются </li>
+</ul>

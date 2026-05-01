@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h2>Часть 1. Анализ уязвимостей в Python-коде</h2>
+<h3>Фрагмент кода 1</h3>
+<p><strong>Недостаток:</strong> SECRET_KEY жестко прописан в исходном коде. Если код попадет в публичный репозиторий, злоумышленник сможет получить доступ к ключу и подделывать сессионные куки, токены сброса пароля и другие данные.</p>
+<p><strong>Рекомендации по устранению:</strong></p>
+<ol>
+<li>Вынести ключ в переменные окружения</li>
+<li>Не коммитить файл с ключами в git</li>
+<li>Для генерации ключа использовать <code>secrets.token_hex(32)</code></li>
+<li>Использовать разные ключи для разных окружений</li>
+</ol>
+<h3>Фрагмент кода 2</h3>
+<p><strong>Недостаток:</strong> Поле для пароля использует обычный <code>TextField</code> - пароль будет виден при вводе. Также отсутствуют валидаторы на полях - можно отправить пустой логин/пароль или слишком длинные строки.</p>
+<p><strong>Рекомендации по устранению:</strong></p>
+<ol>
+<li>Заменить <code>TextField</code> на <code>PasswordField</code> для скрытия ввода</li>
+<li>Добавить валидацию на сложность пароля (цифры, спецсимволы)</li>
+</ol>
+<h3>Фрагмент кода 3</h3>
+<p><strong>Недостаток:</strong> Пароль сохраняется в открытом виде - при утечке базы все пароли будут скомпрометированы. Обработка исключений слишком общая и показывает ошибочное сообщение - пользователь видит success даже если регистрация не прошла.</p>
+<p><strong>Рекомендации по устранению:</strong></p>
+<ol>
+<li>Хешировать пароль перед сохранением</li>
+<li>Разделить обработку ошибок</li>
+<li>Выводить достоверные сообщения - не только об успехе</li>
+</ol>
+<hr>
+<h2>Часть 2. Модель безопасности Django</h2>
+<p>Django из коробки защищает от следующих атак:</p>
+<ul>
+<li>SQL Injection - ORM использует параметризованные запросы</li>
+<li>XSS - Шаблонизатор автоматически экранирует переменные при выводе в HTML</li>
+<li>CSRF - CSRF-токены на всех формах, middleware проверяет заголовок</li>
+<li>Clickjacking - Middleware <code>XFrameOptionsMiddleware</code> добавляет заголовок <code>X-Frame-Options: DENY</code> |</li>
+<li>SSL/HTTPS - Настройки <code>SECURE_SSL_REDIRECT</code>, <code>SESSION_COOKIE_SECURE</code> принудительно включают HTTPS</li>
+</ul>
+<p><strong>Хранение сессий:</strong> Django хранит сессии на стороне сервера, а в браузере клиента остается только идентификатор сессии. Это безопаснее, чем хранение данных в cookie, потому что пользователь не может изменить содержимое сессии. При логине Django автоматически создаёт новый ключ сессии и удаляет старый. Это защищает от фиксации сессии, когда злоумышленник пытается подсунуть жертве свой sessionid.</p>
+
+</body>
+</html>

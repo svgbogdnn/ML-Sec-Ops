@@ -1,0 +1,60 @@
+<h1 id="-1">Часть 1</h1>
+<h2 id="-rest-api-cve-2025-">Анализ уязвимостей REST API (CVE 2025)</h2>
+<table>
+<thead>
+<tr>
+<th>Название CVE</th>
+<th>Источник</th>
+<th>Тип (OWASP API Top 10)</th>
+<th>Недостаток</th>
+<th>Причина</th>
+<th>Последствия</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CVE-2025-14777 (Keycloak)</strong></td>
+<td><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-14777">https://nvd.nist.gov/vuln/detail/CVE-2025-14777</a></td>
+<td>Broken Object Level Authorization</td>
+<td>Пользователь может получать доступ к чужим ресурсам через изменение идентификаторов в API</td>
+<td>Отсутствие проверки прав доступа на уровне объекта</td>
+<td>Доступ к чужим данным, изменение или удаление ресурсов, компрометация системы</td>
+</tr>
+<tr>
+<td><strong>CVE-2025-20348 (Cisco Nexus Dashboard)</strong></td>
+<td><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-20348">https://nvd.nist.gov/vuln/detail/CVE-2025-20348</a></td>
+<td>Broken Function Level Authorization</td>
+<td>Пользователь с низкими привилегиями может выполнять административные операции через API; пользователь из группы A может получить доступ к функциям, которые должны быть доступны только пользователям из группы B</td>
+<td>Отсутствие проверки уровня доступа при вызове API-методов</td>
+<td>Эскалация привилегий, выполнение административных действий, утечка данных</td>
+</tr>
+<tr>
+<td><strong>CVE-2025-56520 (Dify)</strong></td>
+<td><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-56520">https://nvd.nist.gov/vuln/detail/CVE-2025-56520</a></td>
+<td>Server Side Request Forgery (SSRF)</td>
+<td>Сервер выполняет HTTP-запросы по URL, переданному пользователем</td>
+<td>Отсутствие фильтрации и проверки входного URL</td>
+<td>Доступ к внутренним сервисам, обход сетевых ограничений, утечка данных, чтение локальных файлов, извлечение чувствительной информации</td>
+</tr>
+</tbody>
+</table>
+<h1 id="-2">Часть 2</h1>
+<p>После запуска контейнера и инициализации базы данных я попробовала перебирать информацию о пользователях:<br><a href="http://localhost:8080/users/v1">http://localhost:8080/users/v1</a>
+Приложение вернуло список пользователей: {&quot;users&quot;:[{&quot;email&quot;:&quot;mail1@mail.com&quot;,&quot;username&quot;:&quot;name1&quot;},{&quot;email&quot;:&quot;mail2@mail.com&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;email&quot;:&quot;admin@mail.com&quot;,&quot;username&quot;:&quot;admin&quot;}]}<br>Дальше я решила попробовать посмотреть данные про конкретных пользователей: <a href="http://localhost:8080/users/v1/name1">http://localhost:8080/users/v1/name1</a><br>И сервер так же показал его данные: {&quot;username&quot;: &quot;name1&quot;, &quot;email&quot;: &quot;mail1@mail.com&quot;}  </p>
+<p>Аналогично посмотрела данные по другим пользователям.</p>
+<p>Могу посмотреть данные по книгам:  <a href="http://localhost:8080/books/v1">http://localhost:8080/books/v1</a><br>Выдало:  {&quot;Books&quot;:[{&quot;book_title&quot;:&quot;bookTitle82&quot;,&quot;user&quot;:&quot;name1&quot;},{&quot;book_title&quot;:&quot;bookTitle98&quot;,&quot;user&quot;:&quot;name2&quot;},{&quot;book_title&quot;:&quot;bookTitle68&quot;,&quot;user&quot;:&quot;admin&quot;}]}  </p>
+<p>Значит, приложение позволяет получить данные по пользователям только по значению username в URL.</p>
+<p>Попробовала изменить email пользователя через командную строку:<br>C:\Users\oksik\Documents\infobez\lab2&gt;curl -X PUT &quot;<a href="http://localhost:8080/users/v1/name1/email">http://localhost:8080/users/v1/name1/email</a>&quot; -H &quot;Content-Type: application/json&quot; -d &quot;{\&quot;email\&quot;:\&quot;hacker@mail.com\&quot;}&quot;
+{ &quot;status&quot;: &quot;fail&quot;, &quot;message&quot;: &quot;Invalid token&quot;}
+C:\Users\oksik\Documents\infobez\lab2&gt;curl <a href="http://localhost:8080/users/v1/name1">http://localhost:8080/users/v1/name1</a>
+{&quot;username&quot;: &quot;name1&quot;, &quot;email&quot;: &quot;mail1@mail.com&quot;}  </p>
+<p>Получается, мы не можем менять данные пользователей, только смотреть их через GET</p>
+<p>Значит это уязвимость типа BOLA, так как её недостатком является предоставление доступа к объекту только параметром запроса и не проверяется с точки зрения прав доступа (сервер не требует аутентификации и не проверяет, имеет ли клиент право просматривать информацию именно об этом пользователе). Но при этом данные защищены от изменения</p>
+<p>Меры предотвращения:  </p>
+<ol>
+<li>Проверять право доступа к каждому объекту при каждом запросе.</li>
+<li>Не отдавать данные пользователя только на основании username из URL.</li>
+<li>Требовать аутентификацию перед обращением к пользовательским данным.</li>
+<li>Ограничить выдачу списка всех пользователей.</li>
+<li>Реализовать контроль доступа на уровне объектов (object-level authorization).</li>
+</ol>

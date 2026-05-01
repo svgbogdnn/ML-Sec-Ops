@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>Часть 1</h1>
+<h4>1) SSRF в GitLab Webhooks REST API</h4>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-6454">https://nvd.nist.gov/vuln/detail/CVE-2025-6454</a> - Тип (OWASP API Top 10):
+API7:2023 — Server Side Request Forgery (SSRF).</p>
+<p><em>Недостаток:</em><br>В GitLab есть уязвимость в функциональности веб‑хуков: при конфигурации webhook пользователь может указать кастомные HTTP‑заголовки и URL так, что GitLab формирует и отправляет HTTP‑запросы от имени сервера к произвольным адресам, включая внутренние. Это позволяет злоумышленнику использовать GitLab как SSRF‑прокси, обращаться к внутренним сервисам в инфраструктуре компании и потенциально вытаскивать оттуда чувствительные данные или выстраивать дальнейшую атаку.</p>
+<p><em>Причина:</em><br>Недостаточная валидация данных, которые задают параметры исходящего запроса (URL, заголовки), сервер без ограничений доверяет значениям, пришедшим от клиента.</p>
+<h4>2)Неконтролируемая рекурсия в API NVIDIA Triton Inference Server</h4>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-23325">https://nvd.nist.gov/vuln/detail/CVE-2025-23325</a> - ближе всего к API4:2023 -Unrestricted Resource Consumption (ресурсное истощение через входные данные API).</p>
+<p><em>Недостаток:</em><br>REST API Triton принимает специальные входные данные, которые приводят к неконтролируемой рекурсивной обработке внутри сервера. В результате один специально сформированный запрос может &quot;загнать&quot; процесс в глубокую рекурсию и вызвать отказ в обслуживании (DoS).</p>
+<p><em>Причина:</em><br>В коде обработки входных данных нет ограничений на глубину рекурсивных структур и нет защитных проверок, которые бы вовремя останавливали обработку.</p>
+<h4>3) BOLA в Onlook  API</h4>
+<p><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-63783">https://nvd.nist.gov/vuln/detail/CVE-2025-63783</a> -Тип (OWASP API Top 10):API1:2023 - Broken Object Level Authorization (BOLA).</p>
+<p><em>Недостаток:</em>
+В mutation‑эндпоинтах (операции обновления/удаления проектов и управления тегами) сервер принимает project_id из REST‑запроса и выполняет операцию над этим проектом, не проверяя, принадлежит ли он текущему пользователю. Из‑за этого аутентифицированный пользователь может подставить идентификатор чужого проекта и менять или удалять данные других пользователей.</p>
+<p><em>Причина:</em>
+Объектный уровень авторизации не реализован: есть только факт аутентификации, но нет проверки, что пользователь владеет конкретным проектом, к которому обращается. </p>
+<h1>Часть 2</h1>
+<p>Зашел на <a href="http://localhost:8080">http://localhost:8080</a> , увидел все эндпоинты
+<code>{ &quot;создать базу&quot;: &quot;/createdb&quot;,     &quot;посмотреть информацию обо всех пользователях&quot;: &quot;/users/v1&quot;,     &quot;посмотреть подробную информацию обо всех пользователях&quot;: &quot;/users/v1/_debug&quot;,     &quot;регистрация нового пользователя&quot;: &quot;/users/v1/register (HTTP POST)&quot;,     &quot;вход в приложение&quot;: &quot;/users/v1/login (HTTP POST)&quot;,     &quot;просмотр пользователя по имени&quot;: &quot;/users/v1/{username}&quot;,     &quot;удалить пользователя по имени (только для админов)&quot;: &quot;/users/v1/{username} (HTTP DELETE)&quot;,     &quot;изменить email пользователя&quot;: &quot;/users/v1/{username}/email (HTTP PUT)&quot;,     &quot;изменить пароль пользователя&quot;: &quot;/users/v1/{username}/password (HTTP PUT)&quot;,     &quot;все книги&quot;: &quot;/books/v1&quot;,     &quot;добавить книгу&quot;: &quot;/books/v1 (HTTP POST)&quot;,     &quot;просмотр книги&quot;: &quot;/books/v1/{book}&quot;,      }</code></p>
+<p>Создал бд через /createdb
+Посмотрел всех пользователей через /users/v1, получил 3 пользователя - &quot;users&quot;: 
+<code>{&quot;email&quot;: &quot;mail1@mail.com&quot;,</code>
+<code>&quot;username&quot;: &quot;name1&quot;},</code>
+<code>{&quot;email&quot;: &quot;mail2@mail.com&quot;,</code>
+<code>&quot;username&quot;: &quot;name2&quot;},</code>
+<code>{&quot;email&quot;: &quot;admin@mail.com&quot;,</code>
+<code>&quot;username&quot;: &quot;admin&quot;}</code></p>
+<p>Потом отправил запрос на /users/v1/debug  ( который выглядел подозрительно ) и получил ответ вида :
+<code>{&quot;admin&quot;: false,</code>
+<code>&quot;email&quot;: &quot;mail1@mail.com&quot;,</code>
+<code>&quot;password&quot;: &quot;pass1&quot;,</code>
+<code>&quot;username&quot;: &quot;name1&quot;},</code>
+Очевидно, что обычный и неавтиризованный пользователь не должен иметь доступ к такому ввиду данных, поэтому это довольно опасная уязвимость.</p>
+<p>Ее тип - API3:2023 — Broken Object Property Level Authorization.
+OWASP описывает это как ситуацию, когда API неправильно контролирует доступ к отдельным свойствам объекта, а не к самому объекту целиком. </p>
+<p>Меры предотвращения:</p>
+<ol>
+<li>Убрать или жёстко ограничить _debug‑эндпоинты</li>
+<li>Проверка конфигурации перед релизом</li>
+<li>Единый слой авторизации для «чувствительных» эндпоинтов</li>
+</ol>
+
+</body>
+</html>

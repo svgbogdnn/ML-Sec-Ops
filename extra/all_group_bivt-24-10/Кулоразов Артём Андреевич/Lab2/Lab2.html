@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>Лабораторная работа №2 (REST API)</h1>
+<h2>Часть 1</h2>
+<h3>CVE-2025-20349 (Cisco Catalyst Center)</h3>
+<p><strong>Источник:</strong> <a href="https://nvd.nist.gov/vuln/detail/CVE-2025-20349">https://nvd.nist.gov/vuln/detail/CVE-2025-20349</a></p>
+<p><strong>Недостаток:</strong> Аутентифицированный удалённый злоумышленник с ролью Observer может отправить специально созданный запрос к REST API и выполнить произвольные команды в ограниченном контейнере с правами root.</p>
+<p><strong>Причина:</strong> Недостаточная проверка пользовательского ввода в параметрах запроса REST API.</p>
+<p><strong>Категория:</strong> Security Misconfiguration (некорректная валидация ввода, приводящая к инъекции команд).</p>
+<h3>CVE-2025-10611 (WSO2 Products)</h3>
+<p><strong>Источник:</strong> <a href="https://nvd.nist.gov/vuln/detail/CVE-2025-10611">https://nvd.nist.gov/vuln/detail/CVE-2025-10611</a></p>
+<p><strong>Недостаток:</strong> Из-за недостаточной реализации контроля доступа в нескольких продуктах WSO2 можно обойти проверки аутентификации и авторизации для определённых REST API. Это позволяет вызывать их без валидации и выполнять административные операции без авторизации.</p>
+<p><strong>Причина:</strong> Недостаточный контроль доступа — отсутствие проверки прав на уровне отдельных функций API.</p>
+<p><strong>Категория:</strong> Broken Function Level Authorization.</p>
+<h3>CVE-2025-61757 (Oracle Fusion Middleware Identity Manager)</h3>
+<p><strong>Источник:</strong> <a href="https://nvd.nist.gov/vuln/detail/CVE-2025-61757">https://nvd.nist.gov/vuln/detail/CVE-2025-61757</a></p>
+<p><strong>Недостаток:</strong> В компоненте REST WebServices продукта Oracle Identity Manager отсутствует требование аутентификации для критической функции. Неаутентифицированный злоумышленник с доступом по HTTP может получить полный контроль над Identity Manager.</p>
+<p><strong>Причина:</strong> Отсутствие механизма аутентификации для важного эндпоинта REST API.</p>
+<p><strong>Категория:</strong> Broken Authentication.</p>
+<h2>Часть 2</h2>
+<p>Запустим контейнер:
+docker run -d -p 8080:8080 --name rest-lab ket9/otus-devsecops-owasp-rest:latest</p>
+<p>Перейдём <a href="http://localhost:8080/createdb">http://localhost:8080/createdb</a>
+Ответ: {&quot;message&quot;:&quot;Database populated.&quot;}</p>
+<h3>Регистрация и вход</h3>
+<p>Выполним регистрацию пользователя user1:
+Invoke-RestMethod -Uri &quot;<a href="http://localhost:8080/users/v1/register">http://localhost:8080/users/v1/register</a>&quot; -Method Post -Body &#39;{&quot;username&quot;:&quot;user1&quot;,&quot;password&quot;:&quot;12345&quot;,&quot;email&quot;:&quot;<a href="mailto:user1@test.com">user1@test.com</a>&quot;}&#39; -ContentType &quot;application/json&quot;
+Ответ: {&quot;message&quot;:&quot;Successfully registered. Login to receive an auth token.&quot;,&quot;status&quot;:&quot;success&quot;}</p>
+<p>Повторная отправка того же запроса выводит: {&quot;status&quot;:&quot;fail&quot;,&quot;message&quot;:&quot;User already exists. Please Log in.&quot;}
+— регистрация работает, дубликаты не создаются.</p>
+<p>Выполним вход:
+Invoke-RestMethod -Uri &quot;<a href="http://localhost:8080/users/v1/login">http://localhost:8080/users/v1/login</a>&quot; -Method Post -Body &#39;{&quot;username&quot;:&quot;user1&quot;,&quot;password&quot;:&quot;12345&quot;}&#39; -ContentType &quot;application/json&quot;
+Ответ: {&quot;auth_token&quot;:&quot;eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NzY4NjQ5MzUsImlhdCI6MTc3Njg2NDg3NSwic3ViIjoidXNlcjEifQ.79AopA2GRwR9u44jvZdra4_wETVsD50t2M6RPSkVMP4&quot;}</p>
+<p>Скопируем токен в переменную $token:
+$token = $response.auth_token</p>
+<p>Проверим свой профиль:
+Invoke-RestMethod -Uri &quot;<a href="http://localhost:8080/users/v1/user1">http://localhost:8080/users/v1/user1</a>&quot; -Headers @{Authorization=&quot;Bearer $token&quot;}
+Ответ: {&quot;username&quot;:&quot;user1&quot;,&quot;email&quot;:&quot;<a href="mailto:user1@test.com">user1@test.com</a>&quot;}
+Авторизация работает.</p>
+<h3>Проверка доступа к чужим данным</h3>
+<p>Зарегистрируем второго пользователя user2:
+Invoke-RestMethod -Uri &quot;<a href="http://localhost:8080/users/v1/register">http://localhost:8080/users/v1/register</a>&quot; -Method Post -Body &#39;{&quot;username&quot;:&quot;user2&quot;,&quot;password&quot;:&quot;12345&quot;,&quot;email&quot;:&quot;<a href="mailto:user2@test.com">user2@test.com</a>&quot;}&#39; -ContentType &quot;application/json&quot;
+Ответ: {&quot;message&quot;:&quot;Successfully registered. Login to receive an auth token.&quot;,&quot;status&quot;:&quot;success&quot;}</p>
+<p>Попробуем посмотреть его профиль с токеном user1:
+Invoke-RestMethod -Uri &quot;<a href="http://localhost:8080/users/v1/user2">http://localhost:8080/users/v1/user2</a>&quot; -Headers @{Authorization=&quot;Bearer $token&quot;}
+Ответ: {&quot;username&quot;:&quot;user2&quot;,&quot;email&quot;:&quot;<a href="mailto:user2@test.com">user2@test.com</a>&quot;}</p>
+<p>Вывод: сервер не проверяет, имеет ли текущий пользователь право просматривать данные другого пользователя. Это BOLA (Broken Object Level Authorization).</p>
+<h3>Попытка удаления</h3>
+<p>Согласно описанию, удалять пользователей может только админ.</p>
+<p>Попробуем удалить user2:
+Invoke-RestMethod -Uri &quot;<a href="http://localhost:8080/users/v1/user2">http://localhost:8080/users/v1/user2</a>&quot; -Method Delete -Headers @{Authorization=&quot;Bearer $token&quot;}
+Ответ: {&quot;status&quot;:&quot;fail&quot;,&quot;message&quot;:&quot;Only Admins may delete users!&quot;}</p>
+<p>Попробуем удалить самого себя (user1):
+Invoke-RestMethod -Uri &quot;<a href="http://localhost:8080/users/v1/user1">http://localhost:8080/users/v1/user1</a>&quot; -Method Delete -Headers @{Authorization=&quot;Bearer $token&quot;}
+Ответ: {&quot;status&quot;:&quot;fail&quot;,&quot;message&quot;:&quot;Only Admins may delete users!&quot;}</p>
+<p>Вывод: защита на удаление реализована корректно — обычный пользователь не может вызвать эту функцию даже для своего аккаунта.</p>
+<h3>Скрытый эндпоинт _debug</h3>
+<p>В списке эндпоинтов есть /users/v1/_debug с пометкой «посмотреть подробную информацию обо всех пользователях». Попробуем получить к нему доступ:
+Invoke-RestMethod -Uri &quot;<a href="http://localhost:8080/users/v1/_debug">http://localhost:8080/users/v1/_debug</a>&quot; -Headers @{Authorization=&quot;Bearer $token&quot;} | ConvertTo-Json -Depth 10</p>
+<p>Ответ:
+{
+    &quot;users&quot;: [
+        { &quot;admin&quot;: false, &quot;email&quot;: &quot;<a href="mailto:mail1@mail.com">mail1@mail.com</a>&quot;, &quot;password&quot;: &quot;pass1&quot;, &quot;username&quot;: &quot;name1&quot; },
+        { &quot;admin&quot;: false, &quot;email&quot;: &quot;<a href="mailto:mail2@mail.com">mail2@mail.com</a>&quot;, &quot;password&quot;: &quot;pass2&quot;, &quot;username&quot;: &quot;name2&quot; },
+        { &quot;admin&quot;: true,  &quot;email&quot;: &quot;<a href="mailto:admin@mail.com">admin@mail.com</a>&quot;, &quot;password&quot;: &quot;pass1&quot;, &quot;username&quot;: &quot;admin&quot; },
+        { &quot;admin&quot;: false, &quot;email&quot;: &quot;<a href="mailto:user1@test.com">user1@test.com</a>&quot;, &quot;password&quot;: &quot;12345&quot;, &quot;username&quot;: &quot;user1&quot; },
+        { &quot;admin&quot;: false, &quot;email&quot;: &quot;<a href="mailto:user2@test.com">user2@test.com</a>&quot;, &quot;password&quot;: &quot;12345&quot;, &quot;username&quot;: &quot;user2&quot; }
+    ]
+}</p>
+<p>Вывод: любой аутентифицированный пользователь может получить пароли всех учётных записей и узнать, кто является администратором. Это критическая уязвимость — Security Misconfiguration и Broken Object Property Level Authorization.</p>
+<h2>Итог: найденные уязвимости</h2>
+<ol>
+<li><p>Просмотр чужих профилей через /users/v1/{username}.
+Тип: Broken Object Level Authorization.</p>
+</li>
+<li><p>Раскрытие паролей и признака admin через эндпоинт /_debug.
+Тип: Broken Object Property Level Authorization + Security Misconfiguration.</p>
+</li>
+</ol>
+<h2>Меры предотвращения</h2>
+<ul>
+<li>Для всех эндпоинтов, работающих с конкретным пользователем (/{username}), проверять, что username совпадает с именем владельца токена, либо текущий пользователь имеет роль admin.</li>
+<li>Убрать отладочный эндпоинт /_debug из боевого окружения или ограничить его доступ только администраторам.</li>
+<li>Никогда не хранить и не передавать пароли в открытом виде — использовать хеширование (bcrypt, argon2) и не включать поле password в ответы API.</li>
+</ul>
+
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h2>Часть 1. Поиск CVE по уязвимостям REST API (2025 год)</h2>
+<h3>1. Источники информации</h3>
+<p><strong><a href="https://zeropath.com/blog/cve-2025-61757-oracle-identity-manager-rest-api-vulnerability">CVE-2025-61757</a></strong></p>
+<ul>
+<li>Тип: API1:2023 Broken Object Level Authorization + API5:2023 Broken Function Level Authorization</li>
+<li>Описание: Критическая уязвимость в REST WebServices компонента Oracle Identity Manager. Позволяет неаутентифицированному злоумышленнику выполнить произвольные команды на сервере через специально сформированный запрос к публичному API.</li>
+<li>Причина: Отсутствие проверки прав доступа на уровне объекта и функции - любой запрос к REST-эндпоинту обрабатывался без верификации токена или роли пользователя.</li>
+</ul>
+<p><strong><a href="https://www.styra.com/blog/cve-2025-46569-opa-rest-api-path-injection-vulnerability/">CVE-2025-46569</a></strong></p>
+<ul>
+<li>Тип: API7:2023 Server Side Request Forgery / Injection</li>
+<li>Описание: Уязвимость в Open Policy Agent, позволяющая через манипуляции с путем в HTTP-запросе к Data API внедрить Rego-код во внутренний запрос. Может привести к неверным решениям авторизации или утечке переменных окружения.</li>
+<li>Причина: Небезопасная конкатенация пользовательского ввода из URL-пути в Rego-запрос без хорошей санитизации.</li>
+</ul>
+<p><strong><a href="https://www.cve.org/CVERecord?id=CVE-2025-39545">CVE-2025-39545</a></strong></p>
+<ul>
+<li>Тип: API5:2023 Broken Function Level Authorization (CWE-862 Missing Authorization)</li>
+<li>Описание: Плагин miniOrange WordPress REST API Authentication не проверял права доступа к определенным функциям. Аутентифицированный пользователь с низкими привилегиями мог выполнять действия, предназначенные только для администраторов.</li>
+<li>Причина: Функция проверки прав не валидировала роль пользователя перед выполнением чувствительной операции.</li>
+</ul>
+<hr>
+<h2>Часть 2. Практика на стенде</h2>
+<p>Скачала образ и запустила:</p>
+<pre><code>docker pull ket9/otus-devsecops-owasp-rest
+docker run -d -p 8080:8080 ket9/otus-devsecops-owasp-rest:latest
+</code></pre>
+<p>Открыла <code>http://localhost:8080</code>, увидела эндпоинты. </p>
+<p>Перешла по <code>/createdb</code> для инициализации БД.</p>
+<h3>Ход рассуждений</h3>
+<ol>
+<li>Посмотрела, что возвращает приложение по .../users/v1:</li>
+</ol>
+<pre><code class="language-json">{&quot;users&quot;:[{&quot;email&quot;:&quot;mail1@mail.com&quot;,&quot;username&quot;:&quot;name1&quot;},{&quot;email&quot;:&quot;mail2@mail.com&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;email&quot;:&quot;admin@mail.com&quot;,&quot;username&quot;:&quot;admin&quot;}]}
+</code></pre>
+<p>Список пользователей доступен без авторизации, хотя обычно такие данные защищают. Уязвимость.</p>
+<ol start="2">
+<li>Поигралась с путями, попробовала добавить <code>_debug</code> - .../users/v1/_debug:</li>
+</ol>
+<pre><code class="language-json">{&quot;users&quot;:[{&quot;admin&quot;:false,&quot;email&quot;:&quot;mail1@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;name1&quot;},{&quot;admin&quot;:false,&quot;email&quot;:&quot;mail2@mail.com&quot;,&quot;password&quot;:&quot;pass2&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;admin&quot;:true,&quot;email&quot;:&quot;admin@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;admin&quot;}]}
+</code></pre>
+<p>Вау, пароли в открытом виде, поле <code>admin</code>, и все это без какой-либо авторизации. Уязвимость.</p>
+<ol start="3">
+<li>Попробовала залогиниться по .../users/v1/login?username=name1&amp;password=pass1:</li>
+</ol>
+<pre><code class="language-json">{&quot;status&quot;:&quot;fail&quot;,&quot;message&quot;:&quot;User not found&quot;}
+</code></pre>
+<p>Повторила 7 раз с неправильными паролями - никаких блокировок, капчей. Брутфорс в чистом виде. Уязвимость.</p>
+<h3>Уязвимости</h3>
+<ol>
+<li>Публичный доступ к списку пользователей:</li>
+</ol>
+<ul>
+<li>Тип: API5:2023 Broken Function Level Authorization + API3:2023 Broken Object Property Level Authorization</li>
+<li>Суть: любой неаутентифицированный пользователь может получить список всех аккаунтов с личными данными.</li>
+<li>Меры: требовать авторизацию для доступа к эндпоинту, возвращать только те поля, которые действительно нужны для конкретного сценария.</li>
+</ul>
+<ol start="2">
+<li>Debug-эндпоинт с паролями в открытом виде:</li>
+</ol>
+<ul>
+<li>Тип: API8:2023 Security Misconfiguration + API3:2023 Broken Object Property Level Authorization</li>
+<li>Суть: служебный путь для отладки остался включенным в продакшене и возвращает пароли и флаги администратора без какой-либо проверки прав.</li>
+<li>Меры: отключать все debug-эндпоинты через переменные окружения при деплое, никогда не выводить пароли в ответах API, добавить строгую проверку роли перед доступом к чувствительным данным.</li>
+</ul>
+<ol start="3">
+<li>Отсутствие защиты от брутфорса на логине:</li>
+</ol>
+<ul>
+<li>Тип: API2:2023 Broken Authentication</li>
+<li>Суть: можно бесконечно перебирать пароли без блокировок или капчи - приложение не различает человека и бота.</li>
+<li>Меры: хешировать пароли, внедрить rate limiting по IP и пользователю, включать капчу после 3-5 неудачных попыток, логировать подозрительную активность.</li>
+</ul>
+
+</body>
+</html>

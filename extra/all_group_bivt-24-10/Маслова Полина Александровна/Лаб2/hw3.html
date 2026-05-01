@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h3>Часть 1</h3>
+<ul>
+<li>CVE-2026-2025
+API1:2025 - Нарушенный контроль доступа 
+Один из эндпоинтов API был не защищён, поэтому можно было легко достать email адреса в WordPress-плагине Mail Mint, отправив запрос.
+Причина: в коде не было проверки, кем является пользователь (просто пользователь или администратор), поэтому любому желающему выдавались данные </li>
+<li>CVE-2026-3262
+API3:2025 — Чрезмерное раскрытие данных (Excessive Data Exposure)
+Уязвимость связана с неизвестной функцией компонента Administrative Interface. Манипуляции с ней приводят к выполнению после перенаправления. Это означает, что веб-приложение отправляет перенаправление на другой URL, но вместо завершения работы выполняет дополнительный код.</li>
+<li>CVE-2026-3263
+API1:2021
+Уязвимость в системе управления инвентарём и заказами go2ismail Asp.Net-Core-Inventory-Order-Management-System. Уязвимость обнаружена в версиях системы до 9.20250118. Она затрагивает компонент Security API и функциональность файла /api/Security/, к которому можно было легко отправить запрос и получить доступ к функциям безопасности системы.</li>
+</ul>
+<hr>
+<h3>Часть 2</h3>
+<ol>
+<li>После запуска образа я вижу это: <pre><code>{ &quot;создать базу&quot;: &quot;/createdb&quot;,     &quot;посмотреть информацию обо всех пользователях&quot;: &quot;/users/v1&quot;,     &quot;посмотреть подробную информацию обо всех пользователях&quot;: &quot;/users/v1/_debug&quot;,     &quot;регистрация нового пользователя&quot;: &quot;/users/v1/register (HTTP POST)&quot;,     &quot;вход в приложение&quot;: &quot;/users/v1/login (HTTP POST)&quot;,     &quot;просмотр пользователя по имени&quot;: &quot;/users/v1/{username}&quot;,     &quot;удалить пользователя по имени (только для админов)&quot;: &quot;/users/v1/{username} (HTTP DELETE)&quot;,     &quot;изменить email пользователя&quot;: &quot;/users/v1/{username}/email (HTTP PUT)&quot;,     &quot;изменить пароль пользователя&quot;: &quot;/users/v1/{username}/password (HTTP PUT)&quot;,     &quot;все книги&quot;: &quot;/books/v1&quot;,     &quot;добавить книгу&quot;: &quot;/books/v1 (HTTP POST)&quot;,     &quot;просмотр книги&quot;: &quot;/books/v1/{book}&quot;,      }
+</code></pre>
+То есть я вижу документацию по API</li>
+<li>Посмотрим тех пользователей, кто уже есть по ссылке <a href="http://localhost:8080/users/v1">http://localhost:8080/users/v1</a></li>
+</ol>
+<p>{&quot;users&quot;:[{&quot;email&quot;:&quot;<a href="mailto:mail1@mail.com">mail1@mail.com</a>&quot;,&quot;username&quot;:&quot;name1&quot;},{&quot;email&quot;:&quot;<a href="mailto:mail2@mail.com">mail2@mail.com</a>&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;email&quot;:&quot;<a href="mailto:admin@mail.com">admin@mail.com</a>&quot;,&quot;username&quot;:&quot;admin&quot;}]}</p>
+<p>И теперь попробуем создать нового пользователя. 
+3. В описании API написано, что через /users/v1/register происходит регистрация пользователей. Если ввести это в командной строке, то получу  &quot;status&quot;: &quot;fail&quot;, &quot;message&quot;: &quot;User not found&quot;}, это что-то не то, что я бы хотела увидеть. Поговорила с нейронкой, она мне помогла написать вот такой html файлик
+	   ```
+	   <form method="POST" action="http://localhost:8080/users/v1/register"></p>
+<p>    <input name="username" placeholder="username"></p>
+<p>    <input name="password" placeholder="password"></p>
+<p>    <input name="email" placeholder="email"></p>
+<p>    <button type="submit">Register</button></p>
+</form>
+	   ```
+	   Запускаю этот файл в браузере и получаю окошечки для регистрации пользователя. 
+	   Создаю пользователя poli, пароль 123, почта poli@mil.ru. Получила ошибку 
+	   {
+  "detail": null,
+  "status": 415,
+  "title": "Invalid Content-type (application/x-www-form-urlencoded), expected JSON data",
+  "type": "about:blank"
+}
+
+<p>Окей, тут ошибка в том, что данные подаются в неверном формате, тогда создам пользователя через Power Shell:</p>
+<pre><code>$body = @{
+&gt;&gt;     username = &quot;poli&quot;
+&gt;&gt;     password = &quot;123&quot;
+&gt;&gt;     email = &quot;poli@mil.ru&quot;
+&gt;&gt; } | ConvertTo-Json
+</code></pre>
+<p>И ввожу: </p>
+<pre><code> Invoke-RestMethod -Uri &quot;http://localhost:8080/users/v1/register&quot; `
+&gt;&gt;     -Method Post `
+&gt;&gt;     -Body $body `
+&gt;&gt;     -ContentType &quot;application/json&quot;
+</code></pre>
+<p>Смотрю пользователей по ссылке <a href="http://localhost:8080/users/v1">http://localhost:8080/users/v1</a>, и вижу 
+{&quot;users&quot;:[{&quot;email&quot;:&quot;<a href="mailto:mail1@mail.com">mail1@mail.com</a>&quot;,&quot;username&quot;:&quot;name1&quot;},{&quot;email&quot;:&quot;<a href="mailto:mail2@mail.com">mail2@mail.com</a>&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;email&quot;:&quot;<a href="mailto:admin@mail.com">admin@mail.com</a>&quot;,&quot;username&quot;:&quot;admin&quot;},{&quot;email&quot;:&quot;<a href="mailto:poli@mil.ru">poli@mil.ru</a>&quot;,&quot;username&quot;:&quot;poli&quot;}]}, то есть мой новый пользователь создался, ура. 
+4. Теперь я хочу посмотреть подробную информацию обо всех пользователях по ссылке <a href="http://localhost:8080/users/v1/_debug">http://localhost:8080/users/v1/_debug</a></p>
+<p>тут я вижу </p>
+<pre><code>{&quot;users&quot;:[{&quot;admin&quot;:false,&quot;email&quot;:&quot;mail1@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;name1&quot;},{&quot;admin&quot;:false,&quot;email&quot;:&quot;mail2@mail.com&quot;,&quot;password&quot;:&quot;pass2&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;admin&quot;:true,&quot;email&quot;:&quot;admin@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;admin&quot;},{&quot;admin&quot;:false,&quot;email&quot;:&quot;poli@mil.ru&quot;,&quot;password&quot;:&quot;123&quot;,&quot;username&quot;:&quot;poli&quot;}]}
+</code></pre>
+<p>Здесь мы видим все логины и пароли пользователей. Это уязвимости A01:2021 (нарушение контроля доступа) и A02:2021 (криптографические сбои, так как система не шифрует пароли). 
+5. Попробую просто посмотреть информацию о конкретном пользователе по ссылке <a href="http://localhost:8080/users/v1/poli">http://localhost:8080/users/v1/poli</a></p>
+<pre><code>{&quot;username&quot;: &quot;poli&quot;, &quot;email&quot;: &quot;poli@mil.ru&quot;}
+</code></pre>
+<p>   Здесь видно только логин и почту, паролей нет, тут всё окей
+6. Этот недостаток относится к двум уязвимостям: </p>
+<ul>
+<li>A01:2021 - Broken Access Control</li>
+<li>A02:2021 - Cryptographic Failures
+   Меры предотвращения: </li>
+<li>закрыть доступ к эндпоинту и открывать его только для авторизованных администраторов </li>
+<li>Не хранить пароли в явном виде, а записывать, например, хэши</li>
+</ul>
+
+</body>
+</html>

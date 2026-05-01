@@ -1,0 +1,10 @@
+1. CVE за 2021 год, которые содержат XSS в компонентах, написанных на PHP (данные с сайта https://nvd.nist.gov): CVE-2021-27190 (PEEL SHOPPING 9.3.0/9.4.0), CVE-2021-27330 (Triconsole Datepicker Calendar < 3.77), CVE-2021-42078 (PHP Event Calendar), CVE-2021-43657 (Sourcecodester Simple Client Management System 1.0), CVE-2021-43683 (pictshare v1.5), CVE-2021-47914 (PHP Melody 3.0), CVE-2021-40927 (Spotify-for-Alfred ≤ 0.13.9)
+
+
+2. Описание двух из них:
+- PHP Event Calendar - open-source PHP-скрипт для создания и управления несколькими событиями в визуальном календаре. Инструмент для ведения календаря событий. Функционал включает добавление, редактирование, удаление и просмотр событий. Для него зафиксирована XSS-уязвимость CVE-2021-42078. (https://github.com/thetutlage/Php-event-calendar/tree/master/event)
+
+- PEEL SHOPPING - e-commerce CMS на PHP/MySQL. Предназначен для управления каталогом товаров, текстами сайта и прочими элементами магазина из единого административного интерфейса. То есть, это движок интернет-магазина: каталог, административная панель, оформление и сопровождение продаж. XSS-уязвимость для него зафиксирована как CVE-2021-27190. (https://www.softaculous.com/apps/ecommerce/PEEL_SHOPPING)
+
+3. Всего за 2021 год общее количество CVE составляет 20040.
+

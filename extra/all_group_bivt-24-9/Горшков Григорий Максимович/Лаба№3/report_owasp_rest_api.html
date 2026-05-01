@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Отчет OWASP Top 10 - REST API</title>
+<style>body{font-family:Segoe UI,Arial,sans-serif;line-height:1.55;max-width:980px;margin:32px auto;padding:0 24px;color:#1f2933;background:#fff}h1{font-size:30px;margin:0 0 8px}h2{font-size:24px;margin:34px 0 10px;border-bottom:1px solid #d7dde5;padding-bottom:6px}h3{font-size:19px;margin:26px 0 8px}p{margin:7px 0}code,.mono{font-family:Consolas,monospace;background:#f3f5f7;padding:1px 4px;border-radius:4px}pre{white-space:pre-wrap;background:#f6f8fa;border:1px solid #d7dde5;border-radius:8px;padding:12px;overflow:auto}.muted{color:#5f6b7a}.block{margin:12px 0 16px}.url{word-break:break-word}</style>
+</head>
+<body>
+<h1>Отчет по домашнему заданию: OWASP Top 10 - REST API</h1>
+<p>Дата выполнения: 30.04.2026</p>
+
+<h3>Краткое резюме</h3>
+<p>Выполнены обе части задания:</p>
+<p>1. Найдены 3 CVE за последний год, связанные с недостатками REST/API и сопоставленные с OWASP API Security Top 10.</p>
+<p>2. На локальном Docker-стенде ket9/otus-devsecops-owasp-rest найдена и подтверждена уязвимость: незащищенный debug endpoint раскрывает пароли, email и признак администратора для всех пользователей. На основе утекших данных выполнен вход под администратором и получен JWT.</p>
+
+<p>Примечание по стенду: в моем окружении порт 8080 уже был занят другим Docker-контейнером. Нужный образ ket9/otus-devsecops-owasp-rest:latest уже был запущен как контейнер e01715bca094 с пробросом 0.0.0.0:8081-&gt;8080/tcp, поэтому проверки выполнялись через http://localhost:8081. Функционально это тот же стенд.</p>
+
+
+<h2>Часть I. CVE за последний год, связанные с REST/API</h2>
+
+<p>Период поиска: последний год относительно даты выполнения, то есть примерно 30.04.2025 - 30.04.2026.</p>
+<p>Базовая классификация: OWASP API Security Top 10 2023.</p>
+
+<p>Источник по классификации OWASP:</p>
+<p class="url"><a href="https://owasp.org/API-Security/editions/2023/en/0x11-t10/">https://owasp.org/API-Security/editions/2023/en/0x11-t10/</a></p>
+
+<h3>1. CVE-2025-67259 - ClassroomIO REST/PostgREST Broken Access Control</h3>
+<p>Источник: https://nvd.nist.gov/vuln/detail/CVE-2025-67259</p>
+<p>Дата публикации NVD: 24.04.2026</p>
+
+<p>Суть уязвимости:</p>
+<p>В ClassroomIO v0.1.13 низкопривилегированный пользователь с ролью student мог получить не предназначенную ему информацию о курсах через API. Для этого было достаточно изменить перехваченный API-запрос: вместо исходного запроса отправить GET к endpoint /rest/v1/course. В результате раскрывались сведения о других студентах, профили tutor/admin и внутренние метаданные курса.</p>
+
+<p>Причина:</p>
+<p>Недостаточная проверка прав доступа на уровне объектов и endpoint-метода. Сервер доверял тому, что клиент обращается к допустимой операции, и не проверял, имеет ли конкретный пользователь право видеть конкретные объекты и поля.</p>
+
+<p>Связь с OWASP API Top 10:</p>
+<p>API1:2023 - Broken Object Level Authorization, потому что пользователь получал доступ к объектам, которые ему не принадлежат.</p>
+<p>Также близко к API3:2023 - Broken Object Property Level Authorization, потому что раскрывались чувствительные поля объектов.</p>
+
+<h3>2. CVE-2025-56449 - Obsidian Scheduler REST API MFA bypass</h3>
+<p>Источник: https://nvd.nist.gov/vuln/detail/CVE-2025-56449</p>
+<p>Дата публикации NVD: 29.09.2025</p>
+
+<p>Суть уязвимости:</p>
+<p>В Obsidian Scheduler REST API версий 5.0.0 - 6.3.0 учетная запись, заблокированная из-за невключенной MFA, все равно могла использовать Basic Authentication через REST API. В частности, default admin был заблокирован в web-интерфейсе, но через REST API оставался пригодным для административных действий, включая создание нового привилегированного пользователя.</p>
+
+<p>Причина:</p>
+<p>Политика аутентификации и MFA применялась не единообразно. Web-интерфейс учитывал состояние MFA/lockout, а REST API позволял обходить это ограничение через Basic Authentication.</p>
+
+<p>Связь с OWASP API Top 10:</p>
+<p>API2:2023 - Broken Authentication, потому что API позволял обходить MFA и состояние блокировки.</p>
+<p>Также есть связь с API5:2023 - Broken Function Level Authorization, так как через API становились доступны административные действия.</p>
+
+<h3>3. CVE-2025-9209 - RestroPress WordPress REST API token exposure</h3>
+<p>Источник: https://nvd.nist.gov/vuln/detail/CVE-2025-9209</p>
+<p>Дата публикации NVD: 03.10.2025</p>
+
+<p>Суть уязвимости:</p>
+<p>Плагин RestroPress - Online Food Ordering System для WordPress версий 3.0.0 - 3.1.9.2 раскрывал приватные пользовательские токены и API-данные через REST endpoint /wp-json/wp/v2/users. Неаутентифицированный атакующий мог получить эти данные, подделать JWT для других пользователей, включая администраторов, и войти от их имени.</p>
+
+<p>Причина:</p>
+<p>REST endpoint возвращал чувствительные свойства пользовательского объекта неавторизованному клиенту. Дополнительно дизайн токенов позволял использовать утекшие значения для подделки JWT.</p>
+
+<p>Связь с OWASP API Top 10:</p>
+<p>API3:2023 - Broken Object Property Level Authorization, потому что API раскрывал свойства объекта пользователя, которые нельзя отдавать клиенту.</p>
+<p>API2:2023 - Broken Authentication, потому что раскрытие токенов приводило к обходу аутентификации и захвату учетных записей.</p>
+
+
+<h2>Часть II. Проверка Docker-стенда</h2>
+
+<h3>1. Подготовка стенда</h3>
+
+<p>Выполненная команда:</p>
+<p><code>docker pull ket9/otus-devsecops-owasp-rest</code></p>
+
+<p>Результат:</p>
+<p>Образ ket9/otus-devsecops-owasp-rest:latest был уже загружен и актуален.</p>
+<p><code>Digest: sha256:9da7b7d1e2a8a28a5bce07148e49decfebdac6a11a5bc9dcff6870aa413f389c</code></p>
+
+<p>Проверка контейнеров:</p>
+<p><code>docker ps --format &quot;{{.ID}} {{.Image}} {{.Status}} {{.Ports}} {{.Names}}&quot;</code></p>
+
+<p>Релевантный результат:</p>
+<p>e01715bca094 ket9/otus-devsecops-owasp-rest:latest Up 4 hours 0.0.0.0:8081-&gt;8080/tcp cve-owasp-rest-api</p>
+
+<p>Так как порт 8080 уже был занят другим контейнером, стенд проверялся на http://localhost:8081.</p>
+
+<p>Наполнение базы:</p>
+<p><code>GET http://localhost:8081/createdb</code></p>
+
+<p>Ответ:</p>
+<p><code>HTTP 200</code></p>
+<p>{ &quot;message&quot;: &quot;Database populated.&quot; }</p>
+
+<h3>2. Доступный функционал приложения</h3>
+
+<p>Главная страница API возвращает список доступных endpoint:</p>
+
+<p><code>GET /</code></p>
+
+<p>Основные endpoint:</p>
+<p>/createdb - создать/наполнить базу</p>
+<p>/users/v1 - посмотреть информацию обо всех пользователях</p>
+<p>/users/v1/_debug - посмотреть подробную информацию обо всех пользователях</p>
+<p>/users/v1/register - регистрация нового пользователя, HTTP POST</p>
+<p>/users/v1/login - вход в приложение, HTTP POST</p>
+<p>/users/v1/{username} - просмотр пользователя по имени</p>
+<p>/users/v1/{username} - удалить пользователя по имени, HTTP DELETE, заявлено как доступное только администраторам</p>
+<p>/users/v1/{username}/email - изменить email пользователя, HTTP PUT</p>
+<p>/users/v1/{username}/password - изменить пароль пользователя, HTTP PUT</p>
+<p>/books/v1 - все книги</p>
+<p>/books/v1 - добавить книгу, HTTP POST</p>
+<p>/books/v1/{book} - просмотр книги</p>
+
+<h3>3. Ход рассуждений и проверок</h3>
+
+<p>Шаг 1. Проверил обычный список пользователей:</p>
+<p><code>curl -i http://localhost:8081/users/v1</code></p>
+
+<p>Ответ:</p>
+<p><code>HTTP 200</code></p>
+<p>{&quot;users&quot;:[{&quot;email&quot;:&quot;mail1@mail.com&quot;,&quot;username&quot;:&quot;name1&quot;},{&quot;email&quot;:&quot;mail2@mail.com&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;email&quot;:&quot;admin@mail.com&quot;,&quot;username&quot;:&quot;admin&quot;}]}</p>
+
+<p>Вывод:</p>
+<p>Endpoint доступен без аутентификации и раскрывает username/email. Пароли и роли в этом ответе не отображаются.</p>
+
+<p>Шаг 2. Проверил endpoint с говорящим именем _debug:</p>
+<p><code>curl -i http://localhost:8081/users/v1/_debug</code></p>
+
+<p>Ответ:</p>
+<p><code>HTTP 200</code></p>
+<p>{&quot;users&quot;:[{&quot;admin&quot;:false,&quot;email&quot;:&quot;mail1@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;name1&quot;},{&quot;admin&quot;:false,&quot;email&quot;:&quot;mail2@mail.com&quot;,&quot;password&quot;:&quot;pass2&quot;,&quot;username&quot;:&quot;name2&quot;},{&quot;admin&quot;:true,&quot;email&quot;:&quot;admin@mail.com&quot;,&quot;password&quot;:&quot;pass1&quot;,&quot;username&quot;:&quot;admin&quot;}]}</p>
+
+<p>Вывод:</p>
+<p>Endpoint /users/v1/_debug доступен без токена и возвращает расширенные свойства объектов пользователей: password и admin. Это уже является утечкой чувствительных данных и нарушением авторизации на уровне свойств объекта.</p>
+
+<p>Шаг 3. Проверил, можно ли использовать утекшие учетные данные администратора для входа:</p>
+<p><code>Invoke-WebRequest -Method Post -Uri http://localhost:8081/users/v1/login -ContentType application/json -Body &#39;{&quot;username&quot;:&quot;admin&quot;,&quot;password&quot;:&quot;pass1&quot;}&#39;</code></p>
+
+<p>Ответ:</p>
+<p><code>HTTP 200</code></p>
+<p>{</p>
+<p>&quot;auth_token&quot;: &quot;&lt;JWT&gt;&quot;,</p>
+<p>&quot;message&quot;: &quot;Successfully logged in.&quot;,</p>
+<p>&quot;status&quot;: &quot;success&quot;</p>
+<p>}</p>
+
+<p>Шаг 4. Декодировал payload полученного JWT без проверки подписи, чтобы убедиться, что токен действительно выдан для администратора:</p>
+
+<p><code>Payload:</code></p>
+<p>{&quot;exp&quot;:1777576505,&quot;iat&quot;:1777576445,&quot;sub&quot;:&quot;admin&quot;}</p>
+
+<p>Вывод:</p>
+<p>Цепочка атаки подтверждена:</p>
+<p>1. Неаутентифицированный пользователь вызывает /users/v1/_debug.</p>
+<p>2. Получает пароль администратора admin/pass1.</p>
+<p>3. Выполняет login под admin.</p>
+<p>4. Получает JWT с subject admin.</p>
+<p>5. После этого атакующий потенциально может использовать админские функции API.</p>
+
+<p>Удаление пользователей через DELETE не выполнялось, чтобы не менять состояние стенда разрушительным действием. Для доказательства уязвимости достаточно получения admin JWT на основе утекшего пароля.</p>
+
+<h3>4. Описание найденной уязвимости</h3>
+
+<p>Найденная уязвимость: публично доступный debug endpoint раскрывает чувствительные свойства пользовательских объектов.</p>
+
+<p>Уязвимый endpoint:</p>
+<p><code>GET /users/v1/_debug</code></p>
+
+<p>Проблемы:</p>
+<p>1. Endpoint доступен без аутентификации.</p>
+<p>2. Endpoint возвращает поле password для всех пользователей.</p>
+<p>3. Endpoint возвращает поле admin, то есть раскрывает сведения о ролях.</p>
+<p>4. Пароли хранятся и возвращаются в открытом виде.</p>
+<p>5. Утекший пароль администратора позволяет пройти обычную аутентификацию и получить JWT администратора.</p>
+
+<p>Практическое влияние:</p>
+<p>Неаутентифицированный атакующий получает учетные данные пользователей, включая администратора. Это ведет к захвату учетной записи администратора и дальнейшему доступу к административным функциям API.</p>
+
+<h3>5. Тип недостатка по OWASP API Top 10</h3>
+
+<p>Основной тип:</p>
+<p>API3:2023 - Broken Object Property Level Authorization.</p>
+
+<p>Обоснование:</p>
+<p>API возвращает свойства объекта пользователя, которые не должны быть доступны клиенту: password и admin. Сервер не фильтрует чувствительные поля в зависимости от роли и контекста запроса.</p>
+
+<p>Дополнительные связанные типы:</p>
+<p>API9:2023 - Improper Inventory Management, потому что debug endpoint присутствует и доступен в работающем приложении.</p>
+<p>API2:2023 - Broken Authentication, потому что раскрытие пароля администратора приводит к обходу аутентификации через компрометацию учетных данных.</p>
+
+<h3>6. Меры предотвращения</h3>
+
+<p>1. Удалить debug endpoint из production-сборки или закрыть его feature flag, доступным только в локальной разработке.</p>
+<p>2. Ввести принцип deny by default: каждый endpoint должен требовать явного решения по аутентификации и авторизации.</p>
+<p>3. Проверять права доступа на уровне endpoint, объекта и отдельных свойств объекта.</p>
+<p>4. Использовать отдельные response DTO/schema для публичных ответов API. В такие DTO никогда не должны попадать password, password_hash, токены, внутренние роли и служебные признаки.</p>
+<p>5. Не хранить пароли в открытом виде. Использовать стойкое хеширование паролей: Argon2id, bcrypt или scrypt с солью и корректными параметрами сложности.</p>
+<p>6. Никогда не возвращать пароли, хеши паролей, refresh/access tokens и внутренние секреты в API-ответах.</p>
+<p>7. Ограничить административные endpoint RBAC/ABAC-проверками на сервере, а не только на уровне UI.</p>
+<p>8. Вести инвентаризацию API endpoint и отдельно проверять, что debug/test/internal routes не доступны извне.</p>
+<p>9. Добавить автотесты безопасности:</p>
+<p>- неаутентифицированный пользователь не может вызывать debug/internal endpoint;</p>
+<p>- обычный пользователь не получает поля password/admin;</p>
+<p>- OpenAPI-схема публичных ответов не содержит секретных свойств.</p>
+<p>10. Добавить DAST/API security scanning в CI/CD и проверять ответы API на утечки чувствительных полей.</p>
+
+
+<h2>Итог</h2>
+
+<p>Часть I выполнена: найдены 3 актуальные CVE, связанные с REST/API и категориями OWASP API Top 10.</p>
+
+<p>Часть II выполнена: на стенде найдена и подтверждена уязвимость API3:2023 Broken Object Property Level Authorization. Уязвимость позволяет без аутентификации получить пароли пользователей, войти под администратором и получить admin JWT.</p>
+
+</body>
+</html>

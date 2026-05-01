@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Лабораторная работа 5</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.55;
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 20px;
+      color: #222;
+      background: #fff;
+    }
+
+    h1, h2, h3 {
+      color: #222;
+      line-height: 1.25;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-top: 0;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 8px;
+    }
+
+    h2 {
+      font-size: 23px;
+      margin-top: 34px;
+      border-bottom: 1px solid #e5e5e5;
+      padding-bottom: 6px;
+    }
+
+    h3 {
+      font-size: 19px;
+      margin-top: 26px;
+    }
+
+    a {
+      color: #0645ad;
+      text-decoration: none;
+    }
+
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.95em;
+    }
+
+    pre {
+      background: #f4f4f4;
+      padding: 13px;
+      border-radius: 6px;
+      overflow-x: auto;
+      border: 1px solid #e0e0e0;
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      font-size: 14px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 16px 0;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #f2f2f2;
+    }
+
+    ul {
+      padding-left: 24px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Лабораторная работа 5</h1>
+  <p><strong>Тема:</strong> недостатки в Python-коде и безопасность Django.</p>
+
+  <h2>Часть 1. Анализ кода</h2>
+
+  <h3>Фрагмент 1</h3>
+
+  <p><strong>Недостаток:</strong><br>
+    <code>SECRET_KEY</code> хранится прямо в коде.
+  </p>
+
+  <p><strong>Почему это плохо:</strong><br>
+    Если код попадет в репозиторий или к постороннему человеку, секрет станет известен. С его помощью можно подделывать подписанные данные Flask, например session-cookie.
+  </p>
+
+  <p><strong>Как исправить:</strong><br>
+    Хранить секрет в переменной окружения или в хранилище секретов, а не в исходниках.
+    Также нужно добавить <code>.env</code> в <code>.gitignore</code> и менять ключ при утечке.
+  </p>
+
+  <h3>Фрагмент 2</h3>
+
+  <p><strong>Недостаток:</strong><br>
+    У формы почти нет валидации. Пароль задан как обычное текстовое поле.
+  </p>
+
+  <p><strong>Почему это плохо:</strong><br>
+    Можно отправить пустые или слишком длинные значения. Пароль не должен отображаться как обычный текст.
+  </p>
+
+  <p><strong>Как исправить:</strong><br>
+    Использовать <code>PasswordField</code> и валидаторы.
+  </p>
+
+  <h3>Фрагмент 3</h3>
+
+  <p><strong>Недостатки:</strong></p>
+  <ul>
+    <li>пароль сохраняется без хеширования;</li>
+    <li>общий <code>except Exception</code> скрывает все ошибки;</li>
+    <li>при ошибке показывается страница успеха;</li>
+    <li>email и username проверяются слабо.</li>
+  </ul>
+
+  <p><strong>Почему это плохо:</strong><br>
+    Если база утечет, пароли пользователей будут раскрыты. А из-за общего <code>except</code> приложение может сообщить об успешной регистрации, хотя пользователь не был создан.
+  </p>
+
+  <p><strong>Как исправить:</strong></p>
+  <ul>
+    <li>хранить только хеш пароля;</li>
+    <li>использовать <code>bcrypt</code>, <code>argon2</code>, <code>scrypt</code> или <code>PBKDF2</code>;</li>
+    <li>отдельно обрабатывать ошибки валидации и ошибки базы;</li>
+    <li>показывать <code>success_create.html</code> только после успешного сохранения;</li>
+    <li>проверять формат email, длину username и уникальность пользователя.</li>
+  </ul>
+
+  <h2>Часть 2. Безопасность Django</h2>
+
+  <p>Источники:<br>
+    <a href="https://docs.djangoproject.com/en/6.0/topics/security/">https://docs.djangoproject.com/en/6.0/topics/security/</a><br>
+    <a href="https://docs.djangoproject.com/en/6.0/topics/http/sessions/">https://docs.djangoproject.com/en/6.0/topics/http/sessions/</a>
+  </p>
+
+  <h3>1. Какие атаки предотвращает Django</h3>
+
+  <p><strong>XSS.</strong><br>
+    Django-шаблоны по умолчанию экранируют HTML. Поэтому строка вроде <code>&lt;script&gt;alert(1)&lt;/script&gt;</code> при обычном выводе через <code>{{ value }}</code> будет показана как текст. Но защиту можно сломать через <code>safe</code>, <code>mark_safe</code> или отключение <code>autoescape</code>.
+  </p>
+
+  <p><strong>CSRF.</strong><br>
+    Django использует CSRF-токены для опасных запросов, например <code>POST</code>.
+  </p>
+
+  <pre><code>{% csrf_token %}</code></pre>
+
+  <p><strong>SQL Injection.</strong><br>
+    При использовании Django ORM параметры передаются отдельно от SQL-кода, поэтому пользовательский ввод не склеивается с запросом напрямую.
+  </p>
+
+  <p><strong>Clickjacking.</strong><br>
+    Django может отправлять заголовок <code>X-Frame-Options</code>, чтобы страницу нельзя было встроить во фрейм на чужом сайте.
+  </p>
+
+  <p><strong>Host Header Attack.</strong><br>
+    Настройка <code>ALLOWED_HOSTS</code> ограничивает допустимые домены и защищает от подмены заголовка <code>Host</code>.
+  </p>
+
+  <h3>2. Пользовательские сессии в Django</h3>
+
+  <p>Сессии работают через middleware:</p>
+
+  <pre><code>django.contrib.sessions.middleware.SessionMiddleware</code></pre>
+
+  <p>Обычно браузеру выдается cookie <code>sessionid</code>, а сами данные сессии лежат на сервере. По умолчанию они хранятся в таблице <code>django_session</code>.</p>
+
+  <p>Варианты хранения сессий:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Вариант</th>
+        <th>Где хранятся данные</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>database</td><td>в базе данных</td></tr>
+      <tr><td>cache</td><td>в кеше</td></tr>
+      <tr><td>cached_db</td><td>в кеше и базе</td></tr>
+      <tr><td>file</td><td>в файлах</td></tr>
+      <tr><td>signed_cookies</td><td>в подписанной cookie</td></tr>
+    </tbody>
+  </table>
+
+  <p>Важно не хранить в сессии лишние чувствительные данные, не передавать session id в URL и держать <code>SECRET_KEY</code> в секрете.</p>
+
+  <h2>Итог</h2>
+
+  <p>В коде найдены типичные проблемы: секрет в исходниках, слабая форма логина, сохранение пароля без хеша и неправильная обработка ошибок. Django помогает защищаться от XSS, CSRF, SQL Injection, Clickjacking и атак через <code>Host</code>, но эти механизмы нужно использовать правильно.</p>
+</body>
+</html>

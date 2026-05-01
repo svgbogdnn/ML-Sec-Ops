@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h2>Содержание</h2>
+<ol>
+<li><a href="#%D0%B2%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5">Введение</a></li>
+<li><a href="#%D1%87%D0%B0%D1%81%D1%82%D1%8C-i-%D0%B0%D0%BD%D0%B0%D0%BB%D0%B8%D0%B7-%D1%83%D1%8F%D0%B7%D0%B2%D0%B8%D0%BC%D0%BE%D1%81%D1%82%D0%B5%D0%B9-%D0%B7%D0%B0-2021-%D0%B3%D0%BE%D0%B4-%D0%B2-%D1%80%D0%B5%D0%B0%D0%BB%D0%B8%D1%8F%D1%85-20252026-%D0%B3%D0%B3">Часть I. Анализ уязвимостей в реалиях 2025–2026 гг.</a><ul>
+<li><a href="#%D0%BE%D0%B1%D0%B7%D0%BE%D1%80-%D0%BA%D1%80%D0%B8%D1%82%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D1%85-cve">Обзор критических CVE</a></li>
+</ul>
+</li>
+<li><a href="#%D1%87%D0%B0%D1%81%D1%82%D1%8C-ii-%D0%BF%D1%80%D0%B0%D0%BA%D1%82%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B0%D1%8F-%D1%81%D0%B8%D0%BC%D1%83%D0%BB%D1%8F%D1%86%D0%B8%D1%8F-xss-%D0%B0%D1%82%D0%B0%D0%BA%D0%B8">Часть II. Практическая симуляция XSS-атаки</a><ul>
+<li><a href="#1-%D0%B7%D0%B0%D0%BF%D1%83%D1%81%D0%BA-%D1%81%D1%82%D0%B5%D0%BD%D0%B4%D0%B0">1. Запуск стенда</a></li>
+<li><a href="#2-%D1%85%D0%BE%D0%B4-%D1%80%D0%B0%D1%81%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BF%D0%BE%D0%BF%D1%8B%D1%82%D0%BA%D0%B8-%D1%8D%D0%BA%D1%81%D0%BF%D0%BB%D1%83%D0%B0%D1%82%D0%B0%D1%86%D0%B8%D0%B8">2. Ход рассуждений и попытки эксплуатации</a></li>
+<li><a href="#3-%D1%82%D0%B8%D0%BF-%D0%BD%D0%B0%D0%B9%D0%B4%D0%B5%D0%BD%D0%BD%D0%BE%D0%B9-%D1%83%D1%8F%D0%B7%D0%B2%D0%B8%D0%BC%D0%BE%D1%81%D1%82%D0%B8">3. Тип найденной уязвимости</a></li>
+</ul>
+</li>
+<li><a href="#%D1%87%D0%B0%D1%81%D1%82%D1%8C-iii-%D0%BC%D0%B5%D1%80%D1%8B-%D0%BF%D1%80%D0%B5%D0%B4%D0%BE%D1%82%D0%B2%D1%80%D0%B0%D1%89%D0%B5%D0%BD%D0%B8%D1%8F">Часть III. Меры предотвращения</a><ul>
+<li><a href="#%D0%BF%D1%80%D0%B0%D0%B2%D0%B8%D0%BB%D0%B0-%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F">Правила экранирования</a></li>
+<li><a href="#%D0%BF%D1%80%D0%B0%D0%BA%D1%82%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B0%D1%8F-%D1%80%D0%B5%D0%B0%D0%BB%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F-%D0%B7%D0%B0%D1%89%D0%B8%D1%82%D1%8B">Практическая реализация защиты</a></li>
+</ul>
+</li>
+</ol>
+<h2>Введение</h2>
+<p>Межсайтовый скриптинг (XSS) остается критической угрозой. В 1-м квартале 2025 года на инфраструктуру российских компаний было совершено около 270 млн атак, из которых <strong>40% — это XSS</strong> (<a href="https://infoforum.ru/glavnoe/v-nachale-2025-goda-xss-ataki-sostavili-okolo-50-vseh-kiberugroz-v-rossii">Источник: Infoforum</a>). Ситуация усугубляется введением в РФ жестких штрафов за утечки данных, достигающих 3% от годового оборота компании.</p>
+<h2>Часть I. Анализ уязвимостей</h2>
+<p><strong>Статистика CVE:</strong> По данным отчета <a href="https://cbr.ru/Collection/Collection/File/59655/Attack_2025.pdf">Банка России за 2025 год</a>, в 2021 году было зарегистрировано порядка 20 000 уязвимостей. Для сравнения, глобально в 2025 году их число достигло рекордных 48 185 (<a href="https://zerothreat.ai/blog/cybersecurity-vulnerability-statistics">Источник: ZeroThreat</a>). Эксперты подчеркивают, что старые уязвимости (в т.ч. 2021 года) продолжают активно эксплуатироваться злоумышленниками в атаках на бизнес и в 2026 году (<a href="https://secpost.ru/vulncheck-lish-1-opublikovannyh-v-2025-godu-uyazvimostej-realno-ispolzovalsya-v-atakah">Источник: Secpost</a>).</p>
+<h3>Обзор критических CVE</h3>
+<table>
+<thead>
+<tr>
+<th align="left">Идентификатор</th>
+<th align="left">Компонент (PHP)</th>
+<th align="left">Тип XSS</th>
+<th align="left">Суть и механика уязвимости</th>
+<th align="left">Источник</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>CVE-2021-33851</strong></td>
+<td align="left">Плагин WordPress <em>Customize Login Image</em></td>
+<td align="left"><strong>Stored XSS</strong></td>
+<td align="left"><strong>Суть:</strong> Недостаточная фильтрация параметра <code>cli_logo_url</code>.<br><strong>Механика:</strong> Злоумышленник внедряет скрипт (например, <code>&lt;script&gt;alert(1)&lt;/script&gt;</code>) через форму настройки логотипа. Код сохраняется в БД и исполняется в браузере при открытии страницы <code>wp-login.php</code> любым пользователем, похищая сессии.</td>
+<td align="left"><a href="https://www.securin.io/zero-day/cve-2021-33851-stored-cross-site-scripting-in-wordpress-customize-login-image">Securin</a></td>
+</tr>
+<tr>
+<td align="left"><strong>CVE-2021-41878</strong></td>
+<td align="left"><em>i-Panel Administration System 2.0</em></td>
+<td align="left"><strong>Reflected XSS</strong></td>
+<td align="left"><strong>Суть:</strong> Отсутствие экранирования параметров URI в скрипте <code>lostpassword.php</code>.<br><strong>Механика:</strong> Жертва открывает ссылку вида <code>lostpassword.php/n4gap&quot;&gt;&lt;img src=a onerror=alert(1)&gt;</code>. Сервер возвращает путь без изменений в тело страницы, а браузер выполняет код из-за ошибки загрузки несуществующей картинки.</td>
+<td align="left"><a href="https://github.com/projectdiscovery/nuclei-templates/blob/main/http/cves/2021/CVE-2021-41878.yaml">Nuclei</a></td>
+</tr>
+</tbody></table>
+<h2>Часть II. Практическая симуляция XSS-атаки</h2>
+<p><strong>Цель:</strong> Провести анализ методом «черного ящика» (Black-box) и выявить уязвимости в тестовом контейнере.</p>
+<h3>1. Запуск стенда</h3>
+<p>Команды для загрузки и запуска тестовой среды:</p>
+<pre><code class="language-bash">docker pull ket9/otus-devsecops-xss
+docker run -d -p 8080:80 ket9/otus-devsecops-xss:latest
+</code></pre>
+<h3>2. Ход рассуждений и попытки эксплуатации</h3>
+<ul>
+<li><p><strong>Попытка 1 (Reflected XSS в поиске):</strong></p>
+<ul>
+<li><strong>Ввод:</strong> <code>&lt;script&gt;alert(1)&lt;/script&gt;</code></li>
+<li><strong>Реакция сервера:</strong> Вернул текст <code>&amp;lt;script&amp;gt;</code></li>
+<li><strong>Вывод:</strong> GET-запросы безопасно экранируются.</li>
+</ul>
+</li>
+<li><p><strong>Попытка 2 (Stored XSS в POST-запросе гостевой книги):</strong></p>
+<ul>
+<li><strong>Ввод:</strong> <code>&lt;script&gt;alert(2)&lt;/script&gt;</code></li>
+<li><strong>Реакция сервера:</strong> Тег исчез, остался только текст <code>alert(2)</code></li>
+<li><strong>Вывод:</strong> Сервер использует примитивные «черные списки», вырезая тег <code>script</code>.</li>
+</ul>
+</li>
+<li><p><strong>Попытка 3 (Смена регистра):</strong></p>
+<ul>
+<li><strong>Ввод:</strong> <code>&lt;sCrIpT&gt;alert(3)&lt;/ScRiPt&gt;</code></li>
+<li><strong>Реакция сервера:</strong> Тег удален.</li>
+<li><strong>Вывод:</strong> Фильтр нечувствителен к регистру.</li>
+</ul>
+</li>
+<li><p><strong>Попытка 4 (Вложенность):</strong></p>
+<ul>
+<li><strong>Ввод:</strong> <code>&lt;scr&lt;script&gt;ipt&gt;alert(4)&lt;/script&gt;</code></li>
+<li><strong>Реакция сервера:</strong> Пейлоад разрушен.</li>
+<li><strong>Вывод:</strong> Фильтр работает рекурсивно.</li>
+</ul>
+</li>
+<li><p><strong>Попытка 5 (Обход через события — Успех):</strong></p>
+<ul>
+<li><strong>Ввод:</strong> <code>&lt;img src=&quot;x&quot; onerror=&quot;alert(document.cookie)&quot;&gt;</code></li>
+<li><strong>Результат:</strong> Сервер пропустил легитимный тег <code>&lt;img&gt;</code>. Браузер не смог загрузить картинку <code>x</code> и выполнил код из атрибута <code>onerror</code>. Появилось модальное окно с cookie.</li>
+</ul>
+</li>
+</ul>
+<h3>3. Тип найденной уязвимости</h3>
+<p>Выявлена уязвимость класса <strong>Stored XSS</strong> (Хранимый межсайтовый скриптинг). Вредоносный payload навсегда сохранился в базе данных сервера и будет исполняться в браузере любого посетителя зараженной страницы.</p>
+<hr>
+<h2>Часть III. Меры предотвращения</h2>
+<p>Защита через вырезание слов («черные списки») доказала свою неэффективность. Необходима строгая валидация и контекстно-зависимое экранирование вывода.</p>
+<h3>Правила экранирования</h3>
+<p>Символы, подлежащие обязательной замене на HTML-сущности:</p>
+<table>
+<thead>
+<tr>
+<th align="left">Исходный символ</th>
+<th align="left">HTML-сущность</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>&lt;</code></td>
+<td align="left"><code>&amp;lt;</code></td>
+</tr>
+<tr>
+<td align="left"><code>&gt;</code></td>
+<td align="left"><code>&amp;gt;</code></td>
+</tr>
+<tr>
+<td align="left"><code>&quot;</code></td>
+<td align="left"><code>&amp;quot;</code></td>
+</tr>
+<tr>
+<td align="left"><code>&#39;</code></td>
+<td align="left"><code>&amp;#039;</code></td>
+</tr>
+<tr>
+<td align="left"><code>&amp;</code></td>
+<td align="left"><code>&amp;amp;</code></td>
+</tr>
+</tbody></table>
+<h3>Практическая реализация защиты</h3>
+<ol>
+<li><strong>Экранирование (PHP):</strong> При выводе данных пользователя всегда использовать встроенную функцию:<pre><code class="language-php">echo htmlspecialchars($input, ENT_QUOTES | ENT_HTML5, &#39;UTF-8&#39;);
+</code></pre>
+</li>
+<li><strong>Защита сессий:</strong> Использовать флаги <code>HttpOnly</code> и <code>Secure</code> для cookie. Это предотвратит доступ к сессионным данным со стороны JS-скриптов (даже в случае успешной XSS-атаки).</li>
+<li><strong>Заголовки CSP:</strong> Настроить <em>Content Security Policy</em>. Это позволит на уровне браузера запретить исполнение inline-скриптов и потенциально опасных атрибутов (таких как <code>onerror</code> или <code>onload</code>).</li>
+</ol>
+
+</body>
+</html>

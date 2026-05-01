@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code {
+      background: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote {
+      border-left: 4px solid #ddd;
+      margin: 1em 0;
+      padding-left: 20px;
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h2>Часть 1</h2>
+<ol>
+<li>Скачаем образ alpine</li>
+</ol>
+<pre><code>PS C:\Users\roldu\Documents\lab55&gt; docker pull alpine:latest
+&gt;&gt; 
+latest: Pulling from library/alpine
+6a0ac1617861: Pull complete 
+Digest: sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11
+Status: Downloaded newer image for alpine:latest
+docker.io/library/alpine:latest
+</code></pre>
+<ol start="2">
+<li>Просмотрим какие контейнеры запущены с помощью команды</li>
+</ol>
+<pre><code>docker image ls
+</code></pre>
+<pre><code>PS C:\Users\roldu\Documents\lab55&gt; docker image ls
+&gt;&gt; 
+REPOSITORY                             TAG       IMAGE ID       CREATED        SIZE
+otel/opentelemetry-collector-contrib   latest    d57bfe8eee23   39 hours ago   474MB
+alpine                                 latest    5b10f432ef3d   2 weeks ago    13MB
+gpthub/openwebui                       dev       ac30067191b2   2 weeks ago    6.05GB
+&lt;none&gt;                                 &lt;none&gt;    a516c26968aa   2 weeks ago    473MB
+gpthub/openwebui                       builder   94c314d7c9e8   2 weeks ago    4.07GB
+searxng/searxng                        latest    800c99d4a6b8   2 weeks ago    375MB
+&lt;none&gt;                                 &lt;none&gt;    0fba96233274   4 weeks ago    457MB
+ghcr.io/open-webui/open-webui          main      b8095f79a6a8   4 weeks ago    6.67GB
+&lt;none&gt;                                 &lt;none&gt;    e7c92c715f28   8 weeks ago    453MB
+pgvector/pgvector                      pg16      7d400e340efb   2 months ago   621MB
+qdrant/qdrant                          latest    f1c7272cdac5   2 months ago   272MB
+otel/opentelemetry-collector-contrib   latest    ffc818ee108d   5 months ago   449MB
+otel/opentelemetry-collector-contrib   latest    faf125d656fa   5 months ago   445MB
+postgres                               16.1      09f23e02d766   2 years ago    604MB
+</code></pre>
+<ol start="3">
+<li>С помощью команды whoami узнаем имя текущего пользователя</li>
+</ol>
+<pre><code>PS C:\Users\roldu\Documents\lab55&gt; whoami 
+desktop-d1ac1o5\roldu
+</code></pre>
+<ol start="4">
+<li>Далее заходим в контейнер, просмотрим пользователя внутри контейнера</li>
+</ol>
+<pre><code class="language-bash">docker run -it alpine:latest sh
+</code></pre>
+<pre><code class="language-sh">whoami
+</code></pre>
+<p>Видим вывод</p>
+<pre><code>root
+</code></pre>
+<p>![[Pasted image 20260430201251.png]]</p>
+<p>И получается, что <strong>по умолчанию контейнер запускается от root</strong>, даже если ты на хосте обычный пользователь</p>
+<h2>Часть 2</h2>
+<ol>
+<li>Создадим простейший Dockerfile с базовыми настройками безопасности</li>
+</ol>
+<pre><code># Фиксируем конкретный тег для обеспечения стабильности сборки
+FROM alpine:3.19
+
+
+# Обновляем пакеты сразу при сборке, чтобы закрыть известные CVE
+RUN apk update &amp;&amp; apk upgrade --no-cache
+
+
+# Создаём системную группу и пользователя без пароля и логин-шелла для безопасности
+RUN addgroup -S -g 1001 appgroup &amp;&amp; \
+    adduser -S -u 1001 -G appgroup appuser
+  
+# Берем только необходимые файлы для приложения, чтобы минимизировать размер образа
+WORKDIR /app
+
+# Переключаемся на непривилегированного пользователя
+USER felicuss
+
+EXPOSE 8080
+
+CMD [&quot;sh&quot;]
+</code></pre>
+<ol start="2">
+<li>Далее контейнер запустим</li>
+</ol>
+<pre><code class="language-powershell">docker run -it --rm secure-alpine sh
+</code></pre>
+<p>Внутри нашего контейнера выполним</p>
+<pre><code>whoami
+</code></pre>
+<p>Видим</p>
+<pre><code>felicuss
+</code></pre>
+<h2>Часть 3</h2>
+<ol>
+<li>Установим trivy через</li>
+</ol>
+<pre><code>winget install aquasecurity.trivy
+</code></pre>
+<p>Далее запустим сканирование образа</p>
+<pre><code>trivy image secure-alpine
+</code></pre>
+<p>Видим
+![[Pasted image 20260430200332.png]]</p>
+<p>Отсюда можем понять</p>
+<ol>
+<li>Alpine 3.19 устарел и для него больше не выходят security апдейты</li>
+<li>0 уязвимостей, т.к образ минимальный 
+Понимаем, что такой образ не надо использовать, потому что новые CVE не будут ложиться в базу</li>
+</ol>
+
+</body>
+</html>

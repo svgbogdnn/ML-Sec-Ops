@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome file</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="лр-2.-анализ-уязвимостей-rest-api">ЛР 2. Анализ уязвимостей REST API</h1>
+<h2 id="часть-1">Часть 1</h2>
+<h3 id="cve-2025-15414">CVE-2025-15414</h3>
+<p><strong>Недостаток:</strong></p>
+<p>API выполняет запросы к произвольным адресам, контролируемым пользователем, что позволяет получать доступ к внутренним сервисам, локальным ресурсам или обходить сетевые ограничения</p>
+<p><strong>Причина:</strong></p>
+<p>Отсутствие валидации и ограничения входных данных (URL), а также отсутствие контроля допустимых адресов (whitelist). Сервер доверяет пользовательскому вводу и выполняет запросы без проверки</p>
+<p><strong>Тип OWASP:</strong></p>
+<p>Server-Side Request Forgery (SSRF)</p>
+<h3 id="cve-2025-32044">CVE-2025-32044</h3>
+<p><strong>Недостаток:</strong></p>
+<p>API раскрывает избыточную информацию, включая внутренние данные приложения и чувствительные пользовательские данные, что не должно быть доступно внешнему пользователю</p>
+<p><strong>Причина:</strong></p>
+<p>Неправильная конфигурация сервера (включён вывод отладочной информации), а также отсутствие фильтрации данных перед отправкой ответа клиенту</p>
+<p><strong>Тип OWASP:</strong></p>
+<p>Security Misconfiguration</p>
+<h3 id="cve-2025-10910">CVE-2025-10910</h3>
+<p><strong>Недостаток:</strong></p>
+<p>API не проверяет, принадлежит ли устройство пользователю, выполняющему операцию. Это позволяет выполнять действия с чужими объектами (устройствами)</p>
+<p><strong>Причина:</strong></p>
+<p>Отсутствие проверки прав доступа на уровне объекта (object-level authorization). Сервер доверяет входным данным и не проверяет принадлежность ресурса пользователю</p>
+<p><strong>Тип OWASP:</strong></p>
+<p>Broken Object Level Authorization (BOLA)</p>
+<hr>
+<h2 id="часть-2">Часть 2</h2>
+<h3 id="ход-выполнения">Ход выполнения</h3>
+<p>Для начала я перешла по ссылке <code>http://localhost:8080/</code>, увидела там список API</p>
+<pre class=" language-json"><code class="prism  language-json"><span class="token punctuation">{</span> <span class="token string">"создать базу"</span><span class="token punctuation">:</span> <span class="token string">"/createdb"</span><span class="token punctuation">,</span>     <span class="token string">"посмотреть информацию обо всех пользователях"</span><span class="token punctuation">:</span> <span class="token string">"/users/v1"</span><span class="token punctuation">,</span>     <span class="token string">"посмотреть подробную информацию обо всех пользователях"</span><span class="token punctuation">:</span> <span class="token string">"/users/v1/_debug"</span><span class="token punctuation">,</span>     <span class="token string">"регистрация нового пользователя"</span><span class="token punctuation">:</span> <span class="token string">"/users/v1/register (HTTP POST)"</span><span class="token punctuation">,</span>     <span class="token string">"вход в приложение"</span><span class="token punctuation">:</span> <span class="token string">"/users/v1/login (HTTP POST)"</span><span class="token punctuation">,</span>     <span class="token string">"просмотр пользователя по имени"</span><span class="token punctuation">:</span> <span class="token string">"/users/v1/{username}"</span><span class="token punctuation">,</span>     <span class="token string">"удалить пользователя по имени (только для админов)"</span><span class="token punctuation">:</span> <span class="token string">"/users/v1/{username} (HTTP DELETE)"</span><span class="token punctuation">,</span>     <span class="token string">"изменить email пользователя"</span><span class="token punctuation">:</span> <span class="token string">"/users/v1/{username}/email (HTTP PUT)"</span><span class="token punctuation">,</span>     <span class="token string">"изменить пароль пользователя"</span><span class="token punctuation">:</span> <span class="token string">"/users/v1/{username}/password (HTTP PUT)"</span><span class="token punctuation">,</span>     <span class="token string">"все книги"</span><span class="token punctuation">:</span> <span class="token string">"/books/v1"</span><span class="token punctuation">,</span>     <span class="token string">"добавить книгу"</span><span class="token punctuation">:</span> <span class="token string">"/books/v1 (HTTP POST)"</span><span class="token punctuation">,</span>     <span class="token string">"просмотр книги"</span><span class="token punctuation">:</span> <span class="token string">"/books/v1/{book}"</span><span class="token punctuation">,</span>      <span class="token punctuation">}</span> 
+</code></pre>
+<p>Далее по заданию открыла <code>http://localhost:8080/createdb</code>, получила</p>
+<pre class=" language-json"><code class="prism  language-json"><span class="token punctuation">{</span> <span class="token string">"message"</span><span class="token punctuation">:</span> <span class="token string">"Database populated."</span> <span class="token punctuation">}</span>
+</code></pre>
+<p>База данных заполнена</p>
+<p>Попробую посмотреть список пользователей <code>http://localhost:8080/users/v1</code>, получаю</p>
+<pre class=" language-json"><code class="prism  language-json"><span class="token punctuation">{</span><span class="token string">"users"</span><span class="token punctuation">:</span><span class="token punctuation">[</span><span class="token punctuation">{</span><span class="token string">"email"</span><span class="token punctuation">:</span><span class="token string">"mail1@mail.com"</span><span class="token punctuation">,</span><span class="token string">"username"</span><span class="token punctuation">:</span><span class="token string">"name1"</span><span class="token punctuation">}</span><span class="token punctuation">,</span><span class="token punctuation">{</span><span class="token string">"email"</span><span class="token punctuation">:</span><span class="token string">"mail2@mail.com"</span><span class="token punctuation">,</span><span class="token string">"username"</span><span class="token punctuation">:</span><span class="token string">"name2"</span><span class="token punctuation">}</span><span class="token punctuation">,</span><span class="token punctuation">{</span><span class="token string">"email"</span><span class="token punctuation">:</span><span class="token string">"admin@mail.com"</span><span class="token punctuation">,</span><span class="token string">"username"</span><span class="token punctuation">:</span><span class="token string">"admin"</span><span class="token punctuation">}</span><span class="token punctuation">]</span><span class="token punctuation">}</span>
+</code></pre>
+<p>У нас есть три пользователя, пробую получить доступ к конкретному пользователю</p>
+<p><code>http://localhost:8080/users/v1/admin</code></p>
+<pre class=" language-json"><code class="prism  language-json"><span class="token punctuation">{</span><span class="token string">"username"</span><span class="token punctuation">:</span> <span class="token string">"admin"</span><span class="token punctuation">,</span> <span class="token string">"email"</span><span class="token punctuation">:</span> <span class="token string">"admin@mail.com"</span><span class="token punctuation">}</span>
+</code></pre>
+<p><code>http://localhost:8080/users/v1/name1</code></p>
+<pre class=" language-json"><code class="prism  language-json"><span class="token punctuation">{</span><span class="token string">"username"</span><span class="token punctuation">:</span> <span class="token string">"name1"</span><span class="token punctuation">,</span> <span class="token string">"email"</span><span class="token punctuation">:</span> <span class="token string">"mail1@mail.com"</span><span class="token punctuation">}</span>
+</code></pre>
+<p><code>http://localhost:8080/users/v1/name2</code></p>
+<pre class=" language-json"><code class="prism  language-json"><span class="token punctuation">{</span><span class="token string">"username"</span><span class="token punctuation">:</span> <span class="token string">"name2"</span><span class="token punctuation">,</span> <span class="token string">"email"</span><span class="token punctuation">:</span> <span class="token string">"mail2@mail.com"</span><span class="token punctuation">}</span>
+</code></pre>
+<p>Получается, я могу получить список пользователей и могу получить данные конкретного пользователя, даже администратора, напрямую, никакой проверки прав доступа нет<br>
+Тогда это уязвимость BOLA (Broken Object Level Authorization)</p>
+<h3 id="меры-предотвращения">Меры предотвращения</h3>
+<ul>
+<li>Проверка прав доступа на уровне объекта (object-level authorization)</li>
+<li>Запрет доступа к чужим объектам даже при знании ID/username</li>
+<li>Использование принципа least privilege</li>
+<li>Централизованная проверка авторизации в middleware</li>
+<li>Логирование и мониторинг подозрительных обращений к объектам</li>
+</ul>
+</div>
+</body>
+
+</html>

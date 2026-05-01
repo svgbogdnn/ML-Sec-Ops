@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>1 часть</h1>
+<h3>фрагмент кода 1</h3>
+<pre><code>#!/usr/bin/env python3
+from flask import Flask
+
+from mod_api import mod_api
+
+app = Flask(&#39;vuln_app&#39;)
+app.config[&#39;SECRET_KEY&#39;] = &#39;F0cUzh8BgYJSLXAU8qDmClM0dE8GJTpsiyVEl3BCqQMCABp1U$f%&#39;
+
+app.register_blueprint(mod_api, url_prefix=&#39;/api&#39;)
+</code></pre>
+<p>недостаток: секретный ключ написан прямо в коде</p>
+<p>рекомендации по устранению: положить ключ в переменное окружение, вместо хранения его в коде</p>
+<h3>фрагмент кода 2</h3>
+<pre><code>from flask_wtf import Form  
+from wtforms import TextField
+
+class LoginForm(Form):  
+username = TextField(&#39;username&#39;)  
+password = TextField(&#39;password&#39;)
+</code></pre>
+<p>недостаток: нет CSRF-токена, поле пароля имеет тип TextField - пароль будет виден при вводе</p>
+<p>рекомендации по устранению: поменять тип поля у пароля на PasswordField, использовать FlaskForm, вместо Form</p>
+<h3>фрагмент кода 3</h3>
+<pre><code>
+
+def post(self):
+    username = self.get_argument(&#39;username&#39;)
+    password = self.get_argument(&#39;password&#39;).encode(&#39;utf-8&#39;)
+    email = self.get_argument(&#39;mail&#39;)
+
+    try:
+        username = username.lower()
+        email = email.strip().lower()
+        user = User({&#39;username&#39;: username, &#39;password&#39;: password, &#39;email&#39;: email, &#39;date_joined&#39;: curtime()})
+        user.validate()
+        save_user(self.db_conn, user)
+    except Exception, e:
+        return self.render_template(&quot;success_create.html&quot;)
+</code></pre>
+<p>недостаток: 1) при любой ошибке пользователь видит success_create(вероятно, это успех какого-либо действия) 2) сам разработчик никогда не узнает, какая именно ошибка в коде, потому что любые исключения игнорируются 3)есть риск возможности провернуть sql-инъекцию</p>
+<p>рекомендации по устранению: 1) разделить обработку ошибок - это значит, что success_create надо возвращать в конце блока try, а на каждое возможное исключение писать свой блок except и в каждом выводить сообщение, что было не так. 2) использовать параметризованные запросы во избежание sql-инъекции</p>
+<hr>
+<h1>2 часть</h1>
+<h3>Какие наиболее распространенные атаки предотвращает django?</h3>
+<ol>
+<li>XSS</li>
+<li>CSRF</li>
+<li>SQL-инъекции</li>
+<li>Clickjacking</li>
+</ol>
+<h3>Описать, как устроено управление пользовательскими сессиями в django</h3>
+<p>Django управляет сессиями через промежуточное ПО (middleware) и позволяет сохранять данные о пользователе между HTTP-запросами.</p>
+<ol>
+<li>Сначала сессия должна быть создана. При создании сессии(когда код впервые обращается к объекту сессии) пользователь получает свой уникальный сессионный ключ session_key</li>
+<li>Далее данные сессии сериализуются и сохраняются в хранилище</li>
+<li>Браузер получает cookie c именем sessionid и значением session_key</li>
+<li>При запросе django считывает sessionid из cookie, находит данные в хранилище по этому ключу и десериализует их в объект сессии в Python</li>
+</ol>
+
+</body>
+</html>

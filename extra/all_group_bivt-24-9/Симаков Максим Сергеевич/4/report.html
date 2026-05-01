@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Отчет по лабораторной работе №6</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 40px auto;
+            max-width: 860px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 8px;
+        }
+        h2 {
+            color: #2c3e50;
+            margin-top: 30px;
+        }
+        p, li {
+            margin-bottom: 10px;
+        }
+        ul, ol {
+            margin-bottom: 15px;
+        }
+        a {
+            color: #2980b9;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background: #f0f0f0;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.95em;
+        }
+        pre {
+            background: #f4f4f4;
+            border-left: 3px solid #2c3e50;
+            padding: 12px 16px;
+            overflow-x: auto;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.93em;
+            line-height: 1.5;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 36px 0;
+        }
+        strong {
+            color: #111;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>ЧАСТЬ 1</h1>
+
+    <h2>Фрагмент кода 1</h2>
+    <pre>#!/usr/bin/env python3
+from flask import Flask
+
+from mod_api import mod_api
+
+app = Flask('vuln_app')
+app.config['SECRET_KEY'] = 'F0cUzh8BgYJSLXAU8qDmClM0dE8GJTpsiyVEl3BCqQMCABp1U$f%'
+
+app.register_blueprint(mod_api, url_prefix='/api')</pre>
+
+    <p><strong>Недостаток:</strong> секретный ключ <code>SECRET_KEY</code> захардкожен прямо в исходном коде.</p>
+    <p>В Flask <code>SECRET_KEY</code> используется для подписи сессионных куки и защиты от CSRF. Если код попадёт в систему контроля версий или произойдёт утечка репозитория, злоумышленник получит ключ и сможет: подделывать сессионные куки и входить под любым пользователем, обходить CSRF-защиту, расшифровывать данные, которые приложение шифрует этим ключом.</p>
+    <p><strong>Рекомендации по устранению:</strong></p>
+    <ul>
+        <li>Вынести ключ в переменную окружения и читать через <code>os.environ.get('SECRET_KEY')</code>.</li>
+        <li>Добавить <code>.env</code>-файл в <code>.gitignore</code>, чтобы он никогда не попал в репозиторий.</li>
+        <li>Использовать разные ключи для dev и prod окружений.</li>
+        <li>При компрометации немедленно ротировать ключ — все активные сессии при этом сбрасываются.</li>
+    </ul>
+
+    <h2>Фрагмент кода 2</h2>
+    <pre>from flask_wtf import Form
+from wtforms import TextField
+
+class LoginForm(Form):
+    username = TextField('username')
+    password = TextField('password')</pre>
+
+    <p><strong>Недостатки:</strong></p>
+    <p>1. <strong>Пароль — обычное текстовое поле.</strong> <code>TextField</code> отображает вводимые символы открытым текстом. Любой, кто смотрит на экран, видит пароль. Браузер также может предложить сохранить его в автодополнении как обычный текст.</p>
+    <p>2. <strong>Отсутствие валидаторов.</strong> Форма принимает любые данные без ограничений: пустые строки, сколь угодно длинные значения, некорректные форматы. Это открывает путь к ошибкам на уровне базы данных и позволяет обходить ожидаемую логику приложения.</p>
+    <p><strong>Рекомендации по устранению:</strong></p>
+    <ul>
+        <li>Заменить <code>TextField</code> для пароля на <code>PasswordField</code> — он скрывает символы и отключает автодополнение браузера по умолчанию.</li>
+        <li>Добавить валидаторы: <code>DataRequired()</code> для обоих полей, <code>Length(min=8, max=128)</code> для пароля, <code>Length(max=64)</code> для имени пользователя.</li>
+        <li>Для поля <code>username</code> добавить <code>Regexp</code> или <code>Email</code>-валидатор в зависимости от ожидаемого формата.</li>
+    </ul>
+
+    <h2>Фрагмент кода 3</h2>
+    <pre>def post(self):
+    username = self.get_argument('username')
+    password = self.get_argument('password').encode('utf-8')
+    email = self.get_argument('mail')
+
+try:
+    username = username.lower()
+    email = email.strip().lower()
+    user = User({'username': username, 'password': password, 'email': email, 'date_joined': curtime()})
+    user.validate()
+    save_user(self.db_conn, user)
+except Exception, e:
+    return self.render_template("success_create.html")</pre>
+
+    <p><strong>Недостатки:</strong></p>
+    <p>1. <strong>Пароль хранится в открытом виде.</strong> Пароль кодируется в байты (<code>.encode('utf-8')</code>), но не хэшируется перед сохранением. При компрометации базы данных все пароли пользователей немедленно доступны злоумышленнику.</p>
+    <p>2. <strong>Неверная обработка исключений.</strong> При любой ошибке обработчик <code>except</code> всё равно отдаёт страницу <code>success_create.html</code>. Пользователь думает, что регистрация прошла успешно, хотя на деле аккаунт не создан. Это и логическая ошибка, и потенциальная точка для обхода бизнес-логики.</p>
+    <p><strong>Рекомендации по устранению:</strong></p>
+    <ul>
+        <li>Хэшировать пароль перед сохранением с использованием стойкого алгоритма: <code>bcrypt</code>, <code>argon2</code> или <code>PBKDF2</code>. В Python удобно использовать библиотеку <code>passlib</code> или встроенный <code>hashlib</code>.</li>
+        <li>Разделить обработку ошибок: успех показывать только при реальном успехе, ошибку — логировать и возвращать пользователю адекватное сообщение.</li>
+        <li>Конкретные ошибки (например, <code>IntegrityError</code> при дублировании) обрабатывать отдельно: «Имя пользователя уже занято».</li>
+        <li>Никогда не глотать исключения через голый <code>except Exception</code>.</li>
+    </ul>
+
+    <hr>
+
+    <h1>ЧАСТЬ 2</h1>
+
+    <h2>1. Какие наиболее распространённые атаки предотвращает Django?</h2>
+
+    <p>Django предоставляет встроенную защиту от нескольких классов атак из OWASP Top 10, если не отключать её намеренно:</p>
+
+    <p><strong>SQL-инъекции</strong> — ORM Django автоматически параметризует все запросы к базе данных. Пользовательский ввод никогда не конкатенируется напрямую с SQL-кодом. Уязвимость остаётся возможной только при использовании <code>raw()</code> или <code>cursor.execute()</code> с ручной конкатенацией строк.</p>
+
+    <p><strong>XSS (Cross-Site Scripting)</strong> — шаблонизатор Django по умолчанию экранирует все переменные при выводе: <code>&lt;</code>, <code>&gt;</code>, <code>"</code>, <code>'</code>, <code>&amp;</code> заменяются на HTML-сущности. Вредоносный скрипт в пользовательском вводе не выполнится в браузере. Если разработчик явно помечает данные как безопасные через <code>mark_safe()</code> или фильтр <code>|safe</code>, защита отключается.</p>
+
+    <p><strong>CSRF (Cross-Site Request Forgery)</strong> — <code>CsrfViewMiddleware</code> генерирует уникальный токен для каждой сессии и проверяет его наличие в небезопасных HTTP-методах (POST, PUT, DELETE, PATCH). Без токена запрос отклоняется.</p>
+
+    <p><strong>Clickjacking</strong> — <code>XFrameOptionsMiddleware</code> добавляет заголовок <code>X-Frame-Options: DENY</code> или <code>SAMEORIGIN</code>, запрещая встраивать страницы в <code>&lt;iframe&gt;</code> на других сайтах.</p>
+
+    <p><strong>Инъекции через заголовок Host</strong> — Django валидирует заголовок <code>Host</code> по списку <code>ALLOWED_HOSTS</code>. Запросы с неожиданным значением отклоняются, что предотвращает Host Header Injection при генерации ссылок для сброса пароля.</p>
+
+    <p><strong>Брутфорс паролей</strong> — встроенная система аутентификации автоматически хэширует пароли с использованием PBKDF2 с SHA-256 (по умолчанию), при сравнении хэшей используется <code>hmac.compare_digest()</code> для защиты от timing-атак.</p>
+
+    <h2>2. Как устроено управление пользовательскими сессиями в Django?</h2>
+
+    <p>Сессии в Django позволяют серверу «помнить» пользователя между отдельными HTTP-запросами (HTTP — протокол без состояния).</p>
+
+    <p><strong>Архитектура:</strong> данные сессии хранятся на стороне сервера, клиент получает только уникальный идентификатор — <code>session_id</code>. Это принципиально безопаснее подхода, при котором данные хранятся в куки целиком: при перехвате куки атакующий получает только бессмысленный идентификатор, а не реальные данные.</p>
+
+    <p><strong>Жизненный цикл сессии:</strong></p>
+    <ol>
+        <li>Подключается <code>SessionMiddleware</code> в <code>MIDDLEWARE</code> — добавляет объект <code>request.session</code> к каждому запросу.</li>
+        <li>При первом обращении Django создаёт новую сессию и генерирует случайный <code>session_id</code>.</li>
+        <li>Данные сессии сохраняются на сервере (по умолчанию — в таблице <code>django_session</code> в БД).</li>
+        <li>В браузер уходит <code>Set-Cookie: sessionid=&lt;случайная_строка&gt;</code>.</li>
+        <li>При следующих запросах браузер отправляет куки обратно, Django находит сессию по идентификатору и загружает её данные.</li>
+        <li>В коде данные доступны как словарь: <code>request.session['user_id'] = user.id</code>.</li>
+    </ol>
+
+    <p><strong>Бэкенды хранения:</strong> Django поддерживает несколько вариантов — БД (по умолчанию), кэш (Redis/Memcached), файловая система, подписанные куки (данные прямо в куки, подписаны <code>SECRET_KEY</code>, объём до ~4 КБ).</p>
+
+    <p><strong>Сериализация:</strong> по умолчанию используется JSON. Это безопаснее устаревшего <code>pickle</code>, который позволял выполнять произвольный код при десериализации скомпрометированных данных сессии.</p>
+
+    <p><strong>Ключевые настройки безопасности куки:</strong></p>
+    <table>
+        <tr><th>Настройка</th><th>Что делает</th></tr>
+        <tr><td><code>SESSION_COOKIE_HTTPONLY = True</code></td><td>JavaScript не может читать куки — защита от XSS-кражи сессии</td></tr>
+        <tr><td><code>SESSION_COOKIE_SECURE = True</code></td><td>Куки передаются только по HTTPS</td></tr>
+        <tr><td><code>SESSION_COOKIE_SAMESITE = 'Lax'</code></td><td>Защита от части CSRF-атак на уровне куки</td></tr>
+        <tr><td><code>SESSION_COOKIE_AGE = 1209600</code></td><td>Время жизни сессии в секундах (2 недели по умолчанию)</td></tr>
+        <tr><td><code>SESSION_EXPIRE_AT_BROWSER_CLOSE = False</code></td><td>Сессия живёт до истечения AGE, а не до закрытия браузера</td></tr>
+    </table>
+
+    <p><strong>Ротация сессии:</strong> при входе пользователя в систему Django автоматически создаёт новый идентификатор сессии. Это предотвращает Session Fixation — атаку, при которой злоумышленник заранее подсовывает жертве известный ему <code>session_id</code>.</p>
+
+    <p><strong>Завершение сессии:</strong> при выходе из системы вызов <code>request.session.flush()</code> удаляет данные сессии из базы и сбрасывает куки. Устаревшие сессии автоматически удаляются командой <code>python manage.py clearsessions</code>.</p>
+
+    <h2>Источники</h2>
+    <ul>
+        <li><a href="https://docs.djangoproject.com/en/5.0/topics/security/">docs.djangoproject.com — Security in Django</a></li>
+        <li><a href="https://docs.djangoproject.com/en/5.0/topics/http/sessions/">docs.djangoproject.com — How to use sessions</a></li>
+        <li><a href="https://owasp.org/www-project-top-ten/">owasp.org — OWASP Top Ten</a></li>
+    </ul>
+
+</body>
+</html>
