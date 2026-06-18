@@ -1,0 +1,20 @@
+FROM ket9/otus-devsecops-owasp-rest:latest
+
+# Создаем системную группу и пользователя для запуска приложения без прав root
+RUN addgroup --system appgroup && \
+    adduser --system --ingroup appgroup appuser
+
+# Переключаемся на созданного пользователя
+USER appuser
+
+EXPOSE 8080
+
+# Дополнительные настройки безопасности (флаги при запуске docker run):
+# 1. Запускать с read-only файловой системой для защиты от записи вредоносов[cite: 1]:
+#    docker run --read-only ...
+# 2. Ограничить потребление ресурсов для защиты от DoS-атак[cite: 1]:
+#    docker run --memory=512m --cpus=1 ...
+# 3. Сбросить все расширенные привилегии ядра (capabilities)[cite: 1]:
+#    docker run --cap-drop=ALL ...
+# 4. Запретить повышение привилегий внутри контейнера (через suid/sgid):
+#    docker run --security-opt=no-new-privileges:true ...

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Отчёт по найденным секретам</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Manrope:wght@400;600;800&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #151820;
+    --border: #1e2330;
+    --accent: #e05c3a;
+    --accent2: #3ae0a0;
+    --text: #c8cdd8;
+    --text-dim: #5a6278;
+    --heading: #eef0f5;
+    --code-bg: #0a0c10;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Manrope', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 48px 24px;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  header {
+    border-left: 3px solid var(--accent);
+    padding-left: 20px;
+    margin-bottom: 48px;
+    animation: fadeIn 0.6s ease;
+  }
+
+  header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--heading);
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .meta a { color: var(--accent2); text-decoration: none; }
+
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    animation: slideUp 0.5s ease both;
+  }
+
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+  .card:nth-child(4) { animation-delay: 0.4s; }
+  .card:nth-child(5) { animation-delay: 0.5s; }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .badge {
+    background: var(--accent);
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .badge.medium { background: #d4943a; }
+  .badge.low { background: #3a7fd4; }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--heading);
+  }
+
+  .filepath {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    background: var(--code-bg);
+    padding: 3px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .card-body {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #a8d4b0;
+    overflow-x: auto;
+    line-height: 1.7;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .desc {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  .fix {
+    background: rgba(58, 224, 160, 0.06);
+    border: 1px solid rgba(58, 224, 160, 0.15);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+
+  .fix .section-label { color: var(--accent2); }
+  .fix .desc { font-size: 13px; color: #8ab8a0; }
+
+  .extras {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    animation: fadeIn 0.6s ease 0.7s both;
+  }
+
+  .extra-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .extra-card h3 {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--heading);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .extra-card h3::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+
+  .extra-card p {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-dim);
+  }
+
+  .extra-card code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #a8d4b0;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>Отчёт по найденным секретам</h1>
+    <div class="meta">
+      Репозиторий: <a href="https://github.com/OtusTeam/DevSecOps_secret-finding">OtusTeam/DevSecOps_secret-finding</a>
+      &nbsp;·&nbsp; Коммит: 34f1faad &nbsp;·&nbsp; Инструмент: truffleHog
+    </div>
+  </header>
+
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge">КРИТИЧНО</span>
+        <span class="card-title">Пароль в .env файле</span>
+        <span class="filepath">docker/.env · строки 3–4</span>
+      </div>
+      <div class="card-body">
+        <pre>USER=alex675
+PASSWORD=#!qerge34t423sdfvdsfgeR</pre>
+        <div>
+          <div class="section-label">Почему это секрет</div>
+          <div class="desc">Реальные логин и пароль, скорее всего от приватного репозитория пакетов. Высокая энтропия пароля говорит о том, что это не заглушка.</div>
+        </div>
+        <div class="fix">
+          <div class="section-label">Как хранить правильно</div>
+          <div class="desc">Файл <code>.env</code> добавить в <code>.gitignore</code>. Значения передавать через GitHub Secrets / GitLab CI Variables или HashiCorp Vault.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge">КРИТИЧНО</span>
+        <span class="card-title">Приватный RSA-ключ</span>
+        <span class="filepath">webgoat-server/privatekey.key</span>
+      </div>
+      <div class="card-body">
+        <pre>-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASC...
+-----END PRIVATE KEY-----</pre>
+        <div>
+          <div class="section-label">Почему это секрет</div>
+          <div class="desc">Полный приватный RSA-ключ (2048-бит). Позволяет расшифровывать трафик и подделывать подписи. Остаётся в истории git навсегда.</div>
+        </div>
+        <div class="fix">
+          <div class="section-label">Как хранить правильно</div>
+          <div class="desc">Только в Vault, HSM или AWS KMS. В репозиторий приватные ключи не должны попадать никогда.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge">КРИТИЧНО</span>
+        <span class="card-title">GitHub токен в workflows</span>
+        <span class="filepath">.github/workflows/release.yml · строка 75</span>
+      </div>
+      <div class="card-body">
+        <pre># было:
+GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+# стало:
+GITHUB_TOKEN: cee3257f0e59d1d4975a35429cffc3d8b5fabe15...</pre>
+        <div>
+          <div class="section-label">Почему это секрет</div>
+          <div class="desc">Токен аутентификации GitHub захардкожен в файле вместо обращения к хранилищу секретов. Любой читатель репозитория получает доступ к аккаунту.</div>
+        </div>
+        <div class="fix">
+          <div class="section-label">Как хранить правильно</div>
+          <div class="desc">Только через <code>${{ secrets.GITHUB_TOKEN }}</code> или пользовательский секрет в Settings → Secrets репозитория.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge medium">ВЫСОКИЙ</span>
+        <span class="card-title">App Secret Key</span>
+        <span class="filepath">docker/.env · строка 2</span>
+      </div>
+      <div class="card-body">
+        <pre>APP_SECRET=666666666666666</pre>
+        <div>
+          <div class="section-label">Почему это секрет</div>
+          <div class="desc">Ключ для подписи сессий и CSRF-токенов приложения. Значение слабое и предсказуемое — злоумышленник может подделывать сессии пользователей.</div>
+        </div>
+        <div class="fix">
+          <div class="section-label">Как хранить правильно</div>
+          <div class="desc">Случайное значение длиной минимум 32 байта, хранить только в переменных окружения платформы, не коммитить.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge low">СРЕДНИЙ</span>
+        <span class="card-title">CSR файл (PKI артефакт)</span>
+        <span class="filepath">webgoat-server/certificatesigningrequest.csr</span>
+      </div>
+      <div class="card-body">
+        <pre>-----BEGIN CERTIFICATE REQUEST-----
+MIIC4zCCAcsCAQAwdDEL...
+-----END CERTIFICATE REQUEST-----</pre>
+        <div>
+          <div class="section-label">Почему это секрет</div>
+          <div class="desc">Пара к приватному ключу из секрета №2. Содержит метаданные организации, подтверждает связь с утёкшим ключом.</div>
+        </div>
+        <div class="fix">
+          <div class="section-label">Как хранить правильно</div>
+          <div class="desc">Передавать напрямую в Certificate Authority через защищённый канал. В репозитории не хранить.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+</div>
+</body>
+</html>

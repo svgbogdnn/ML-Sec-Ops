@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code {
+      background: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote {
+      border-left: 4px solid #ddd;
+      margin: 1em 0;
+      padding-left: 20px;
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h2>Развернуть инструмент SAST-анализа и провести SAST-тестирование</h2>
+<p><strong>Дисциплина:</strong> Внедрение и работа в DevSecOps<br><strong>Инструмент:</strong> Mobile Security Framework — MobSF<br><strong>Тип анализа:</strong> Static Analysis / SAST<br><strong>Объект анализа:</strong> Android APK-файл<br><strong>Формат приложения:</strong> <code>.apk</code></p>
+<hr>
+<p>В рамках работы были выполнены</p>
+<ul>
+<li>развернут MobSF</li>
+<li>загружен APK-файл мобильного приложения</li>
+<li>выполнен статический анализ приложения</li>
+<li>изучены результаты по permissions, network security, manifest analysis и code analysis</li>
+<li>составлен план митигации обнаруженных рисков</li>
+</ul>
+<hr>
+<h2>2. Развертывание MobSF</h2>
+<p>Для выполнения задания я использовал локальное развертывание MobSF через Docker.</p>
+<p>Команда для загрузки образа:</p>
+<pre><code class="language-bash">docker pull opensecurity/mobile-security-framework-mobsf:latest
+</code></pre>
+<p>Команда для запуска контейнера:</p>
+<pre><code class="language-bash">docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
+</code></pre>
+<p>После запуска MobSF был доступен в браузере по адресу:</p>
+<pre><code class="language-text">http://127.0.0.1:8000
+</code></pre>
+<p>Вход был выполнен с использованием стандартных учетных данных MobSF:</p>
+<pre><code class="language-text">login: mobsf
+password: mobsf
+</code></pre>
+<p>После входа я перешёл к загрузке APK-файла для анализа.</p>
+<hr>
+<h2>3. Загрузка APK и запуск анализа</h2>
+<p>В интерфейсе MobSF был выбран APK-файл мобильного приложения. После загрузки MobSF автоматически запустил статический анализ.</p>
+<p>В процессе анализа MobSF проверил:</p>
+<ul>
+<li>AndroidManifest.xml;</li>
+<li>используемые permissions;</li>
+<li>network security configuration;</li>
+<li>параметры сборки приложения;</li>
+<li>потенциально опасные участки кода;</li>
+<li>использование небезопасных API;</li>
+<li>наличие признаков небезопасной работы с данными.</li>
+</ul>
+<p>После завершения анализа был сформирован отчет MobSF.</p>
+<hr>
+<h2>4. Результаты SAST-анализа</h2>
+<h3>4.1 App Permissions</h3>
+<p>В разделе <strong>App Permissions</strong> были обнаружены разрешения со статусом <code>dangerous</code>.</p>
+<p>Основные опасные разрешения:</p>
+<table>
+<thead>
+<tr>
+<th>Permission</th>
+<th align="right">Уровень риска</th>
+<th>Описание риска</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>android.permission.CAMERA</code></td>
+<td align="right">Dangerous</td>
+<td>Приложение может получать доступ к камере устройства.</td>
+</tr>
+<tr>
+<td><code>android.permission.RECORD_AUDIO</code></td>
+<td align="right">Dangerous</td>
+<td>Приложение может записывать звук с микрофона.</td>
+</tr>
+<tr>
+<td><code>android.permission.READ_EXTERNAL_STORAGE</code></td>
+<td align="right">Dangerous</td>
+<td>Приложение может читать пользовательские файлы.</td>
+</tr>
+<tr>
+<td><code>android.permission.WRITE_EXTERNAL_STORAGE</code></td>
+<td align="right">Dangerous</td>
+<td>Приложение может изменять или сохранять файлы во внешнем хранилище.</td>
+</tr>
+<tr>
+<td><code>android.permission.ACCESS_FINE_LOCATION</code></td>
+<td align="right">Dangerous</td>
+<td>Приложение может получать точное местоположение пользователя.</td>
+</tr>
+</tbody></table>
+<p><strong>Вывод:</strong> приложение запрашивает чувствительные разрешения, которые могут приводить к утечке персональных данных при некорректной реализации контроля доступа или избыточном сборе данных.</p>
+<hr>
+<h3>4.2 Network Security</h3>
+<p>В разделе <strong>Network Security</strong> были выделены проблемы высокого уровня риска.</p>
+<p>Основные замечания:</p>
+<table>
+<thead>
+<tr>
+<th>Проблема</th>
+<th align="right">Severity</th>
+<th>Риск</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Cleartext traffic разрешён</td>
+<td align="right">High</td>
+<td>Передача данных по HTTP может привести к перехвату трафика.</td>
+</tr>
+<tr>
+<td>Недостаточно строгая TLS-конфигурация</td>
+<td align="right">High</td>
+<td>Возможен downgrade или использование слабых параметров соединения.</td>
+</tr>
+<tr>
+<td>Отсутствие certificate pinning</td>
+<td align="right">Medium / High</td>
+<td>При компрометации доверенного CA возможна MITM-атака.</td>
+</tr>
+</tbody></table>
+<p><strong>Вывод:</strong> сетевые настройки приложения требуют ужесточения. Главный риск связан с возможностью передачи или перехвата чувствительных данных при недостаточно защищенном соединении.</p>
+<hr>
+<h3>4.3 Manifest Analysis</h3>
+<p>В разделе <strong>Manifest Analysis</strong> были обнаружены потенциально опасные настройки приложения.</p>
+<p>Основные проблемы:</p>
+<table>
+<thead>
+<tr>
+<th>Проблема</th>
+<th align="right">Severity</th>
+<th>Описание</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>android:debuggable=&quot;true&quot;</code></td>
+<td align="right">High</td>
+<td>Debug-режим не должен быть включён в production-сборке.</td>
+</tr>
+<tr>
+<td><code>android:allowBackup=&quot;true&quot;</code></td>
+<td align="right">High</td>
+<td>Возможна выгрузка данных приложения через backup-механизмы.</td>
+</tr>
+<tr>
+<td>Exported components</td>
+<td align="right">High</td>
+<td>Экспортированные Activity/Service/Receiver могут быть вызваны другими приложениями.</td>
+</tr>
+<tr>
+<td>Использование опасных intent-filter</td>
+<td align="right">Medium / High</td>
+<td>Возможны некорректные внешние вызовы компонентов приложения.</td>
+</tr>
+</tbody></table>
+<p><strong>Вывод:</strong> настройки манифеста содержат риски, связанные с отладкой, резервным копированием и доступностью внутренних компонентов приложения извне.</p>
+<hr>
+<h3>4.4 Code Analysis</h3>
+<p>В разделе <strong>Code Analysis</strong> были обнаружены проблемы высокого уровня риска.</p>
+<p>Основные замечания:</p>
+<table>
+<thead>
+<tr>
+<th>Проблема</th>
+<th align="right">Severity</th>
+<th>Риск</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Hardcoded sensitive information</td>
+<td align="right">High</td>
+<td>В коде могут присутствовать ключи, токены или служебные значения.</td>
+</tr>
+<tr>
+<td>Insecure random number generator</td>
+<td align="right">High</td>
+<td>Небезопасная генерация случайных значений может повлиять на токены или идентификаторы.</td>
+</tr>
+<tr>
+<td>Logging sensitive data</td>
+<td align="right">High</td>
+<td>Чувствительные данные могут попадать в логи.</td>
+</tr>
+<tr>
+<td>Небезопасная работа с WebView</td>
+<td align="right">High</td>
+<td>Возможны XSS, загрузка небезопасного контента или выполнение JavaScript.</td>
+</tr>
+<tr>
+<td>Использование устаревших API</td>
+<td align="right">Medium / High</td>
+<td>Повышает вероятность эксплуатации известных уязвимостей.</td>
+</tr>
+</tbody></table>
+<p><strong>Вывод:</strong> часть рисков связана с небезопасной обработкой чувствительных данных и использованием потенциально опасных механизмов Android API.</p>
+<hr>
+<h2>5. Общий анализ обнаруженных недостатков</h2>
+<p>По итогам SAST-анализа можно выделить несколько групп проблем:</p>
+<ol>
+<li><p><strong>Избыточные разрешения приложения.</strong><br>Приложение запрашивает доступ к камере, микрофону, файлам и геолокации. Такие разрешения должны использоваться только при реальной необходимости.</p>
+</li>
+<li><p><strong>Недостаточно защищенная сетевая конфигурация.</strong><br>Разрешение cleartext traffic и отсутствие certificate pinning повышают риск MITM-атак.</p>
+</li>
+<li><p><strong>Проблемные настройки AndroidManifest.xml.</strong><br>Включенный debug-режим, разрешенный backup и exported-компоненты увеличивают поверхность атаки.</p>
+</li>
+<li><p><strong>Проблемы в коде приложения.</strong><br>В коде обнаружены потенциально опасные практики: хранение чувствительных данных, логирование, небезопасная работа с WebView и использование слабых механизмов генерации случайных значений.</p>
+</li>
+</ol>
+<hr>
+<h2>6. План митигации рисков</h2>
+<table>
+<thead>
+<tr>
+<th align="right">№</th>
+<th>Обнаруженный риск</th>
+<th align="right">Приоритет</th>
+<th>План митигации</th>
+<th>Ожидаемый результат</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">1</td>
+<td>Избыточные dangerous permissions</td>
+<td align="right">High</td>
+<td>Провести ревизию всех permissions. Удалить разрешения, которые не нужны для бизнес-функций приложения. Для оставшихся разрешений добавить runtime-запрос и пояснение пользователю.</td>
+<td>Снижение риска несанкционированного доступа к данным пользователя.</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td>Доступ к камере и микрофону</td>
+<td align="right">High</td>
+<td>Ограничить использование только конкретными сценариями. Добавить контроль доступа на уровне UI и бизнес-логики.</td>
+<td>Исключение скрытого или неконтролируемого сбора аудио/видео.</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td>Доступ к внешнему хранилищу</td>
+<td align="right">High</td>
+<td>Перейти на scoped storage. Не хранить чувствительные данные во внешнем хранилище.</td>
+<td>Снижение риска утечки файлов и персональных данных.</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td>Cleartext traffic разрешён</td>
+<td align="right">High</td>
+<td>Запретить HTTP-трафик через <code>networkSecurityConfig</code> и использовать только HTTPS.</td>
+<td>Исключение передачи данных по незащищенному каналу.</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td>Отсутствие certificate pinning</td>
+<td align="right">Medium / High</td>
+<td>Реализовать certificate pinning для критичных API-запросов.</td>
+<td>Снижение риска MITM-атак.</td>
+</tr>
+<tr>
+<td align="right">6</td>
+<td>Debug-режим в production</td>
+<td align="right">High</td>
+<td>Установить <code>android:debuggable=&quot;false&quot;</code> для release-сборок. Проверить Gradle-конфигурацию.</td>
+<td>Исключение отладочных возможностей в production.</td>
+</tr>
+<tr>
+<td align="right">7</td>
+<td>Разрешенный backup</td>
+<td align="right">High</td>
+<td>Установить <code>android:allowBackup=&quot;false&quot;</code> или настроить backup rules с исключением чувствительных данных.</td>
+<td>Снижение риска извлечения данных приложения через backup.</td>
+</tr>
+<tr>
+<td align="right">8</td>
+<td>Exported components</td>
+<td align="right">High</td>
+<td>Для всех компонентов явно указать <code>android:exported</code>. Закрыть компоненты, которые не должны быть доступны извне. Добавить permission-защиту для необходимых exported-компонентов.</td>
+<td>Уменьшение поверхности атаки.</td>
+</tr>
+<tr>
+<td align="right">9</td>
+<td>Hardcoded secrets</td>
+<td align="right">High</td>
+<td>Удалить ключи и токены из кода. Перенести секреты в защищенное хранилище или backend. Провести ротацию скомпрометированных значений.</td>
+<td>Исключение утечки секретов из APK.</td>
+</tr>
+<tr>
+<td align="right">10</td>
+<td>Логирование чувствительных данных</td>
+<td align="right">High</td>
+<td>Удалить логи с персональными данными, токенами, session id и параметрами авторизации. Отключить debug-логи в release.</td>
+<td>Снижение риска раскрытия данных через логи.</td>
+</tr>
+<tr>
+<td align="right">11</td>
+<td>Небезопасная работа с WebView</td>
+<td align="right">High</td>
+<td>Отключить JavaScript, если он не нужен. Запретить загрузку file:// URL. Ограничить домены через allowlist.</td>
+<td>Снижение риска XSS и небезопасной загрузки контента.</td>
+</tr>
+<tr>
+<td align="right">12</td>
+<td>Использование устаревших API</td>
+<td align="right">Medium</td>
+<td>Обновить зависимости и SDK. Проверить совместимость после обновления.</td>
+<td>Снижение риска эксплуатации известных уязвимостей.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>7. Приоритизация исправлений</h2>
+<p>Исправления стоит выполнять в следующем порядке:</p>
+<ol>
+<li>Отключить debug-режим и запретить backup в production-сборке.</li>
+<li>Запретить cleartext traffic и оставить только HTTPS.</li>
+<li>Проверить exported-компоненты и закрыть лишние.</li>
+<li>Удалить hardcoded secrets и выполнить ротацию ключей.</li>
+<li>Убрать логирование чувствительных данных.</li>
+<li>Провести ревизию dangerous permissions.</li>
+<li>Настроить certificate pinning для критичных API.</li>
+<li>Повторно просканировать APK в MobSF после исправлений.</li>
+</ol>
+<hr>
+<h2>8. Контроль после исправлений</h2>
+<p>После внесения исправлений необходимо повторно собрать APK и загрузить его в MobSF.</p>
+<p>Проверить, что:</p>
+<ul>
+<li>в App Permissions остались только необходимые dangerous permissions;</li>
+<li>в Network Security отсутствуют high findings;</li>
+<li>в Manifest Analysis отсутствуют high findings;</li>
+<li>в Code Analysis снижено количество high findings;</li>
+<li>PDF-отчет MobSF сохранён и приложен к домашнему заданию.</li>
+</ul>
+<hr>
+<h2>9. Итог</h2>
+<p>В ходе работы был развернут MobSF и выполнено SAST-тестирование Android APK-файла.</p>
+<p>По результатам анализа были выявлены основные группы рисков:</p>
+<ul>
+<li>опасные permissions;</li>
+<li>небезопасные сетевые настройки;</li>
+<li>проблемы в AndroidManifest.xml;</li>
+<li>потенциально опасные участки кода;</li>
+<li>недостатки в обработке чувствительных данных.</li>
+</ul>
+<p>Для найденных проблем был составлен план митигации, включающий ограничение permissions, запрет cleartext traffic, отключение debug-режима, закрытие exported-компонентов, удаление hardcoded secrets и повторное сканирование приложения после исправлений.</p>
+
+</body>
+</html>

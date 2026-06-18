@@ -1,0 +1,67 @@
+<h1 id="-7">Лабораторная работа №7</h1>
+<h2 id="-gitlab-ci-yaml">Файл .gitlab-ci.yaml</h2>
+<p>Добавляем сканнеры:</p>
+<pre><code>include:
+  - template: Jobs/SAST<span class="hljs-selector-class">.gitlab-ci</span><span class="hljs-selector-class">.yml</span>
+  - template: Jobs/Dependency-Scanning<span class="hljs-selector-class">.gitlab-ci</span><span class="hljs-selector-class">.yml</span>
+  - template: Jobs/Secret-Detection<span class="hljs-selector-class">.gitlab-ci</span><span class="hljs-selector-class">.yml</span>
+  - template: Jobs/Container-Scanning<span class="hljs-selector-class">.gitlab-ci</span><span class="hljs-selector-class">.yml</span>
+</code></pre><p><img src="image.png" alt="alt text"></p>
+<p>Результаты пайплайна</p>
+<p><img src="image-10.png" alt="alt text"></p>
+<h2 id="1-sast">1. SAST</h2>
+<h3 id="-">Настройка и подключение</h3>
+<p>Инструмент SAST подключен через официальный шаблон <code>Jobs/SAST.gitlab-ci.yml</code>. Анализ исходного кода выполнялся в автоматическом режиме с помощью сканера <strong>Semgrep</strong>.</p>
+<h3 id="-">Анализ результатов</h3>
+<p>По результатам <code>gl-sast-report.json</code>, в исходном коде веб-приложения обнаружены <strong>3 уязвимости уровня Critical</strong>.</p>
+<ul>
+<li><strong>Тип уязвимости:</strong> Improper Neutralization of Special Elements used in an SQL Command (<strong>SQL Injection</strong>).</li>
+<li><strong>Классификация:</strong> CWE-89 / OWASP A03:2021 — Injection.</li>
+<li><strong>Локация в проекте:</strong><ol>
+<li>Файл <code>app/server.js</code>, строка <code>24</code></li>
+<li>Файл <code>app/server.js</code>, строка <code>54</code></li>
+<li>Файл <code>app/server.js</code>, строка <code>81</code></li>
+</ol>
+</li>
+</ul>
+<p>В файле <code>server.js</code> на указанных строках обнаружена прямая конкатенация (склейка) строк при формировании сырых SQL-запросов к базе данных без предварительной валидации или экранирования:</p>
+<p><img src="image-1.png" alt="alt text">
+<img src="image-2.png" alt="alt text">
+<img src="image-3.png" alt="alt text"></p>
+<p>Места с возможной инъекцией</p>
+<p><img src="image-12.png" alt="alt text"></p>
+<h2 id="2-license-scanning">2. License Scanning</h2>
+<h3 id="-license-compliance-">Лицензионный аудит (License Compliance)</h3>
+<ul>
+<li><strong>Тип лицензий:</strong> Для всех 412 пакетов статус определен как <code>1 unknown</code> (неизвестно / не определено в манифесте репозитория apt пакетов). </li>
+<li><strong>Юридические риски:</strong> Отсутствие явных юридических рисков, связанных с коммерческим использованием «вирусного» ПО (copyleft / GPL), так как утилиты являются стандартной частью дистрибутива Linux и не встраиваются напрямую в проприетарный исходный код приложения.
+<img src="image-11.png" alt="alt text"><h2 id="3-dependency-scanning">3. Dependency Scanning</h2>
+</li>
+</ul>
+<p><strong>Всего зависимостей:</strong> 412 пакетов.</p>
+<p><strong>Компоненты с уязвимостями:</strong> 212 пакетов из 412 </p>
+<p><strong>Общее число зафиксированных уязвимостей в системе:</strong> 1459 проблем безопасности.</p>
+<p><strong>Наиболее критичные и уязвимые системные компоненты:</strong></p>
+<ul>
+<li><code>binutils</code> (версия <code>2.28-5</code>) — содержит <strong>93 уязвимости</strong> (включая критические переполнения буфера и DoS-атаки).</li>
+</ul>
+<p>Выгруженный список зависимостей подтверждает критическое состояние безопасности инфраструктурного слоя приложения. Наличие <strong>1459 уязвимостей</strong> обусловлено тем, что базовый Docker-образ использует неподдерживаемый дистрибутив ОС (Debian 9). </p>
+<p><img src="image-4.png" alt="alt text"></p>
+<p><img src="image-9.png" alt="alt text"></p>
+<h2 id="4-container-scanning">4. Container Scanning</h2>
+<p><strong>Инструмент анализа:</strong> Trivy</p>
+<h3 id="-">Ключевые проблемы и критические уязвимости</h3>
+<p>Анализ системных слоев выявил критические архитектурные недостатки, связанные с использованием устаревшей базовой ОC. Это привело к наличию большого количества известных незакрытых CVE.</p>
+<p>Наиболее значимые примеры зафиксированных уязвимостей уровня (<strong>High</strong>):</p>
+<ol>
+<li><strong>Пакет <code>binutils</code> (версия <code>2.28-5</code>):</strong> <em> <em>*Идентификатор:</em></em> CVE-2017-12448</li>
+<li><strong>Библиотека <code>zlib1g-dev</code> (версия <code>1:1.2.8.dfsg-5</code>):</strong> <em> <em>*Идентификатор:</em></em> CVE-2018-25032</li>
+</ol>
+<p>Большинство найденных уязвимостей в отчете помечены статусом <code>&quot;vendor_status&quot;: &quot;fixed&quot;</code>. Это указывает на то, что патчи безопасности для данных пакетов <strong>существуют</strong>, но они выпущены для более свежих веток дистрибутива Debian (10/11/12) и не могут быть автоматически установлены в репозиториях Debian 9.</p>
+<p><img src="image-6.png" alt="alt text">
+<img src="image-5.png" alt="alt text"></p>
+<h2 id="5-secret-detection">5. Secret Detection</h2>
+<p>Инструмент: (Jobs/Secret-Detection.gitlab-ci.yml).</p>
+<p>Результат: Этап пройден безошибочно. Актуальных утечек приватных ключей, паролей или токенов в истории коммитов репозитория не обнаружено (&quot;vulnerabilities&quot;: []).</p>
+<p><img src="image-8.png" alt="alt text">
+<img src="image-7.png" alt="alt text"></p>

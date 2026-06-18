@@ -1,0 +1,178 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h1 id="-7">Лабораторная работа №7</h1>
+<p>Студент: Ананьев Даниил Евгеньевич</p>
+<h2 id="-">Ход выполнения</h2>
+<p>В работе нужно было поднять mobsf, отсканировать любое мобильное приложение, разобрать основные находки и составить план по митигации.</p>
+<p>Mobsf я развернул через докер, это самый простой способ из всех вариантов в задании.</p>
+<pre><code class="lang-bash">docker <span class="hljs-keyword">run</span><span class="bash"> <span class="hljs-_">-d</span> --name mobsf-lab7 -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest</span>
+</code></pre>
+<p>После старта контейнер слушает на <code>localhost:8000</code>. Из логов забрал rest api ключ, который mobsf генерирует при первом запуске.</p>
+<p>В качестве приложения для скана я взял vlc для андроид версии 3.7.0. Это реальное и довольно большое приложение, около 48 мб, с нативным кодом, доступом к сети и куче медиа. Сам apk скачал с официального зеркала.</p>
+<pre><code class="lang-bash"><span class="hljs-symbol">curl</span> -<span class="hljs-built_in">sL</span> <span class="hljs-string">"https://get.videolan.org/vlc-android/last/VLC-Android-3.7.0-arm64-v8a.apk"</span> -o VLC-<span class="hljs-keyword">Android.apk</span>
+</code></pre>
+<p>Дальше через rest api загрузил apk в mobsf и запустил скан.</p>
+<pre><code class="lang-bash"><span class="hljs-attribute">curl</span> -F <span class="hljs-string">"file=<span class="hljs-variable">@VLC</span>-Android.apk"</span> http://localhost:8000/api/v1/upload -H <span class="hljs-string">"Authorization: <span class="hljs-variable">$API_KEY</span>"</span>
+curl -X POST -d <span class="hljs-string">"hash=<span class="hljs-variable">$HASH</span>&amp;scan_type=apk&amp;file_name=VLC-Android.apk"</span> http://localhost:8000/api/v1/scan -H <span class="hljs-string">"Authorization: <span class="hljs-variable">$API_KEY</span>"</span>
+</code></pre>
+<p>Pdf отчет забрал через эндпоинт <code>/api/v1/download_pdf</code>. Сам отчет лежит рядом с этим файлом, называется <code>mobsf_report.pdf</code>.</p>
+<h2 id="-">Информация о приложении</h2>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Название</td>
+<td>VLC</td>
+</tr>
+<tr>
+<td>Пакет</td>
+<td>org.videolan.vlc</td>
+</tr>
+<tr>
+<td>Версия</td>
+<td>3.7.0</td>
+</tr>
+<tr>
+<td>Размер</td>
+<td>47.65 МБ</td>
+</tr>
+<tr>
+<td>Target SDK</td>
+<td>36</td>
+</tr>
+<tr>
+<td>Min SDK</td>
+<td>17</td>
+</tr>
+</tbody>
+</table>
+<h2 id="-">Основные находки</h2>
+<h3 id="-dangerous-">Опасные разрешения (статус dangerous)</h3>
+<p>Mobsf нашел 12 разрешений со статусом dangerous. Самые важные из них.</p>
+<ul>
+<li><code>READ_LOGS</code> - чтение системных логов. Через это можно потенциально достать чувствительные данные других приложений.</li>
+<li><code>MANAGE_EXTERNAL_STORAGE</code> - полный доступ ко всему внешнему хранилищу.</li>
+<li><code>WRITE_SETTINGS</code> - изменение глобальных настроек системы.</li>
+<li><code>WRITE_EXTERNAL_STORAGE</code> и <code>READ_EXTERNAL_STORAGE</code> - чтение и запись на внешнюю память.</li>
+<li><code>RECORD_AUDIO</code> - запись звука с микрофона.</li>
+<li><code>SYSTEM_ALERT_WINDOW</code> - возможность рисовать поверх других приложений, типичный вектор для оверлей атак.</li>
+<li><code>READ_MEDIA_AUDIO</code>, <code>READ_MEDIA_VIDEO</code>, <code>READ_MEDIA_IMAGES</code> - доступ к медиа на устройстве.</li>
+<li><code>BLUETOOTH_CONNECT</code> - подключение к спаренным устройствам.</li>
+<li><code>POST_NOTIFICATIONS</code> - показ уведомлений.</li>
+</ul>
+<p>Для медиа плеера часть из них логична, но <code>READ_LOGS</code>, <code>WRITE_SETTINGS</code> и <code>SYSTEM_ALERT_WINDOW</code> выглядят избыточными.</p>
+<h3 id="-network-security">Анализ network security</h3>
+<p>В этой части mobsf не нашел ни одной проблемы. У vlc есть свой <code>network_security_config.xml</code>, и в нем все настроено нормально, без разрешения cleartext трафика на уровне конфига.</p>
+<p>Но интересный момент в том, что при этом в самом манифесте флаг <code>usesCleartextTraffic=true</code>, что в манифест анализе подсветилось как high. То есть конфликт между манифестом и сетевой конфигурацией.</p>
+<h3 id="-manifest">Анализ manifest</h3>
+<p>Здесь mobsf нашел 29 проблем, из них 2 уровня high и 27 уровня warning.</p>
+<p>High находки.</p>
+<ol>
+<li><p><code>App can be installed on a vulnerable unpatched Android version</code>. Min sdk у приложения равен 17, это андроид 4.2. На таких старых версиях много непропатченных уязвимостей.</p>
+</li>
+<li><p><code>Clear text traffic is Enabled For App [android:usesCleartextTraffic=true]</code>. В манифесте разрешен открытый http трафик. Даже несмотря на то что в network security config все нормально, наличие этого флага сигнализирует, что какие-то части приложения могут ходить по http без шифрования.</p>
+</li>
+</ol>
+<p>Warning находки в основном про экспортированные компоненты. Куча активити, сервисов, провайдеров и резиверов помечены как exported или доступны другим приложениям без явной защиты permission. Сюда попали <code>MainActivity</code>, <code>VideoPlayerActivity</code>, <code>PlaybackService</code>, <code>FileProvider</code>, <code>ArtworkProvider</code>, <code>RemoteAccessService</code> и еще несколько. Плюс несколько активити с launch mode <code>singleTask</code> или <code>singleInstance</code>, что тоже считается небезопасным.</p>
+<p>Отдельно есть warning по сертификату подписи приложения, оно подписано по v1 схеме, а это известная janus уязвимость на старых андроидах. И high про то, что для подписи использован SHA1withRSA, а SHA1 считается устаревшим из-за коллизий.</p>
+<h3 id="-">Анализ кода</h3>
+<p>Здесь mobsf нашел 1 high находку и 7 warning.</p>
+<p>High.</p>
+<ol>
+<li><code>android_world_readable</code> в <code>org/videolan/vlc/gui/video/benchmark/StartActivityOnCrash.java</code>. Файл или sharedpreference сделан world readable, то есть любое приложение на устройстве может его прочитать.</li>
+</ol>
+<p>Warning.</p>
+<ul>
+<li><code>android_ip_disclosure</code> в зависимостях ktor, в коде встречаются ip адреса.</li>
+<li><code>android_read_write_external</code> в коде медиатеки, чтение и запись на внешнее хранилище без проверки. Любое приложение тоже может туда писать.</li>
+<li><code>android_temp_file</code> в зависимостях ktor и netty, создаются временные файлы, в которые потенциально могут попасть чувствительные данные.</li>
+<li><code>android_insecure_random</code> в netty, используется небезопасный генератор случайных чисел.</li>
+<li><code>android_hardcoded</code> в ktor, в коде есть строки, похожие на захардкоженные пароли или ключи.</li>
+<li><code>android_sha1</code> в ktor, использование SHA1 как хеша.</li>
+<li><code>android_md5</code> в ktor и netty, использование md5 как хеша.</li>
+</ul>
+<p>Отдельно mobsf отметил как good то, что в приложении используется ssl pinning через ktor.</p>
+<h3 id="-">Анализ бинарей</h3>
+<p>Из 8 нативных библиотек одна, <code>libc++_shared.so</code>, имеет high находку по тому что в ней не включен стек канарей. Также у нескольких библиотек warning по отсутствию fortify функций и не stripped символам.</p>
+<h2 id="-">План по митигации</h2>
+<p>Расписываю по каждой из найденных проблем что бы я предложил сделать.</p>
+<h3 id="1-">1. Опасные разрешения</h3>
+<ul>
+<li>Пересмотреть список разрешений. <code>READ_LOGS</code>, <code>WRITE_SETTINGS</code> и <code>SYSTEM_ALERT_WINDOW</code> для медиаплеера выглядят лишними и их надо постараться убрать.</li>
+<li>Если разрешение реально нужно, запрашивать его только в момент использования соответствующей функции, а не сразу при старте приложения.</li>
+<li>Для доступа к медиа на новых андроидах использовать гранулярные разрешения <code>READ_MEDIA_*</code> вместо общего <code>READ_EXTERNAL_STORAGE</code>.</li>
+</ul>
+<h3 id="2-min-sdk-17">2. Min SDK 17</h3>
+<ul>
+<li>Поднять min sdk хотя бы до 24 (андроид 7.0). На таких устройствах уже работают современные механизмы безопасности типа improved permissions и более жесткая работа с tls.</li>
+<li>Объяснять пользователям, что поддержка очень старых устройств снимается из-за безопасности.</li>
+</ul>
+<h3 id="3-cleartext-traffic-">3. Cleartext traffic в манифесте</h3>
+<ul>
+<li>Убрать <code>android:usesCleartextTraffic=&quot;true&quot;</code> из манифеста. Если открытый http действительно нужен для каких-то локальных кейсов, перечислить домены в network security config с <code>cleartextTrafficPermitted=&quot;true&quot;</code>, а не на уровне всего приложения.</li>
+</ul>
+<h3 id="4-">4. Экспортированные компоненты</h3>
+<ul>
+<li>Пройти по всем активити, сервисам, броадкаст резиверам и контент провайдерам. Если они не должны быть доступны другим приложениям, явно проставить <code>exported=&quot;false&quot;</code>.</li>
+<li>Если экспорт нужен, защитить его через <code>android:permission</code> с собственным разрешением signature уровня.</li>
+<li>Для контент провайдеров вроде <code>FileProvider</code> дополнительно проверить, что доступ ограничен через <code>grantUriPermissions</code>.</li>
+</ul>
+<h3 id="5-launch-mode-singletask-singleinstance">5. Launch mode singleTask и singleInstance</h3>
+<ul>
+<li>Использовать <code>standard</code> или <code>singleTop</code> где это возможно. <code>singleTask</code> и <code>singleInstance</code> стоит оставить только там где это реально нужно для специфики приложения.</li>
+</ul>
+<h3 id="6-apk">6. Подпись apk</h3>
+<ul>
+<li>Перевыпустить подпись приложения с использованием SHA256 или сильнее. SHA1 уже считается слабым.</li>
+<li>Включить подпись по схемам v2 или v3, не оставлять только v1, чтобы исключить риск janus уязвимости на старых андроидах.</li>
+</ul>
+<h3 id="7-world-readable-android_world_readable-">7. World readable файл (android_world_readable)</h3>
+<ul>
+<li>В <code>StartActivityOnCrash.java</code> найти место где создается world readable файл или sharedpreference и убрать этот режим. По умолчанию для sharedpreferences надо использовать <code>MODE_PRIVATE</code>.</li>
+<li>Если данные нужно расшарить с другим приложением, использовать content provider с правами доступа, а не world readable файл.</li>
+</ul>
+<h3 id="8-">8. Чтение и запись на внешнее хранилище</h3>
+<ul>
+<li>По возможности переехать на scoped storage и приватную папку приложения.</li>
+<li>Чувствительные данные вообще не класть на внешнее хранилище, потому что туда имеет доступ любое другое приложение с соответствующим разрешением.</li>
+</ul>
+<h3 id="9-md5-sha1-">9. Слабые хеши (md5 и sha1)</h3>
+<ul>
+<li>Заменить md5 и sha1 на современные хеши, как минимум SHA-256.</li>
+<li>Если хеш используется только для контрольной суммы и не для безопасности, оставить как есть, но проверить что эти места действительно не критичны.</li>
+</ul>
+<h3 id="10-insecure-random">10. Insecure random</h3>
+<ul>
+<li>Заменить <code>Random</code> на <code>SecureRandom</code> во всех местах где случайные числа используются для криптографии, токенов, ключей, временных файлов и идентификаторов сессий.</li>
+</ul>
+<h3 id="11-">11. Хардкод чувствительных данных</h3>
+<ul>
+<li>Найти что именно нашлось как хардкод. Если это реальные ключи или пароли, вынести их в gradle ресурсы из secrets файла или подгружать с сервера. В репозитории их не хранить.</li>
+<li>Использовать android keystore для хранения ключей, чувствительных к приложению.</li>
+</ul>
+<h3 id="12-">12. Временные файлы</h3>
+<ul>
+<li>Создавать временные файлы только в приватной директории приложения через <code>Context.getCacheDir()</code>.</li>
+<li>Удалять временные файлы сразу после использования.</li>
+<li>Не писать в них чувствительные данные.</li>
+</ul>
+<h3 id="13-">13. Зависимости</h3>
+<ul>
+<li>Большая часть проблем в коде нашлась в зависимостях ktor и netty. Это значит, что напрямую vlc эти проблемы не пишет, но тащит их через библиотеки. Имеет смысл регулярно обновлять зависимости и смотреть в их changelog, чинят ли там подобные вещи.</li>
+</ul>
+<h3 id="14-">14. Нативные библиотеки</h3>
+<ul>
+<li>Для <code>libc++_shared.so</code> включить стек канарей через флаг компилятора <code>-fstack-protector-all</code>.</li>
+<li>Для библиотек где не включен fortify включить через <code>-D_FORTIFY_SOURCE=2</code>.</li>
+<li>Не забыть стрипать символы перед релизом, чтобы не оставлять подсказки реверсерам.</li>
+</ul>
+<h2 id="-">Вывод</h2>
+<p>С помощью mobsf удалось получить полный отчет по apk файлу vlc для андроид. Большая часть критических находок не очень страшная для конкретно этого приложения, потому что vlc медиаплеер, а не банковский клиент. Но даже у такого приложения нашлись реальные проблемы, например cleartext traffic в манифесте, world readable файл, использование слабых хешей и подпись по sha1.</p>
+<p>Mobsf удобен тем, что покрывает сразу несколько уровней анализа, от разрешений и манифеста до нативных бинарей. И его легко добавить в пайплайн сициди, например через api прогонять каждую новую сборку. План по митигации в основном сводится к стандартным практикам безопасной разработки под андроид, минимум разрешений, нет cleartext, нет экспортированных компонентов без защиты, нормальные хеши и подпись и приватные файлы вместо world readable.</p>
+</body></html>

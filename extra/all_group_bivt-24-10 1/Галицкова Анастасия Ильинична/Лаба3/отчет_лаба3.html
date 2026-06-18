@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отчет: XSS-атака и анализ CVE 2021</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        h1 {
+            border-bottom: 3px solid #e74c3c;
+            padding-bottom: 10px;
+        }
+        h2 {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-left: 5px solid #e74c3c;
+            margin-top: 30px;
+        }
+        code {
+            background-color: #e9ecef;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            /* Убираем черный фон */
+            background-color: transparent;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #ccc;
+            color: #333;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #e9ecef;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #d4edda;
+            border-left: 5px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .vuln-note {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .badge {
+            background-color: #e74c3c;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Отчет: Анализ CVE за 2021 год и симуляция XSS-атаки</h1>
+
+    <h2>Часть I. Статический анализ CVE за 2021 год</h2>
+    
+    <h3>1. Общее количество CVE за 2021 год</h3>
+    <p>Согласно данным Национальной базы уязвимостей (NVD), за 2021 год зарегистрировано <span class="badge">20 151</span> уязвимость.</p>
+
+    <h3>2. Выбранные CVE с XSS в PHP-компонентах</h3>
+    
+    <h4>CVE-2021-40924</h4>
+    <table>
+        <tr>
+            <th style="width: 150px;">Параметр</th>
+            <th>Значение</th>
+        </tr>
+        <tr>
+            <td><strong>Компонент</strong></td>
+            <td>Bugs (баг-трекер на PHP)</td>
+        </tr>
+        <tr>
+            <td><strong>Назначение</strong></td>
+            <td>Система отслеживания ошибок и задач для команд разработчиков. Позволяет создавать тикеты, назначать ответственных, комментировать статус исправления.</td>
+        </tr>
+        <tr>
+            <td><strong>Тип XSS</strong></td>
+            <td>Reflected XSS</td>
+        </tr>
+        <tr>
+            <td><strong>Уязвимый файл</strong></td>
+            <td><code>/install/index.php</code></td>
+        </tr>
+        <tr>
+            <td><strong>Параметр</strong></td>
+            <td><code>first_name</code></td>
+        </tr>
+    </table>
+
+    <h4>CVE-2021-39412</h4>
+    <table>
+        <tr>
+            <th style="width: 150px;">Параметр</th>
+            <th>Значение</th>
+        </tr>
+        <tr>
+            <td><strong>Компонент</strong></td>
+            <td>PHPGurukul Shopping Portal v3.1</td>
+        </tr>
+        <tr>
+            <td><strong>Назначение</strong></td>
+            <td>Интернет-магазин на PHP — управление каталогом товаров, корзиной, оформление заказов.</td>
+        </tr>
+        <tr>
+            <td><strong>Тип XSS</strong></td>
+            <td>Reflected XSS (множественные векторы)</td>
+        </tr>
+        <tr>
+            <td><strong>Уязвимые файлы</strong></td>
+            <td><code>jsonp.php</code>, <code>editable_ajax.php</code>, <code>captcha/index.php</code></td>
+        </tr>
+        <tr>
+            <td><strong>Параметры</strong></td>
+            <td><code>callback</code>, <code>PHP_SELF</code></td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <h2>Часть II. Практическая симуляция</h2>
+    
+    <h3>1. Развертывание стенда</h3>
+    <pre><code>docker pull ket9/otus-devsecops-xss
+docker run -d -p 8080:80 ket9/otus-devsecops-xss:latest</code></pre>
+    <p>После запуска приложение доступно по адресу: <code>http://localhost:8080</code></p>
+
+    <h3>2. Ход рассуждений и тестирование</h3>
+    
+    <p><strong>Шаг 1. Первичный осмотр</strong></p>
+    <p>На главной странице обнаружена форма с текстовым полем ввода. При вводе обычного текста (<code>test123</code>) он отображается на той же странице после отправки.</p>
+    
+    <p><strong>Шаг 2. Проверка на обработку HTML</strong></p>
+    <p>Ввожу тестовый HTML-тег:</p>
+    <pre><code>&lt;h1&gt;Hello&lt;/h1&gt;</code></pre>
+    <p><strong>Результат:</strong> Браузер отобразил текст как заголовок (крупным жирным шрифтом). Это означает, что теги не экранируются и интерпретируются браузером.</p>
+    
+    <p><strong>Шаг 3. Попытка выполнения JavaScript</strong></p>
+    <p>Пробую классический payload:</p>
+    <pre><code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code></pre>
+    <p><strong>Результат:</strong> Окно не появилось. Скорее всего, сервер удаляет или экранирует тег <code>&lt;script&gt;</code>.</p>
+    
+    <p><strong>Шаг 4. Обход фильтрации</strong></p>
+    <p>Использую тег <code>&lt;img&gt;</code> с обработчиком события <code>onerror</code>:</p>
+    <pre><code>&lt;img src="invalid.jpg" onerror="alert('XSS_OTUS')"&gt;</code></pre>
+    <p><strong>Результат:</strong> Появилось всплывающее окно <code>alert('XSS_OTUS')</code>. Атака успешна.</p>
+
+    <div class="success">
+        <h3>✅ Доказательство выполнения JS-скрипта</h3>
+        <p>При вводе payload <code>&lt;img src="invalid.jpg" onerror="alert('XSS_OTUS')"&gt;</code> в уязвимое поле:</p>
+        <ol>
+            <li>Браузер пытается загрузить изображение по пути <code>invalid.jpg</code></li>
+            <li>Загрузка не удается (404 или отсутствует файл)</li>
+            <li>Срабатывает событие <code>onerror</code></li>
+            <li>Выполняется JavaScript-код <code>alert('XSS_OTUS')</code></li>
+            <li>На экране появляется модальное окно с текстом</li>
+        </ol>
+    </div>
+
+    <div class="vuln-note">
+        <h3>📌 Тип найденной уязвимости</h3>
+        <p><strong>Reflected XSS (Отраженная межсайтовая скриптовая уязвимость)</strong></p>
+        <p><strong>Обоснование:</strong></p>
+        <ul>
+            <li>Зловредный код не сохраняется на сервере (в базу данных или файлы)</li>
+            <li>Код отражается (возвращается) в теле HTTP-ответа немедленно после отправки запроса</li>
+            <li>Для успешной атаки жертву необходимо обманом заставить перейти по специально сформированной ссылке</li>
+        </ul>
+        <p><strong>Вектор атаки:</strong></p>
+        <pre><code>http://localhost:8080/?search=&lt;img src=x onerror=alert('XSS')&gt;</code></pre>
+    </div>
+
+    <hr>
+
+    <h2>Часть III. Меры предотвращения</h2>
+    
+    <h3>1. Экранирование вывода (главная защита)</h3>
+    <p>При выводе любых пользовательских данных в HTML-коде необходимо заменять спецсимволы на HTML-сущности.</p>
+    
+    <p><strong>Какие символы нужно экранировать:</strong></p>
+    <table>
+        <tr>
+            <th>Символ</th>
+            <th>HTML-сущность</th>
+        </tr>
+        <tr>
+            <td><code>&amp;</code></td>
+            <td><code>&amp;amp;</code></td>
+        </tr>
+        <tr>
+            <td><code>&lt;</code></td>
+            <td><code>&amp;lt;</code></td>
+        </tr>
+        <tr>
+            <td><code>&gt;</code></td>
+            <td><code>&amp;gt;</code></td>
+        </tr>
+        <tr>
+            <td><code>"</code></td>
+            <td><code>&amp;quot;</code></td>
+        </tr>
+        <tr>
+            <td><code>'</code></td>
+            <td><code>&amp;#039;</code> (или <code>&amp;apos;</code>)</td>
+        </tr>
+    </table>
+    
+    <p><strong>Реализация на PHP:</strong></p>
+    <pre><code>// Уязвимый код (НЕ ДЕЛАТЬ ТАК)
+echo $_GET['search'];
+
+// Безопасный код
+$safe_input = htmlspecialchars($_GET['search'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+echo $safe_input;</code></pre>
+    <p><strong>Что делает <code>ENT_QUOTES</code>:</strong> экранирует и двойные, и одинарные кавычки. Это закрывает векторы атаки через атрибуты тегов (например, <code>value='...'</code>).</p>
+
+    <h3>2. Защита на уровне HTTP-заголовков</h3>
+    <pre><code>// Content-Security-Policy — запрет inline-скриптов и скриптов с внешних доменов
+header("Content-Security-Policy: default-src 'self'; script-src 'self'");
+
+// X-XSS-Protection — для старых версий браузеров
+header("X-XSS-Protection: 1; mode=block");
+
+// HttpOnly для Cookie — защита сессии от кражи через document.cookie
+session_set_cookie_params(['httponly' => true]);</code></pre>
+
+    <h3>3. Дополнительные рекомендации</h3>
+    <table>
+        <tr>
+            <th style="width: 200px;">Мера</th>
+            <th>Описание</th>
+        </tr>
+        <tr>
+            <td><strong>Валидация ввода</strong></td>
+            <td>Проверка данных на соответствие ожидаемому формату (тип, длина, диапазон)</td>
+        </tr>
+        <tr>
+            <td><strong>Белые списки</strong></td>
+            <td>Разрешать только известные безопасные значения, запрещать всё остальное</td>
+        </tr>
+        <tr>
+            <td><strong>Контекстное экранирование</strong></td>
+            <td>Для HTML, атрибутов, JavaScript, CSS и URL — разные правила экранирования</td>
+        </tr>
+        <tr>
+            <td><strong>Обновление ПО</strong></td>
+            <td>Регулярно обновлять PHP, фреймворки и библиотеки</td>
+        </tr>
+    </table>
+
+</body>
+</html>

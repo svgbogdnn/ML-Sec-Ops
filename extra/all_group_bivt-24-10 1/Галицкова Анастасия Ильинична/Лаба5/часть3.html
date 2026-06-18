@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ безопасности образа</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 {
+            color: #2E75B6;
+            border-bottom: 2px solid #2E75B6;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #4472C4;
+            margin-top: 30px;
+        }
+        ul {
+            margin: 15px 0;
+        }
+        li {
+            margin: 8px 0;
+        }
+        strong {
+            color: #2E75B6;
+        }
+        .conclusion {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-left: 4px solid #2E75B6;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Анализ безопасности образа</h1>
+    
+    <h2>Результаты сканирования</h2>
+    <p>По результатам сканирования образа <code>secure-container:v1</code> на базе Alpine Linux 3.23.4 инструментом Trivy обнаружено <strong>0 уязвимостей</strong>.</p>
+    
+    <h2>Оценка безопасности</h2>
+    
+    <p><strong>Положительные аспекты:</strong></p>
+    <ul>
+        <li>Отсутствие известных уязвимостей (CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0)</li>
+        <li>Использование актуальной версии Alpine Linux 3.23.4</li>
+        <li>Минималистичный дистрибутив с малой поверхностью атаки</li>
+        <li>Все системные пакеты обновлены до последних безопасных версий</li>
+        <li>Не обнаружено секретов или утечек credentials</li>
+    </ul>
+    
+    <div class="conclusion">
+        <strong>Вывод:</strong> Образ безопасен для использования в production окружениях с точки зрения известных уязвимостей.
+    </div>
+</body>
+</html>

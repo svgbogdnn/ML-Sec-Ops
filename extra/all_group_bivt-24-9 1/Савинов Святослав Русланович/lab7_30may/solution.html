@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторная работа №7</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; line-height: 1.6; color: #333; }
+        h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
+        h2 { margin-top: 24px; }
+        a { color: #0066cc; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; word-break: break-all; }
+        pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: none; padding: 0; }
+        strong { color: #111; }
+        img { max-width: 100%; border: 1px solid #ddd; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+<h1>ЛР 7. MobSF, статический анализ apk</h1>
+<p>Поднял MobSF в докере:</p>
+<pre><code class="language-bash">docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
+</code></pre>
+<p>Веб открывается на localhost:8000. Сканил учебное приложение <strong>InsecureBankv2</strong> (com.android.insecurebankv2), это нарочно дырявый банк-клиент под андроид. специально взяли такое приложение результатат ожидаемые. apk скачал из релизов автора, загрузил и прогнал через rest api (ключ MobSF пишет в логи при старте):</p>
+<pre><code class="language-bash">curl -F &quot;file=@InsecureBankv2.apk&quot; http://localhost:8000/api/v1/upload -H &quot;Authorization: $APIKEY&quot;
+curl -X POST -d &quot;hash=$HASH&quot; http://localhost:8000/api/v1/scan -H &quot;Authorization: $APIKEY&quot;
+curl -X POST -d &quot;hash=$HASH&quot; http://localhost:8000/api/v1/download_pdf -H &quot;Authorization: $APIKEY&quot; -o mobsf_report.pdf
+</code></pre>
+<p>Полный pdf лежит рядом (<code>mobsf_report.pdf</code>). Общая оценка <strong>28/100, grade F, CRITICAL RISK</strong>. По severity: 7 high, 9 medium, 1 hotspot. результат ожидаемй.</p>
+<h2>Что за приложение</h2>
+<p>InsecureBankv2 1.0, main activity LoginActivity, target SDK 22, min SDK 15. 10 активити, 2 ресивера, 1 провайдер, из них наружу торчат 4 активити, 1 ресивер и 1 провайдер. Подписано сертификатом на CN=Dinesh Shetty (это автор приложения) и только по схеме v1.</p>
+<h2>Опасные разрешения</h2>
+<p>MobSF пометил 7 разрешений как dangerous:</p>
+<ul>
+<li><code>SEND_SMS</code>, отправка смс, можно слать сообщения без подтверждения юзера (читай списывать деньги)</li>
+<li><code>WRITE_EXTERNAL_STORAGE</code>, запись на внешнее хранилище</li>
+<li><code>READ_CONTACTS</code>, чтение всех контактов</li>
+<li><code>READ_PROFILE</code>, чтение профиля пользователя</li>
+<li><code>GET_ACCOUNTS</code>, список аккаунтов на устройстве</li>
+<li><code>USE_CREDENTIALS</code>, запрос токенов аутентификации</li>
+<li><code>ACCESS_COARSE_LOCATION</code>, примерное местоположение</li>
+</ul>
+<p>Для банк-клиента <code>SEND_SMS</code>, <code>READ_CONTACTS</code> и геолокация выглядят явно лишними. зачем банку чиатть контакты хз MobSF отдельно отметил, что 7 из этих разрешений входят в список тех, что часто абьюзит малварь.</p>
+<h2>Манифест</h2>
+<p>Тут основная масса high.</p>
+<p><code>minSdk=15</code> значит приложение ставится аж на Android 4.0.3, а это куча непропатченных дыр и никаких апдейтов безопасности от гугла.</p>
+<p><code>android:debuggable=true</code>, собрано с включённой отладкой, к нему легко прицепить дебаггер, снять стектрейс, залезть в потроха.</p>
+<p><code>android:allowBackup=true</code> (warning), данные приложения можно слить через adb backup, если у юзера включена отладка по usb.</p>
+<p>Четыре активити (<code>PostLogin</code>, <code>DoTransfer</code>, <code>ViewStatement</code>, <code>ChangePassword</code>) помечены как уязвимые к <strong>StrandHogg 2.0</strong>. Это task hijacking, стороннее приложение может подсунуть свою активити поверх стека уязвимого приложения, классика для фишинга (нарисовать поверх экрана перевода денег свой). нифига себе это уже жестко. Лечится <code>launchMode="singleInstance"</code> плюс пустой <code>taskAffinity</code>, либо поднятием targetSdk до 29+.</p>
+<p>Плюс куча компонентов торчит наружу с <code>exported=true</code> без защиты: те же 4 активити, контент-провайдер <code>TrackUserContentProvider</code> и ресивер <code>MyBroadCastReceiver</code>. То есть любое стороннее приложение на телефоне может их дёрнуть.</p>
+<h2>Сертификат</h2>
+<p>Подписано только по схеме v1, отсюда high про <strong>Janus</strong>. На Android 5.0-8.0 это позволяет подменить код apk, сохранив валидную подпись. Подписи v2/v3 нет.</p>
+<h2>Хардкод</h2>
+<p>В разделе Hardcoded Secrets MobSF насыпал пачку base64-строк (hotspot), типа <code>eRIYZ7vwE2B0WWejblqyBziYzuBt9JW024X3YOHX2vY=</code> и подобных. Часть из них это захардкоженные ключи шифрования и строки приложения. В дырявом банке это и задумано, но в реальном проекте такие ключи в apk это утечка, apk легко декомпилируется и строки достаются.</p>
+<h2>Что чисто</h2>
+<p>Network Security пустой, проблем нет. Code Analysis в этой версии MobSF тоже без high-находок. Из трекеров приложение тащит Google AdMob, Analytics и Tag Manager. APKID нашёл anti-VM код (проверки Build.MODEL и MANUFACTURER), приложение пытается понять, не крутится ли оно в эмуляторе.</p>
+<h2>План митигации</h2>
+<ol>
+<li>Разрешения. Выкинуть из манифеста всё, что не нужно банк-клиенту, в первую очередь <code>SEND_SMS</code>, <code>READ_CONTACTS</code>, <code>ACCESS_COARSE_LOCATION</code>, <code>READ_PROFILE</code>. Что реально нужно, запрашивать в рантайме в момент использования, а не пачкой на старте.</li>
+<li>minSdk. Поднять хотя бы до 24-29. На старых андроидах нет современных механизмов безопасности, и гугл их не патчит.</li>
+<li>debuggable. В релизной сборке <code>android:debuggable=false</code>, разделить debug и release конфиги. В CI блокировать сборку, если в релизе нашёлся debuggable=true.</li>
+<li>allowBackup. Поставить <code>android:allowBackup=false</code>, чтобы данные нельзя было слить через adb.</li>
+<li>StrandHogg. Уязвимым активити выставить <code>launchMode="singleInstance"</code> и пустой <code>taskAffinity</code>, плюс поднять targetSdk до 29+, тогда дыра закрывается на уровне платформы.</li>
+<li>Exported. Всем внутренним компонентам проставить <code>exported="false"</code>. Что должно вызываться извне, закрыть своим permission уровня signature, для провайдера ограничить доступ.</li>
+<li>Подпись. Переподписать по схемам v2 и v3, а не только v1, это закрывает Janus. Заодно уйти на нормальный релизный ключ и хранить его отдельно от кода.</li>
+<li>Хардкод ключей. Реальные ключи и секреты вынести из кода, не хранить в apk. Чувствительное держать на сервере или в Android Keystore. Всё, что уже было захардкожено, считать скомпрометированным и менять.</li>
+</ol>
+<h2>Вывод</h2>
+<p>InsecureBankv2 заслуженно получил 28/100, это эталонно дырявое приложение. Самое жирное это debuggable-сборка, StrandHogg на экранах входа и перевода денег, торчащие наружу компоненты и Janus из-за v1-подписи. План в основном сводится к базовой гигиене под андроид: минимум разрешений, нет debug в релизе, нет exported без защиты, нормальная подпись и никаких ключей в apk. дырявое приложение в целом</p>
+</body>
+</html>

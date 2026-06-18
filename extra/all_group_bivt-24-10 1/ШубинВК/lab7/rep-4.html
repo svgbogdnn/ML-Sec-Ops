@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 26.2.3.2 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changed" content="00:00:00"/>
+	<style type="text/css">
+		@page { size: 8.27in 11.69in; margin: 0.79in }
+		p { margin-bottom: 0.1in; line-height: 115%; background: transparent }
+		h1 { margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h1.western { font-weight: bold; font-size: 18pt; font-family: "Liberation Sans", sans-serif }
+		h1.cjk { font-weight: bold; font-size: 18pt; font-family: "AR PL SungtiL GB" }
+		h1.ctl { font-weight: bold; font-family: "Noto Sans Devanagari"; font-size: 18pt }
+		h2 { margin-top: 0.14in; margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h2.western { font-weight: bold; font-size: 16pt; font-family: "Liberation Sans", sans-serif }
+		h2.cjk { font-weight: bold; font-size: 16pt; font-family: "AR PL SungtiL GB" }
+		h2.ctl { font-weight: bold; font-family: "Noto Sans Devanagari"; font-size: 16pt }
+		a:link { color: #000080; text-decoration: underline }
+	</style>
+</head>
+<body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><h1 class="western">
+Lab7</h1>
+<h2 class="western">Start</h2>
+<p>Скачал образ MobSF</p>
+<p><img src="/input/import-1/image.png" name="Image1" align="absmiddle" width="33" height="33" border="0"/>
+</p>
+<p>И запустил&nbsp;<img src="/input/import-1/image-2.png" name="Image2" align="absmiddle" width="33" height="33" border="0"/>
+</p>
+<p>Входим как обычный пользователь по
+данным из логов&nbsp;<img src="/input/import-1/image-1.png" name="Image3" align="absmiddle" width="33" height="33" border="0"/>
+</p>
+<p>Для исследования взял это
+приложение&nbsp;<a href="https://github.com/hax0rgb/InsecureShop">https://github.com/hax0rgb/InsecureShop</a></p>
+<p>загружаем&nbsp;<img src="/input/import-1/image-3.png" name="Image4" align="absmiddle" width="33" height="33" border="0"/>
+</p>
+<p>Ждем когда пройдет анализ&nbsp;<img src="/input/import-1/image-4.png" name="Image5" align="absmiddle" width="33" height="33" border="0"/>
+</p>
+<p>Анализ завершен&nbsp;<img src="/input/import-1/image-5.png" name="Image6" align="absmiddle" width="33" height="33" border="0"/>
+</p>
+<h2 class="western">app permissions со статусом dangerous</h2>
+<p><img src="/input/import-1/image-6.png" name="Image7" align="absmiddle" width="33" height="33" border="0"/>
+&nbsp;READ_CONTACTS
+- (dangerous)	Чтение контактов пользователя</p>
+<p>READ_EXTERNAL_STORAGE - (dangerous)	Чтение файлов на
+SD-карте</p>
+<p>WRITE_EXTERNAL_STORAGE - (dangerous) Запись/удаление
+файлов на SD-карте</p>
+<p>Вывод: Приложению-магазину не нужен
+доступ к контактам и полная запись на
+внешний накопитель. Эти разрешения
+следует удалить или запрашивать в
+рантайме с объяснением.</p>
+<p>network security не обнаружено&nbsp;<img src="/input/import-1/image-7.png" name="Image8" align="absmiddle" width="33" height="33" border="0"/>
+</p>
+<h2 class="western">code analysis</h2>
+<ol>
+	<li><p>Insecure WebView Implementation. WebView ignores SSL
+	Certificate errors and accept any SSL Certificate. This application
+	is vulnerable to MITM attacks</p></li>
+</ol>
+<p>WebView игнорирует ошибки SSL-сертификатов
+и принимает любые сертификаты. Приложение
+уязвимо к MITM-атакам — злоумышленник
+может перехватывать и подменять трафик</p>
+<p>CWE: CWE-295: Improper Certificate Validation&nbsp;OWASP Top 10:
+M3: Insecure Communication&nbsp;OWASP MASVS: MSTG-NETWORK-3</p>
+<ol>
+	<li><p>Debug configuration enabled. Production builds must not be
+	debuggable.</p></li>
+</ol>
+<p>Отладка включена в приложении.
+Злоумышленник может подключить отладчик
+и анализировать работу приложения</p>
+<p>CWE: CWE-919: Weaknesses in Mobile Applications&nbsp;OWASP Top 10:
+M1: Improper Platform Usage&nbsp;OWASP MASVS: MSTG-RESILIENCE-2</p>
+<p><img src="/input/import-1/image-8.png" name="Image9" align="absmiddle" width="33" height="33" border="0"/>
+</p>
+<h2 class="western">Certificate Analysis</h2>
+<p><img src="/input/import-1/image-9.png" name="Image10" align="absmiddle" width="33" height="33" border="0"/>
+</p>
+<p>Application signed with debug certificate (high) - Релизное
+приложение подписано отладочным
+сертификатом (небезопасно)</p>
+<p>Certificate algorithm vulnerable to hash collision (high) -
+Используется SHA1withRSA — алгоритм с
+известными коллизиями</p>
+<h2 class="western">Manifest Analysis с severity high</h2>
+<p><img src="/input/import-1/image-10.png" name="Image11" align="absmiddle" width="33" height="33" border="0"/>
+</p>
+<p>App can be installed on vulnerable Android 4.1-4.1.2 (minSdk=16) -
+Приложение можно установить на старые
+версии Android, которые не получают обновления
+безопасности</p>
+<p>Clear text traffic Enabled (android:usesCleartextTraffic=true) -
+Tрафик может передаваться по HTTP без
+шифрования → перехват паролей (MITM)</p>
+<p>Debug Enabled For App (android:debuggable=true) - К приложению
+можно подключить отладчик →
+реверс-инжиниринг</p>
+<p>android:allowBackup=true (warning) — данные можно
+скопировать через adb</p>
+<h2 class="western">Result</h2>
+<ul>
+	<li><p>Опасные разрешения — удалить
+	READ_CONTACTS, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE из
+	манифеста. Они не нужны магазину.</p></li>
+	<li><p>Старые версии Android — поднять minSdk с
+	16 до 29 (Android 10), чтобы приложение не
+	ставилось на устаревшие устройства
+	без обновлений.</p></li>
+	<li><p>Нешифрованный трафик — выключить
+	usesCleartextTraffic, перевести весь трафик на
+	HTTPS, иначе пароли перехватываются.</p></li>
+	<li><p>Отладка — выключить debuggable в релизной
+	сборке, чтобы нельзя было подключить
+	отладчик.</p></li>
+	<li><p>WebView — убрать игнорирование
+	SSL-ошибок, иначе MITM-атака.</p></li>
+	<li><p>Подпись — подписать релиз своим
+	ключом, а не дебаг-сертификатом.</p></li>
+	<li><p>Алгоритм — заменить SHA1 на SHA-256.</p></li>
+</ul>
+<p><br/>
+<br/>
+
+</p>
+</body>
+</html>

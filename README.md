@@ -1,18 +1,19 @@
 # ML Sec Ops 🍃
 
-> Practical sec lab repository focused on WebAppSec, API Security, secure coding, container hardening and vulnerability analysis.
+> Practical sec lab repository focused on WebAppSec, API Security, secure coding, container hardening, secret scanning, mobile SAST and vulnerability analysis.
 
 ## 📍 Overview
 
 `ML Sec Ops` is a hands-on security engineering repository that documents a sequence of laboratory works around modern application security and DevSecOps practices.
 
-The repository is focused on practical security analysis rather than abstract theory: vulnerability research, CVE triage, exploit reproduction, insecure API behavior, secure coding review, Docker container hardening and image vulnerability scanning.
+The repository is focused on practical security analysis rather than abstract theory: vulnerability research, CVE triage, exploit reproduction, insecure API behavior, secure coding review, Docker container hardening, image vulnerability scanning, secret detection in source code and mobile application SAST analysis.
 
 The main goal is to show a clear security workflow:
 
 ⬩ identify the attack surface  
 ⬩ reproduce vulnerable behavior in a controlled local environment  
 ⬩ map findings to OWASP categories  
+⬩ detect exposed secrets and insecure configuration  
 ⬩ document impact and root cause  
 ⬩ propose mitigation and hardening steps  
 
@@ -31,7 +32,16 @@ The main goal is to show a clear security workflow:
 - Docker container hardening
 - Non-root container runtime configuration
 - Vulnerability scanning with Trivy
+- Secret scanning and exposed credential analysis
+- Git history secret leakage
+- Database connection string exposure
+- Mobile SAST with MobSF
+- Android Manifest security analysis
+- Android dangerous permissions review
+- APK certificate and signing analysis
 - CVE research and vulnerability classification
+
+ㅤ
 
 ## 🔹 Repo Structure
 
@@ -52,8 +62,17 @@ ML-Sec-Ops/
 ├── 5 lab/
 │   └── Docker hardening, non-root containers and Trivy vulnerability scan
 │
-└── README.md
+├── 6 lab/
+│   └── Secret scanning, exposed credentials and safe secret storage analysis
+│
+├── 7 lab/
+│   └── Mobile SAST with MobSF, Android APK analysis and mitigation planning
+│
+├── README.md
+└── readme1.md
 ```
+
+ㅤ
 
 ## 🔸 Lab Index
 
@@ -167,6 +186,51 @@ Main security topics:
 
 `Docker hardening`, `non-root container`, `least privilege`, `Trivy`, `CVE scanning`, `Alpine packages`, `Python dependencies`, `container runtime security`.
 
+---
+
+### 🔹 Lab 6 — Secret Scanning and Exposed Credential Analysis
+
+The sixth lab is focused on searching for secrets in source code and Git history, then explaining why the detected values are sensitive and how they should be stored.
+
+The work documents five findings detected in project files and historical commits: database connection strings, URI credentials, JDBC credentials and configuration values that can be interpreted as database secrets.
+
+Covered findings:
+
+- PostgreSQL connection string with embedded credentials;
+- URI with `guest:guest` credentials and explicit port;
+- JDBC PostgreSQL URL with `user` and `password` parameters;
+- SQL Server related value in `web.xml`;
+- URI with embedded credentials without an explicit port;
+- explanation of why every finding is treated as a secret;
+- mitigation plan for safe storage and rotation.
+
+Main security topics:
+
+`secret scanning`, `TruffleHog`, `Git history`, `database credentials`, `connection strings`, `JDBC`, `URI credentials`, `secret rotation`, `CI/CD secrets`, `secret manager`.
+
+---
+
+### 🔹 Lab 7 — Mobile SAST with MobSF
+
+The seventh lab is focused on static security analysis of an Android application using Mobile Security Framework MobSF.
+
+MobSF was deployed through Docker, then an APK file `InsecureBankv201.apk` was uploaded for static analysis. The analyzed application received a low security score and critical risk level, so the lab includes both findings review and a mitigation plan.
+
+Covered work:
+
+- MobSF deployment through Docker;
+- Android APK upload and static analysis;
+- review of dangerous Android permissions;
+- Network Security section review;
+- Manifest Analysis findings with High severity;
+- Code Analysis review;
+- mitigation plan for Android permissions, debug flags, exported components and signing issues;
+- final security conclusion for the analyzed APK.
+
+Main security topics:
+
+`MobSF`, `SAST`, `Android APK`, `dangerous permissions`, `AndroidManifest.xml`, `android:debuggable`, `StrandHogg 2.0`, `exported components`, `debug certificate`, `SHA1withRSA`, `mobile application security`.
+
 ## 🔸 Technical Stack
 
 - Docker
@@ -177,6 +241,10 @@ Main security topics:
 - SQL
 - Linux shell
 - Trivy
+- MobSF
+- Android APK
+- Android Manifest
+- TruffleHog
 - NVD CVE database
 - OWASP Top 10
 - OWASP API Security Top 10
@@ -191,7 +259,7 @@ The labs follow a practical security workflow:
    └── collect CVE data, reports, OWASP categories and known weakness patterns
 
 2. Local Environment Setup
-   └── run vulnerable apps in Docker containers
+   └── run vulnerable apps, security tools and analysis environments in Docker
 
 3. Manual Testing
    └── interact with endpoints, parameters, forms and runtime behavior
@@ -199,51 +267,67 @@ The labs follow a practical security workflow:
 4. Exploit Reproduction
    └── validate SQLi, XSS, BOLA / IDOR and misconfiguration issues
 
-5. Root Cause Analysis
+5. Static Analysis
+   └── scan source code, Git history, containers and mobile APKs for security issues
+
+6. Root Cause Analysis
    └── identify why the vulnerability exists at code, config or architecture level
 
-6. Mitigation
+7. Mitigation
    └── document secure alternatives, access control, encoding, validation and hardening
 
-7. Security Reporting
+8. Security Reporting
    └── summarize findings, impact and remediation steps
 ```
 
 ## 🔸 Example Findings
 
-
-| Area            | Example Finding                                        | Security Category           |
-| --------------- | ------------------------------------------------------ | --------------------------- |
-| Web Application | SQL Injection through unsanitized request parameter    | Injection                   |
-| REST API        | User profile access without object-level authorization | BOLA / IDOR                 |
-| REST API        | Public debug endpoint exposing sensitive user data     | Security Misconfiguration   |
-| XSS             | Stored JavaScript payload executed from saved comment  | Stored XSS                  |
-| Secure Coding   | Hardcoded secret key in Flask application code         | Secret Management Failure   |
-| Secure Coding   | Plaintext password handling                            | Insecure Credential Storage |
-| Docker          | Container running as root                              | Least Privilege Violation   |
-| Docker          | Vulnerable packages detected by Trivy                  | Vulnerable Dependencies     |
-
+| Area | Example Finding | Security Category |
+| --- | --- | --- |
+| Web Application | SQL Injection through unsanitized request parameter | Injection |
+| REST API | User profile access without object-level authorization | BOLA / IDOR |
+| REST API | Public debug endpoint exposing sensitive user data | Security Misconfiguration |
+| XSS | Stored JavaScript payload executed from saved comment | Stored XSS |
+| Secure Coding | Hardcoded secret key in Flask application code | Secret Management Failure |
+| Secure Coding | Plaintext password handling | Insecure Credential Storage |
+| Docker | Container running as root | Least Privilege Violation |
+| Docker | Vulnerable packages detected by Trivy | Vulnerable Dependencies |
+| Secret Scanning | PostgreSQL connection string committed to repository | Exposed Credentials |
+| Secret Scanning | URI containing `user:password@host` | Secret Leakage |
+| Mobile SAST | Android application built with `android:debuggable=true` | Insecure Build Configuration |
+| Mobile SAST | Activity vulnerable to StrandHogg 2.0 task hijacking | Android Manifest Misconfiguration |
+| Mobile SAST | APK signed with debug certificate and SHA1withRSA | Weak Release Signing |
 
 ## 🔹 Hardening Notes
 
 Security improvements documented across the labs include:
 
-⬩ validate and normalize user-controlled input
-⬩ avoid raw SQL string concatenation
-⬩ use parameterized queries or ORM abstractions
-⬩ enforce authentication and authorization on every sensitive endpoint
-⬩ check object-level access on every resource request
-⬩ remove debug endpoints from deployed builds
-⬩ never expose plaintext passwords in API responses
-⬩ store secrets outside source code
-⬩ hash passwords with dedicated password hashing algorithms
-⬩ encode output before rendering user-controlled data in HTML
-⬩ enable CSRF protection for state-changing requests
-⬩ configure secure session cookies
-⬩ run containers as non-root users
-⬩ drop unnecessary Linux capabilities
-⬩ use read-only filesystems where possible
-⬩ regularly scan images and dependencies for known CVEs
+⬩ validate and normalize user-controlled input  
+⬩ avoid raw SQL string concatenation  
+⬩ use parameterized queries or ORM abstractions  
+⬩ enforce authentication and authorization on every sensitive endpoint  
+⬩ check object-level access on every resource request  
+⬩ remove debug endpoints from deployed builds  
+⬩ never expose plaintext passwords in API responses  
+⬩ store secrets outside source code  
+⬩ rotate secrets that have already appeared in Git history  
+⬩ use `.env`, CI/CD protected variables or dedicated secret managers for credentials  
+⬩ prevent secrets from entering commits with automated scanning  
+⬩ hash passwords with dedicated password hashing algorithms  
+⬩ encode output before rendering user-controlled data in HTML  
+⬩ enable CSRF protection for state-changing requests  
+⬩ configure secure session cookies  
+⬩ run containers as non-root users  
+⬩ drop unnecessary Linux capabilities  
+⬩ use read-only filesystems where possible  
+⬩ regularly scan images and dependencies for known CVEs  
+⬩ review Android dangerous permissions and remove unnecessary ones  
+⬩ disable `android:debuggable` in release builds  
+⬩ restrict exported Android components  
+⬩ sign release APKs with production certificates and modern algorithms  
+⬩ repeat SAST scanning after mitigation changes  
+
+ㅤ
 
 ## 🔸 Purpose
 
@@ -256,4 +340,3 @@ The emphasis is on practical engineering thinking:
 ```text
 vulnerability → exploitation path → impact → root cause → mitigation → hardening
 ```
-

@@ -1,0 +1,82 @@
+<p>В этой работе я запускал MobSF через докер образ и прогонял через него APK <code>Clash+of+Clans_18.367.1_APKPure.apk</code></p>
+<p>APK скачан с <a href="https://apkpure.net/clash-of-clans-android-app/com.supercell.clashofclans/download">https://apkpure.net/clash-of-clans-android-app/com.supercell.clashofclans/download</a></p>
+<p>Результат общего сканирования такой:</p>
+<p>Security Score: 38/100</p>
+<p>По scorecard MobSF показал:</p>
+<ul>
+<li>HIGH: 4</li>
+<li>WARNING: 6</li>
+<li>INFO: 1</li>
+</ul>
+<p>Также MobSF отметил, что в приложении найдено 5 privacy trackers:</p>
+<ul>
+<li>AppsFlyer</li>
+<li>Google Firebase Analytics</li>
+<li>HelpShift</li>
+<li>Sentry</li>
+<li>Snowplow</li>
+</ul>
+<h1 id="high-severity">High severity</h1>
+<h2 id="dangerous-permissions">Dangerous permissions</h2>
+<p>MobSF отметил 2 разрешения со статусом dangerous:</p>
+<ol>
+<li><code>android.permission.POST_NOTIFICATIONS</code></li>
+<li><code>android.permission.CAMERA</code></li>
+</ol>
+<p>С уведомлениями все более-менее ожидаемо, это обычное permission для современного мобильного приложения.</p>
+<p>А вот <code>CAMERA</code> уже более чувствительное разрешение, потому что оно дает доступ к камере устройства. Даже если оно реально нужно приложению для какой-то функции, это все равно permission, которое надо отдельно обосновывать.</p>
+<p>То есть первый обязательный пункт задания выполняется: dangerous permissions у приложения есть.</p>
+<h2 id="manifest-analysis">Manifest Analysis</h2>
+<h3 id="1-android">1) Поддержка старой версии Android</h3>
+<p><code>App can be installed on a vulnerable unpatched Android version 7.0, [minSdk=24]</code></p>
+<p>То есть приложение можно ставить на Android 7.0. MobSF считает это проблемой, потому что такие старые версии уже давно не получают нормальные обновления безопасности.</p>
+<h3 id="2-cleartext-traffic">2) Разрешен cleartext traffic</h3>
+<p><code>Clear text traffic is Enabled For App [android:usesCleartextTraffic=true]</code></p>
+<p>Это означает, что приложение допускает незашифрованный трафик. Из всех находок именно эта выглядит одной из самых понятных и практических: если трафик не защищен, его можно перехватывать и подменять.</p>
+<h2 id="code-analysis">Code Analysis</h2>
+<p>Тут как раз наоборот: для этого APK MobSF не выдал high findings в разделе Code Analysis</p>
+<p>Раздел code_analysis в JSON-отчете пустой.</p>
+<h1 id="-">Дополнительно</h1>
+<h2 id="1-">1) Слабый алгоритм подписи сертификата</h2>
+<p>MobSF отметил:</p>
+<p><code>Certificate algorithm vulnerable to hash collision</code></p>
+<p>Причина в том, что приложение подписано с использованием <code>SHA1withRSA</code></p>
+<p>SHA-1 давно считается устаревшим алгоритмом, и это нормальное high-срабатывание, на которое стоит обратить внимание.</p>
+<h2 id="2-privacy-trackers">2) Privacy trackers</h2>
+<p>MobSF отдельно ругается на наличие privacy trackers.</p>
+<p>Сами по себе трекеры не равны уязвимости один в один, но это уже вопрос приватности и сбора данных пользователя. Для игрового приложения это вполне ожидаемо, но как риск в отчете это все равно отражается.</p>
+<h1 id="-">План митигации</h1>
+<p>Теперь план митигации.</p>
+<h3 id="1-cleartext-traffic">1) Убрать cleartext traffic</h3>
+<p>Что делать:</p>
+<ul>
+<li>выставить <code>android:usesCleartextTraffic=&quot;false&quot;</code></li>
+<li>проверить <code>network_security_config</code></li>
+<li>оставить только HTTPS</li>
+</ul>
+<h3 id="2-android">2) Поднять минимальную поддерживаемую версию Android</h3>
+<p>Что делать:</p>
+<ul>
+<li>поднять minSdkVersion хотя бы до более новой версии Android, если это допустимо по требованиям</li>
+</ul>
+<p>Идея простая: не поддерживать совсем старые Android, которые уже небезопасны.</p>
+<h3 id="3-">3) Обновить схему подписи</h3>
+<p>Что делать:</p>
+<ul>
+<li>не использовать SHA-1</li>
+<li>проверить текущий сертификат подписи и процесс релизной сборки</li>
+</ul>
+<h3 id="4-dangerous-permissions">4) Пересмотреть dangerous permissions</h3>
+<p>Что делать:</p>
+<ul>
+<li>проверить, действительно ли нужна камера</li>
+<li>убедиться, что разрешения запрашиваются только тогда, когда реально нужны</li>
+</ul>
+<p>То есть логика стандартная: чем меньше лишних разрешений, тем лучше.</p>
+<h3 id="5-sdk-">5) Проверить сторонние SDK и трекеры</h3>
+<p>Что делать:</p>
+<ul>
+<li>посмотреть, какие SDK реально нужны</li>
+<li>удалить неиспользуемые</li>
+<li>обновить используемые зависимости</li>
+</ul>

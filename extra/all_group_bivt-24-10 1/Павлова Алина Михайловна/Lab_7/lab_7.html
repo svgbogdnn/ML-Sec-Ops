@@ -1,0 +1,653 @@
+<h1 id="-sast-">Отчёт о проведении SAST-анализа мобильного приложения</h1>
+<p><strong>Лабораторная работа №7</strong></p>
+<hr>
+<h2 id="1-">1. Введение</h2>
+<h3 id="1-1-">1.1 Цель работы</h3>
+<p>Развернуть инструмент SAST-анализа мобильных приложений (MobSF) и провести тестирование безопасности мобильного приложения.</p>
+<h3 id="1-2-">1.2 Инструментарий</h3>
+<ul>
+<li><strong>Инструмент:</strong> Mobile Security Framework (MobSF) v3.x</li>
+<li><strong>Способ развёртывания:</strong> Docker Container</li>
+<li><strong>Объект анализа:</strong> TikTok.apk (com.zhiliaoapp.musically)</li>
+<li><strong>Версия приложения:</strong> 32.7.4</li>
+<li><strong>Размер:</strong> 67.3 МБ</li>
+</ul>
+<h3 id="1-3-">1.3 Методология</h3>
+<p>SAST (Static Application Security Testing) — метод анализа безопасности приложений, который проверяет исходный код и бинарные файлы без выполнения программы. MobSF автоматически анализирует:</p>
+<ul>
+<li>AndroidManifest.xml</li>
+<li>Сетевую конфигурацию</li>
+<li>Разрешения приложения</li>
+<li>Исходный код на наличие уязвимостей</li>
+<li>Hardcoded secrets</li>
+</ul>
+<hr>
+<h2 id="2-mobsf">2. Развёртывание MobSF</h2>
+<h3 id="2-1-docker">2.1 Установка через Docker</h3>
+<pre><code class="lang-powershell"><span class="hljs-meta"># Создание директории для данных</span>
+<span class="hljs-title">mkdir</span> -p ~/mobsf-<span class="hljs-class"><span class="hljs-keyword">data</span></span>
+
+<span class="hljs-meta"># Запуск контейнера MobSF</span>
+<span class="hljs-title">docker</span> run -it <span class="hljs-comment">--rm \</span>
+  -p <span class="hljs-number">8000</span>:<span class="hljs-number">8000</span> \
+  -v ~/mobsf-<span class="hljs-class"><span class="hljs-keyword">data</span>:/home/mobsf/<span class="hljs-type">MobSF</span>/userdata \</span>
+  opensecurity/mobile-security-framework-mobsf:v3<span class="hljs-number">.1</span><span class="hljs-number">.1</span>
+</code></pre>
+<h3 id="2-2-">2.2 Проверка работоспособности</h3>
+<p>После запуска контейнера веб-интерфейс доступен по адресу:</p>
+<ul>
+<li><strong>URL:</strong> <a href="http://localhost:8000">http://localhost:8000</a></li>
+<li><strong>Статус:</strong> Работает</li>
+</ul>
+<hr>
+<h2 id="3-">3. Информация о тестируемом приложении</h2>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Название</strong></td>
+<td>TikTok</td>
+</tr>
+<tr>
+<td><strong>Package Name</strong></td>
+<td>com.zhiliaoapp.musically</td>
+</tr>
+<tr>
+<td><strong>Версия</strong></td>
+<td>32.7.4</td>
+</tr>
+<tr>
+<td><strong>Размер файла</strong></td>
+<td>67.3 МБ</td>
+</tr>
+<tr>
+<td><strong>Min SDK</strong></td>
+<td>23 (Android 6.0)</td>
+</tr>
+<tr>
+<td><strong>Target SDK</strong></td>
+<td>33 (Android 13)</td>
+</tr>
+<tr>
+<td><strong>Security Score</strong></td>
+<td>45/100</td>
+</tr>
+<tr>
+<td><strong>Risk Level</strong></td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td><strong>Grade</strong></td>
+<td>C</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Обоснование выбора:</strong> TikTok — популярное приложение с большим количеством функций (видео, стримы, чаты, платежи), что делает его интересным объектом для анализа безопасности.</p>
+<hr>
+<h2 id="4-">4. Результаты сканирования</h2>
+<h3 id="4-1-">4.1 Сводная статистика уязвимостей</h3>
+<table>
+<thead>
+<tr>
+<th>Severity</th>
+<th>Количество</th>
+<th>Процент</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>High</strong></td>
+<td>9</td>
+<td>15%</td>
+</tr>
+<tr>
+<td><strong>Medium</strong></td>
+<td>18</td>
+<td>30%</td>
+</tr>
+<tr>
+<td><strong>Low/Info</strong></td>
+<td>33</td>
+<td>55%</td>
+</tr>
+<tr>
+<td><strong>ВСЕГО</strong></td>
+<td><strong>60</strong></td>
+<td><strong>100%</strong></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="4-2-app-permissions-">4.2 App Permissions — Опасные разрешения</h3>
+<p>MobSF обнаружил <strong>6 разрешений</strong> со статусом <strong>dangerous</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Разрешение</th>
+<th>Уровень риска</th>
+<th>Описание угрозы</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ACCESS_FINE_LOCATION</code></td>
+<td><strong>High</strong></td>
+<td>Точное GPS-отслеживание в реальном времени. Риск утечки геоданных и слежки за пользователем</td>
+</tr>
+<tr>
+<td><code>ACCESS_COARSE_LOCATION</code></td>
+<td><strong>Medium</strong></td>
+<td>Приблизительное местоположение через сеть. Может использоваться для профилирования</td>
+</tr>
+<tr>
+<td><code>ACCESS_MEDIA_LOCATION</code></td>
+<td><strong>Medium</strong></td>
+<td>Извлечение геолокации из EXIF-данных фотографий и видео. Утечка метаданных</td>
+</tr>
+<tr>
+<td><code>CAMERA</code></td>
+<td><strong>Medium</strong></td>
+<td>Доступ к камере. Риск несанкционированной съёмки</td>
+</tr>
+<tr>
+<td><code>RECORD_AUDIO</code></td>
+<td><strong>Medium</strong></td>
+<td>Запись звука с микрофона. Перехват приватных разговоров</td>
+</tr>
+<tr>
+<td><code>READ_CONTACTS</code></td>
+<td><strong>High</strong></td>
+<td>Полный доступ к контактам. Утечка личных данных третьих лиц</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Анализ:</strong></p>
+<ul>
+<li>Для видеоприложения разрешения <code>CAMERA</code> и <code>RECORD_AUDIO</code> <strong>обоснованы</strong></li>
+<li><code>ACCESS_FINE_LOCATION</code> <strong>избыточно</strong> — достаточно приблизительной геолокации для рекомендаций контента</li>
+<li><code>READ_CONTACTS</code> <strong>критично</strong> — не очевидно зачем приложению доступ к контактам</li>
+</ul>
+<p><strong>Рекомендации:</strong></p>
+<ol>
+<li>Запрашивать разрешения <strong>в рантайме</strong>, а не при установке</li>
+<li>Объяснять пользователю <strong>цель</strong> каждого запроса</li>
+<li>Предоставлять <strong>fallback</strong> для пользователей, отказавших в разрешениях</li>
+<li>Удалить <code>READ_CONTACTS</code> если функционал не требует доступа к адресной книге</li>
+</ol>
+<hr>
+<h3 id="4-3-network-security-">4.3 Network Security — Уязвимости сетевой безопасности</h3>
+<p>Обнаружено <strong>4 проблемы</strong> уровня <strong>HIGH</strong> и выше.</p>
+<h4 id="high-1-cleartext-http-">HIGH-1: Cleartext HTTP разрешён глобально</h4>
+<p><strong>Severity:</strong> HIGH<br><strong>CWE:</strong> CWE-319 (Cleartext Transmission of Sensitive Information)</p>
+<p><strong>Описание:</strong>
+В <code>AndroidManifest.xml</code> установлен флаг:</p>
+<pre><code class="lang-xml">&lt;<span class="hljs-built_in">application</span>
+    android:usesCleartextTraffic=<span class="hljs-string">"true"</span>
+    ... &gt;
+</code></pre>
+<p>Это разрешает передачу данных по <strong>незашифрованному HTTP</strong> для всех доменов.</p>
+<p><strong>Риск:</strong></p>
+<ul>
+<li>Перехват трафика злоумышленником (MITM-атака)</li>
+<li>Утечка чувствительных данных (токены, персональная информация)</li>
+<li>Подмена контента и инъекция вредоносного кода</li>
+</ul>
+<p><strong>Митигация:</strong></p>
+<pre><code class="lang-xml">&lt;<span class="hljs-built_in">application</span>
+    android:usesCleartextTraffic=<span class="hljs-string">"false"</span>
+    android:networkSecurityConfig=<span class="hljs-string">"@xml/network_security_config"</span>
+    ... &gt;
+</code></pre>
+<p>Создать <code>res/xml/network_security_config.xml</code>:</p>
+<pre><code class="lang-xml"><span class="php"><span class="hljs-meta">&lt;?</span>xml version=<span class="hljs-string">"1.0"</span> encoding=<span class="hljs-string">"utf-8"</span><span class="hljs-meta">?&gt;</span></span>
+<span class="hljs-tag">&lt;<span class="hljs-name">network-security-config</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">base-config</span> <span class="hljs-attr">cleartextTrafficPermitted</span>=<span class="hljs-string">"false"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">trust-anchors</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">certificates</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"system"</span> /&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">trust-anchors</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">base-config</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">network-security-config</span>&gt;</span>
+</code></pre>
+<hr>
+<h4 id="high-2-certificate-pinning">HIGH-2: Обход Certificate Pinning</h4>
+<p><strong>Severity:</strong> HIGH<br><strong>CWE:</strong> CWE-295 (Improper Certificate Validation)</p>
+<p><strong>Описание:</strong>
+В конфигурации сети обнаружен механизм <strong>обхода проверки сертификатов</strong> (certificate pinning bypass).</p>
+<p><strong>Риск:</strong></p>
+<ul>
+<li>Возможность подделки SSL-сертификата</li>
+<li>Перехват зашифрованного трафика через прокси (Charles, mitmproxy)</li>
+<li>Компрометация защищённых каналов связи</li>
+</ul>
+<p><strong>Митигация:</strong></p>
+<ul>
+<li>Удалить код, позволяющий обходить certificate pinning</li>
+<li>Внедрить строгий <strong>Public Key Pinning</strong> для критичных API-доменов</li>
+<li>Использовать библиотеки с автоматической проверкой сертификатов (OkHttp, Retrofit)</li>
+</ul>
+<hr>
+<h4 id="high-3-cleartext-zero-rating-tiktok-com">HIGH-3: Cleartext для zero-rating.tiktok.com</h4>
+<p><strong>Severity:</strong> HIGH<br><strong>Описание:</strong>
+В domain-specific конфигурации разрешён HTTP-трафик для домена <code>zero-rating.tiktok.com</code>.</p>
+<p><strong>Риск:</strong></p>
+<ul>
+<li>Специфичный домен для zero-rating (бесплатный трафик) передаёт данные без шифрования</li>
+<li>Утечка метаданных о пользователях</li>
+</ul>
+<p><strong>Митигация:</strong></p>
+<ul>
+<li>Настроить HTTPS для <strong>всех доменов без исключений</strong></li>
+<li>Использовать HSTS (HTTP Strict Transport Security)</li>
+</ul>
+<hr>
+<h4 id="warning-">WARNING: Доверие системным сертификатам</h4>
+<p><strong>Severity:</strong> WARNING<br><strong>Описание:</strong>
+Приложение доверяет всем системным CA-сертификатам по умолчанию.</p>
+<p><strong>Рекомендация:</strong></p>
+<ul>
+<li>Ограничить список доверенных CA только необходимыми</li>
+<li>Использовать custom CA для внутренних сервисов</li>
+</ul>
+<hr>
+<h3 id="4-4-manifest-analysis-androidmanifest-xml">4.4 Manifest Analysis — Анализ AndroidManifest.xml</h3>
+<p>Обнаружено <strong>2 проблемы</strong> уровня <strong>HIGH</strong> и <strong>37 предупреждений</strong>.</p>
+<h4 id="high-1-minsdkversion">HIGH-1: Устаревший minSdkVersion</h4>
+<p><strong>Severity:</strong> HIGH<br><strong>Проблема:</strong> <code>minSdkVersion=23</code> (Android 6.0 Marshmallow)</p>
+<p><strong>Риск:</strong></p>
+<ul>
+<li>Android 6.0 <strong>не получает обновления безопасности</strong> с 2019 года</li>
+<li>Известные уязвимости платформы остаются неисправленными</li>
+<li>Отсутствие современных механизмов защиты (Scoped Storage, Privacy Features, Runtime Permissions)</li>
+</ul>
+<p><strong>Митигация:</strong></p>
+<pre><code class="lang-gradle"><span class="hljs-class">android </span>{
+    <span class="hljs-class">defaultConfig </span>{
+        minSdkVersion <span class="hljs-number">29</span>  <span class="hljs-comment">// Android 10</span>
+        targetSdkVersion <span class="hljs-number">33</span>
+    }
+}
+</code></pre>
+<p><strong>Обоснование:</strong></p>
+<ul>
+<li>Android 10+ получают регулярные security patches</li>
+<li>Современные механизмы защиты приватности</li>
+<li>Улучшенная работа с разрешениями</li>
+</ul>
+<hr>
+<h4 id="high-2-cleartext-traffic">HIGH-2: Глобальный cleartext traffic</h4>
+<p><strong>Severity:</strong> HIGH<br><strong>Проблема:</strong> <code>android:usesCleartextTraffic=&quot;true&quot;</code> в <code>&lt;application&gt;</code></p>
+<p><strong>Риск:</strong> (см. Network Security HIGH-1)</p>
+<p><strong>Митигация:</strong> (см. выше)</p>
+<hr>
+<h4 id="warning-">WARNING: Экспортированные компоненты</h4>
+<p><strong>Количество:</strong> 26 Activity, 3 Service, 5 BroadcastReceiver</p>
+<p><strong>Проблема:</strong>
+Компоненты объявлены с <code>android:exported=&quot;true&quot;</code> без защиты <code>android:permission</code>.</p>
+<p><strong>Риск:</strong></p>
+<ul>
+<li>Любое приложение может вызвать Activity/Service</li>
+<li>Утечка данных через Intent</li>
+<li>Запуск компонентов злоумышленником</li>
+</ul>
+<p><strong>Митигация:</strong></p>
+<pre><code class="lang-xml"><span class="hljs-tag">&lt;<span class="hljs-name">activity</span>
+    <span class="hljs-attr">android:name</span>=<span class="hljs-string">".MainActivity"</span>
+    <span class="hljs-attr">android:exported</span>=<span class="hljs-string">"false"</span> /&gt;</span>
+
+<span class="hljs-comment">&lt;!-- Или с защитой --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">activity</span>
+    <span class="hljs-attr">android:name</span>=<span class="hljs-string">".SensitiveActivity"</span>
+    <span class="hljs-attr">android:exported</span>=<span class="hljs-string">"true"</span>
+    <span class="hljs-attr">android:permission</span>=<span class="hljs-string">"com.tiktok.permission.ACCESS_ACTIVITY"</span> /&gt;</span>
+</code></pre>
+<hr>
+<h3 id="4-5-code-analysis-">4.5 Code Analysis — Уязвимости в коде</h3>
+<p>Обнаружено <strong>3 проблемы</strong> уровня <strong>HIGH</strong> и <strong>10 предупреждений</strong>.</p>
+<h4 id="high-1-ecb-">HIGH-1: ECB-режим шифрования</h4>
+<p><strong>Severity:</strong> HIGH<br><strong>CWE:</strong> CWE-327 (Use of a Broken or Risky Cryptographic Algorithm)<br><strong>Файл:</strong> <code>X/C1531540pxZ.java</code></p>
+<p><strong>Описание:</strong>
+Используется режим <strong>ECB</strong> (Electronic Codebook) для шифрования данных. Одинаковые блоки открытого текста дают одинаковые блоки шифротекста.</p>
+<p><strong>Риск:</strong></p>
+<ul>
+<li>Паттерны в данных остаются видимыми</li>
+<li>Возможность криптоанализа</li>
+<li>Не соответствует современным стандартам безопасности (NIST)</li>
+</ul>
+<p><strong>Митигация:</strong></p>
+<pre><code class="lang-java"><span class="hljs-comment">// НЕБЕЗОПАСНО:</span>
+<span class="hljs-selector-tag">Cipher</span><span class="hljs-selector-class">.getInstance</span>(<span class="hljs-string">"AES/ECB/PKCS5Padding"</span>)
+
+<span class="hljs-comment">// БЕЗОПАСНО:</span>
+<span class="hljs-selector-tag">Cipher</span><span class="hljs-selector-class">.getInstance</span>(<span class="hljs-string">"AES/GCM/NoPadding"</span>)  <span class="hljs-comment">// с уникальным IV</span>
+<span class="hljs-comment">// ИЛИ</span>
+<span class="hljs-selector-tag">Cipher</span><span class="hljs-selector-class">.getInstance</span>(<span class="hljs-string">"AES/CBC/PKCS5Padding"</span>)  <span class="hljs-comment">// с случайным IV</span>
+</code></pre>
+<hr>
+<h4 id="high-2-">HIGH-2: Слабый алгоритм шифрования</h4>
+<p><strong>Severity:</strong> HIGH<br><strong>CWE:</strong> CWE-327<br><strong>Файл:</strong> <code>com/heytap/mcssdk/utils/c.java</code></p>
+<p><strong>Описание:</strong>
+Используется устаревший или слабый криптографический алгоритм (возможно DES, 3DES или RC4).</p>
+<p><strong>Риск:</strong></p>
+<ul>
+<li>Алгоритм может быть взломан brute-force</li>
+<li>Не соответствует современным стандартам (NIST, FIPS)</li>
+<li>Уязвимость к криптоанализу</li>
+</ul>
+<p><strong>Митигация:</strong></p>
+<ul>
+<li>Заменить на <strong>AES-256-GCM</strong> или <strong>ChaCha20-Poly1305</strong></li>
+<li>Использовать ключи длиной минимум <strong>256 бит</strong></li>
+<li>Реализовать правильное управление ключами (Android KeyStore)</li>
+</ul>
+<hr>
+<h4 id="high-3-world-writable-sharedpreference">HIGH-3: World Writable SharedPreference</h4>
+<p><strong>Severity:</strong> HIGH<br><strong>CWE:</strong> CWE-732 (Incorrect Permission Assignment for Critical Resource)<br><strong>Файл:</strong> <code>SettingsFragmentDelegate.java</code>, <code>yd/E.java</code></p>
+<p><strong>Описание:</strong>
+Файл или SharedPreference создан с флагом <strong>MODE_WORLD_WRABLE</strong>. Любое приложение может записать данные в этот файл.</p>
+<p><strong>Риск:</strong></p>
+<ul>
+<li>Любое приложение с разрешением на чтение внешнего хранилища может получить доступ к данным</li>
+<li>Возможность инъекции вредоносных данных</li>
+<li>Утечка токенов и настроек</li>
+</ul>
+<p><strong>Митигация:</strong></p>
+<pre><code class="lang-java"><span class="hljs-comment">// НЕБЕЗОПАСНО:</span>
+<span class="hljs-selector-tag">getSharedPreferences</span>(<span class="hljs-string">"prefs"</span>, Context.MODE_WORLD_WRABLE);
+
+<span class="hljs-comment">// БЕЗОПАСНО:</span>
+<span class="hljs-selector-tag">getSharedPreferences</span>(<span class="hljs-string">"prefs"</span>, Context.MODE_PRIVATE);
+</code></pre>
+<p>Если данные нужно расшарить с другим приложением — использовать <strong>Content Provider</strong> с правами доступа.</p>
+<hr>
+<h4 id="warning-hardcoded-secrets">WARNING: Hardcoded Secrets</h4>
+<p><strong>Severity:</strong> WARNING<br><strong>CWE:</strong> CWE-798 (Use of Hard-coded Credentials)</p>
+<p><strong>Найдено:</strong></p>
+<pre><code><span class="hljs-string">"google_api_key"</span>:<span class="hljs-string">"AIzaSyCKvlAvtCaEuj0WuF1gxesJv_j6hHuoEHo"</span>
+<span class="hljs-string">"facebook_client_token"</span>:<span class="hljs-string">"c5a29925ae6d41fe68136a6edfc5749f"</span>
+<span class="hljs-string">"firebase_database_url"</span>:<span class="hljs-string">"https://td-project-01.firebaseio.com"</span>
+</code></pre><p><strong>Риск:</strong></p>
+<ul>
+<li>API-ключи извлечены из APK</li>
+<li>Злоумышленник может использовать ключи</li>
+<li>Квоты и лимиты могут быть исчерпаны</li>
+</ul>
+<p><strong>Митигация:</strong></p>
+<ul>
+<li>Вынести ключи в <strong>переменные окружения</strong> или <strong>BuildConfig</strong></li>
+<li>Использовать <strong>backend-прокси</strong> для доступа к внешним API</li>
+<li>Регулярно <strong>ротировать</strong> ключи</li>
+</ul>
+<hr>
+<h4 id="warning-">WARNING: Небезопасный генератор случайных чисел</h4>
+<p><strong>Severity:</strong> WARNING<br><strong>CWE:</strong> CWE-330 (Use of Insufficiently Random Values)</p>
+<p><strong>Описание:</strong>
+Используется <code>java.util.Random</code> вместо <code>java.security.SecureRandom</code>.</p>
+<p><strong>Риск:</strong></p>
+<ul>
+<li>Предсказуемые значения</li>
+<li>Компрометация токенов, ключей, nonce</li>
+</ul>
+<p><strong>Митигация:</strong></p>
+<pre><code class="lang-java"><span class="hljs-comment">// НЕБЕЗОПАСНО:</span>
+Random <span class="hljs-built_in">random</span> = <span class="hljs-keyword">new</span> Random();
+
+<span class="hljs-comment">// БЕЗОПАСНО:</span>
+SecureRandom <span class="hljs-built_in">random</span> = <span class="hljs-keyword">new</span> SecureRandom();
+</code></pre>
+<hr>
+<h4 id="warning-">WARNING: Слабые хеш-функции</h4>
+<p><strong>Severity:</strong> WARNING<br><strong>CWE:</strong> CWE-328</p>
+<p><strong>Найдено:</strong></p>
+<ul>
+<li>Использование <strong>MD5</strong> (известны коллизии)</li>
+<li>Использование <strong>SHA-1</strong> (известны коллизии)</li>
+</ul>
+<p><strong>Митигация:</strong></p>
+<ul>
+<li>Заменить на <strong>SHA-256</strong> или <strong>SHA-3</strong></li>
+<li>Для паролей использовать <strong>bcrypt</strong>, <strong>scrypt</strong> или <strong>Argon2</strong></li>
+</ul>
+<hr>
+<h4 id="warning-">WARNING: Запись чувствительных данных в логи</h4>
+<p><strong>Severity:</strong> WARNING<br><strong>CWE:</strong> CWE-532 (Insertion of Sensitive Information into Log File)</p>
+<p><strong>Описание:</strong>
+В логах могут попадать чувствительные данные (токены, идентификаторы пользователей).</p>
+<p><strong>Митигация:</strong></p>
+<ul>
+<li>Отключить логирование в production-сборках</li>
+<li>Использовать <strong>ProGuard/R8</strong> для удаления логов</li>
+<li>Применять фильтры для маскирования чувствительных данных</li>
+</ul>
+<hr>
+<h2 id="5-">5. План митигации обнаруженных рисков</h2>
+<h3 id="5-1-">5.1 Приоритизация исправлений</h3>
+<table>
+<thead>
+<tr>
+<th>Приоритет</th>
+<th>Уязвимости</th>
+<th>Срок</th>
+<th>Баллы CVSS (оценка)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Critical</strong></td>
+<td>World Writable, Hardcoded Secrets, ECB Mode</td>
+<td><strong>1 неделя</strong></td>
+<td>8.5-9.5</td>
+</tr>
+<tr>
+<td><strong>High</strong></td>
+<td>Cleartext HTTP, Certificate Pinning Bypass, Weak Crypto</td>
+<td><strong>2 недели</strong></td>
+<td>7.0-8.4</td>
+</tr>
+<tr>
+<td><strong>Medium</strong></td>
+<td>minSdkVersion=23, Dangerous Permissions, Exported Components</td>
+<td><strong>1 месяц</strong></td>
+<td>4.0-6.9</td>
+</tr>
+<tr>
+<td><strong>Low</strong></td>
+<td>Logging, Weak Hashes, Insecure Random</td>
+<td><strong>2 месяца</strong></td>
+<td>0.1-3.9</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="5-2-">5.2 Детальный план действий</h3>
+<h4 id="critical-priority-1-">Critical Priority (Срок: 1 неделя)</h4>
+<p><strong>1. Исправить World Writable SharedPreference</strong></p>
+<p><strong>Проблема:</strong> Файлы доступны для записи любому приложению</p>
+<p><strong>Действия:</strong></p>
+<ol>
+<li>Найти все места создания SharedPreferences</li>
+<li>Заменить <code>MODE_WORLD_WRABLE</code> на <code>MODE_PRIVATE</code></li>
+<li>Если нужен обмен данными — использовать Content Provider</li>
+<li>Протестировать функциональность</li>
+</ol>
+<p><strong>Ответственный:</strong> Android Developer<br><strong>Статус:</strong>  In Progress<br><strong>Проверка:</strong> Повторное сканирование MobSF</p>
+<hr>
+<p><strong>2. Удалить Hardcoded Secrets</strong></p>
+<p><strong>Проблема:</strong> API-ключи захардкожены в коде</p>
+<p><strong>Действия:</strong></p>
+<ol>
+<li>Извлечь все API-ключи из кода</li>
+<li>Перенести в <code>gradle.properties</code> или переменные окружения</li>
+<li>Настроить backend-прокси для чувствительных операций</li>
+<li>Отозвать скомпрометированные ключи</li>
+<li>Сгенерировать новые</li>
+</ol>
+<p><strong>Ответственный:</strong> Backend Developer + DevOps<br><strong>Статус:</strong>  Planned<br><strong>Проверка:</strong> Поиск строк в коде через grep</p>
+<hr>
+<p><strong>3. Заменить ECB-режим шифрования</strong></p>
+<p><strong>Проблема:</strong> Использование AES/ECB</p>
+<p><strong>Действия:</strong></p>
+<ol>
+<li>Провести аудит всех криптографических операций</li>
+<li>Заменить ECB на <strong>AES-256-GCM</strong></li>
+<li>Внедрить Android KeyStore для хранения ключей</li>
+<li>Обновить библиотеки шифрования</li>
+</ol>
+<p><strong>Ответственный:</strong> Security Engineer<br><strong>Статус:</strong> In Progress<br><strong>Проверка:</strong> Code review + статический анализ</p>
+<hr>
+<h4 id="high-priority-2-">High Priority (Срок: 2 недели)</h4>
+<p><strong>4. Отключить Cleartext HTTP</strong></p>
+<p><strong>Проблема:</strong> Разрешён незашифрованный трафик</p>
+<p><strong>Действия:</strong></p>
+<ol>
+<li>Установить <code>android:usesCleartextTraffic=&quot;false&quot;</code></li>
+<li>Создать Network Security Config</li>
+<li>Настроить HTTPS для всех доменов</li>
+<li>Включить HSTS</li>
+<li>Протестировать все сетевые вызовы</li>
+</ol>
+<p><strong>Ответственный:</strong> Android Developer<br><strong>Статус:</strong> Planned<br><strong>Проверка:</strong> Wireshark/tcpdump для проверки шифрования</p>
+<hr>
+<p><strong>5. Устранить Certificate Pinning Bypass</strong></p>
+<p><strong>Проблема:</strong> Код позволяет обходить проверку сертификатов</p>
+<p><strong>Действия:</strong></p>
+<ol>
+<li>Найти и удалить код bypass</li>
+<li>Внедрить строгий Public Key Pinning</li>
+<li>Протестировать с самоподписанными сертификатами</li>
+</ol>
+<p><strong>Ответственный:</strong> Security Engineer<br><strong>Статус:</strong> Backlog<br><strong>Проверка:</strong> Попытка MITM-атаки через mitmproxy</p>
+<hr>
+<p><strong>6. Усилить криптографию</strong></p>
+<p><strong>Проблема:</strong> Слабые алгоритмы</p>
+<p><strong>Действия:</strong></p>
+<ol>
+<li>Заменить MD5/SHA-1 на SHA-256</li>
+<li>Заменить DES/3DES на AES-256</li>
+<li>Обновить библиотеки (Bouncy Castle, Tink)</li>
+</ol>
+<p><strong>Ответственный:</strong> Android Developer<br><strong>Статус:</strong> Planned<br><strong>Проверка:</strong> MobSF Code Analysis</p>
+<hr>
+<h4 id="medium-priority-1-">Medium Priority (Срок: 1 месяц)</h4>
+<p><strong>7. Поднять minSdkVersion</strong></p>
+<p><strong>Проблема:</strong> Поддержка Android 6.0 (не получает патчи)</p>
+<p><strong>Действия:</strong></p>
+<ol>
+<li>Поднять <code>minSdkVersion</code> до <strong>29</strong> (Android 10)</li>
+<li>Протестировать на совместимость</li>
+<li>Проанализировать статистику пользователей</li>
+<li>Уведомить пользователей об окончании поддержки</li>
+</ol>
+<p><strong>Ответственный:</strong> Product Manager + QA<br><strong>Статус:</strong> Discussion<br><strong>Проверка:</strong> Google Play Console Analytics</p>
+<hr>
+<p><strong>8. Ограничить экспорт компонентов</strong></p>
+<p><strong>Проблема:</strong> 26 Activity, 3 Service экспортированы без защиты</p>
+<p><strong>Действия:</strong></p>
+<ol>
+<li>Провести аудит всех компонентов</li>
+<li>Установить <code>exported=&quot;false&quot;</code> для внутренних</li>
+<li>Добавить <code>android:permission</code> для публичных</li>
+<li>Протестировать межприложенное взаимодействие</li>
+</ol>
+<p><strong>Ответственный:</strong> Android Developer<br><strong>Статус:</strong> Planned<br><strong>Проверка:</strong> Drozer/Frida для проверки экспорта</p>
+<hr>
+<p><strong>9. Минимизировать dangerous permissions</strong></p>
+<p><strong>Проблема:</strong> Избыточные разрешения</p>
+<p><strong>Действия:</strong></p>
+<ol>
+<li>Пересмотреть необходимость <code>READ_CONTACTS</code></li>
+<li>Удалить <code>ACCESS_BACKGROUND_LOCATION</code> если не нужно</li>
+<li>Запрашивать разрешения в рантайме</li>
+<li>Добавить объяснения в UI</li>
+</ol>
+<p><strong>Ответственный:</strong> UX Designer + Developer<br><strong>Статус:</strong> Planned<br><strong>Проверка:</strong> Проверка через <code>adb shell dumpsys package</code></p>
+<hr>
+<h4 id="low-priority-2-">Low Priority (Срок: 2 месяца)</h4>
+<p><strong>10. Очистить логи</strong></p>
+<p><strong>Проблема:</strong> Чувствительные данные в логах</p>
+<p><strong>Действия:</strong></p>
+<ol>
+<li>Настроить ProGuard для удаления логов</li>
+<li>Внедрить кастомный логгер с фильтрацией</li>
+<li>Провести code review</li>
+</ol>
+<p><strong>Ответственный:</strong> DevOps<br><strong>Статус:</strong> Backlog</p>
+<hr>
+<p><strong>11. Заменить небезопасный Random</strong></p>
+<p><strong>Проблема:</strong> Использование <code>java.util.Random</code></p>
+<p><strong>Действия:</strong></p>
+<ol>
+<li>Найти все использования Random</li>
+<li>Заменить на <code>SecureRandom</code></li>
+<li>Протестировать генерацию токенов</li>
+</ol>
+<p><strong>Ответственный:</strong> Android Developer<br><strong>Статус:</strong> Backlog</p>
+<hr>
+<h3 id="5-3-">5.3 Контрольные точки</h3>
+<table>
+<thead>
+<tr>
+<th>Этап</th>
+<th>Срок</th>
+<th>Критерии приёмки</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sprint 1</strong></td>
+<td>Неделя 1</td>
+<td>Исправлены Critical уязвимости</td>
+</tr>
+<tr>
+<td><strong>Sprint 2</strong></td>
+<td>Неделя 2</td>
+<td>Исправлены High уязвимости</td>
+</tr>
+<tr>
+<td><strong>Sprint 3</strong></td>
+<td>Неделя 3-4</td>
+<td>Исправлены Medium уязвимости</td>
+</tr>
+<tr>
+<td><strong>Retest</strong></td>
+<td>Неделя 5</td>
+<td>Повторное сканирование MobSF</td>
+</tr>
+<tr>
+<td><strong>CI/CD Integration</strong></td>
+<td>Неделя 6-8</td>
+<td>Автоматическое SAST в пайплайне</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="5-4-">5.4 Метрики успеха</h3>
+<ul>
+<li><strong>Security Score:</strong> 45/100 → <strong>85/100</strong></li>
+<li><strong>High Vulnerabilities:</strong> 9 → <strong>0</strong></li>
+<li><strong>Critical Vulnerabilities:</strong> 3 → <strong>0</strong></li>
+<li><strong>Grade:</strong> C → <strong>A</strong></li>
+</ul>
+<hr>
+<h2 id="6-">6. Выводы</h2>
+<h3 id="6-1-">6.1 Общая оценка безопасности</h3>
+<p>В ходе SAST-анализа мобильного приложения <strong>TikTok</strong> было обнаружено:</p>
+<ul>
+<li><strong>9 уязвимостей уровня HIGH</strong></li>
+<li><strong>18 уязвимостей уровня MEDIUM</strong></li>
+<li><strong>33 информационных замечаний</strong></li>
+</ul>
+<p><strong>Security Score:</strong> 45/100 (<strong>HIGH RISK</strong>)</p>
+<h3 id="6-2-">6.2 Критические проблемы</h3>
+<p><strong>Наиболее опасные уязвимости:</strong></p>
+<ol>
+<li><strong>World Writable SharedPreference</strong> — любое приложение может получить доступ к данным</li>
+<li><strong>Hardcoded API Keys</strong> — ключи извлечены из APK</li>
+<li><strong>ECB-режим шифрования</strong> — уязвимость к криптоанализу</li>
+<li><strong>Cleartext HTTP</strong> — передача данных без шифрования</li>
+<li><strong>Устаревший minSdkVersion</strong> — поддержка непропатченных версий Android</li>
+</ol>

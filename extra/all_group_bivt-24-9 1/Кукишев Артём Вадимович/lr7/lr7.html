@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code {
+      background: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote {
+      border-left: 4px solid #ddd;
+      margin: 1em 0;
+      padding-left: 20px;
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h2>1. Цель работы</h2>
+<p>Развернуть инструмент статического анализа мобильных приложений MobSF, провести SAST-тестирование реального Android-приложения и составить план митигации выявленных уязвимостей.</p>
+<h2>2. Развёртывание MobSF</h2>
+<p>Инструмент развёрнут через Docker:</p>
+<pre><code class="language-bash">docker pull opensecurity/mobile-security-framework-mobsf:latest
+
+docker run -it --rm \
+  -p 8000:8000 \
+  -v $(pwd)/mobsf_data:/root/.MobSF \
+  opensecurity/mobile-security-framework-mobsf:latest
+</code></pre>
+<p>Веб-интерфейс доступен по адресу <code>http://127.0.0.1:8000</code>. REST API ключ берётся из логов контейнера при первом запуске.</p>
+<h2>3. Выбор APK и проведение анализа</h2>
+<p>Для анализа выбран <strong>Firefox for Android v131.0</strong> — реальный браузер с широкими разрешениями и сетевой активностью. APK загружен через веб-интерфейс MobSF. PDF-отчёт приложен отдельным файлом <code>mobsf_firefox_report.pdf</code>.</p>
+<p><strong>Общие результаты:</strong></p>
+<pre><code>App Security Score: 38/100
+Grade: F
+Risk Level: HIGH RISK
+
+High:   6
+Medium: 14
+Info:   2
+</code></pre>
+<h2>4. Опасные разрешения (статус: dangerous)</h2>
+<table>
+<thead>
+<tr>
+<th>Разрешение</th>
+<th>Риск</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ACCESS_FINE_LOCATION</code></td>
+<td>Точная GPS-геолокация, отслеживание перемещений</td>
+</tr>
+<tr>
+<td><code>ACCESS_COARSE_LOCATION</code></td>
+<td>Приблизительная геолокация по сети</td>
+</tr>
+<tr>
+<td><code>RECORD_AUDIO</code></td>
+<td>Запись звука с микрофона</td>
+</tr>
+<tr>
+<td><code>CAMERA</code></td>
+<td>Доступ к камере устройства</td>
+</tr>
+<tr>
+<td><code>READ_CONTACTS</code></td>
+<td>Чтение всей адресной книги</td>
+</tr>
+<tr>
+<td><code>READ/WRITE_EXTERNAL_STORAGE</code></td>
+<td>Полный доступ к файлам на накопителе</td>
+</tr>
+<tr>
+<td><code>SYSTEM_ALERT_WINDOW</code></td>
+<td>Наложение поверх других окон — вектор overlay-атак</td>
+</tr>
+</tbody></table>
+<p>Разрешения на геолокацию, камеру и микрофон обоснованы функциональностью браузера (WebRTC, Geolocation API). <code>SYSTEM_ALERT_WINDOW</code> и <code>READ/WRITE_EXTERNAL_STORAGE</code> требуют пересмотра.</p>
+<h2>5. Network Security</h2>
+<table>
+<thead>
+<tr>
+<th>№</th>
+<th>Проблема</th>
+<th>Уровень</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>Base config разрешает cleartext-трафик</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Domain config разрешает HTTP для <code>tiles.services.mozilla.com</code></td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Конфигурация доверяет пользовательским CA</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Base config доверяет всем системным CA без ограничений</td>
+<td>WARNING</td>
+</tr>
+</tbody></table>
+<p>Разрешённый cleartext-трафик открывает возможность для MITM-атак в публичных Wi-Fi-сетях. Доверие к пользовательским CA позволяет злоумышленнику установить собственный сертификат и перехватить весь HTTPS-трафик приложения.</p>
+<p><strong>Рекомендация — исправленный <code>network_security_config.xml</code>:</strong></p>
+<pre><code class="language-xml">&lt;network-security-config&gt;
+  &lt;base-config cleartextTrafficPermitted=&quot;false&quot;&gt;
+    &lt;trust-anchors&gt;
+      &lt;certificates src=&quot;system&quot;/&gt;
+      &lt;!-- user CA убраны из production --&gt;
+    &lt;/trust-anchors&gt;
+  &lt;/base-config&gt;
+  &lt;debug-overrides&gt;
+    &lt;trust-anchors&gt;
+      &lt;certificates src=&quot;user&quot;/&gt;
+    &lt;/trust-anchors&gt;
+  &lt;/debug-overrides&gt;
+&lt;/network-security-config&gt;
+</code></pre>
+<h2>6. Manifest Analysis (High и выше)</h2>
+<table>
+<thead>
+<tr>
+<th>№</th>
+<th>Проблема</th>
+<th>Уровень</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>android:usesCleartextTraffic=true</code></td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>minSdkVersion=21</code> (Android 5.0, без патчей безопасности)</td>
+<td>HIGH</td>
+</tr>
+</tbody></table>
+<p>Дополнительно обнаружено 11 экспортированных компонентов без явной защиты permission (уровень WARNING): <code>MainActivity</code>, <code>ExternalAppBrowserActivity</code>, <code>MediaContentProvider</code> и другие.</p>
+<h2>7. Code Analysis (High и выше)</h2>
+<table>
+<thead>
+<tr>
+<th>№</th>
+<th>Идентификатор</th>
+<th>CWE</th>
+<th>Файл</th>
+<th>Описание</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>android_world_readable</code></td>
+<td>CWE-276</td>
+<td><code>geckoview/StorageController.java</code></td>
+<td>SharedPreferences создаётся в режиме <code>MODE_WORLD_READABLE</code> — любое приложение на устройстве может прочитать его содержимое</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>android_insecure_random</code></td>
+<td>CWE-330</td>
+<td><code>support/utils/CreditCardUtils.kt</code></td>
+<td>В криптографическом контексте используется <code>java.util.Random</code> вместо <code>SecureRandom</code> — значения предсказуемы</td>
+</tr>
+</tbody></table>
+<p>Из WARNING: использование MD5 и SHA-1 в зависимостях, временные файлы в общих директориях, строки высокой энтропии (возможные захардкоженные ключи).</p>
+<h2>8. План митигации</h2>
+<table>
+<thead>
+<tr>
+<th>Приоритет</th>
+<th>Проблема</th>
+<th>Рекомендация</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>P0</strong></td>
+<td>Cleartext HTTP + доверие user CA</td>
+<td><code>cleartextTrafficPermitted=&quot;false&quot;</code> глобально; убрать <code>&lt;certificates src=&quot;user&quot;/&gt;</code> из production</td>
+</tr>
+<tr>
+<td><strong>P0</strong></td>
+<td><code>android:usesCleartextTraffic=true</code></td>
+<td>Удалить флаг; перевести все API-эндпоинты на HTTPS</td>
+</tr>
+<tr>
+<td><strong>P1</strong></td>
+<td>World Readable SharedPreferences (CWE-276)</td>
+<td>Заменить <code>MODE_WORLD_READABLE</code> на <code>MODE_PRIVATE</code>; для чувствительных данных — <code>EncryptedSharedPreferences</code></td>
+</tr>
+<tr>
+<td><strong>P1</strong></td>
+<td><code>java.util.Random</code> в криптоконтексте (CWE-330)</td>
+<td>Заменить на <code>java.security.SecureRandom</code> везде, где генерируются токены и ключи</td>
+</tr>
+<tr>
+<td><strong>P2</strong></td>
+<td><code>minSdkVersion=21</code></td>
+<td>Поднять до <code>minSdkVersion=26</code> (Android 8.0)</td>
+</tr>
+<tr>
+<td><strong>P2</strong></td>
+<td>Экспортированные компоненты без permission</td>
+<td>Добавить <code>android:permission</code> или явно установить <code>android:exported=&quot;false&quot;</code></td>
+</tr>
+<tr>
+<td><strong>P3</strong></td>
+<td><code>SYSTEM_ALERT_WINDOW</code>, <code>READ/WRITE_EXTERNAL_STORAGE</code></td>
+<td>Удалить <code>SYSTEM_ALERT_WINDOW</code> если не нужно; перейти на Scoped Storage (Android 10+)</td>
+</tr>
+<tr>
+<td><strong>P3</strong></td>
+<td>MD5 и SHA-1</td>
+<td>Заменить на SHA-256; обновить зависимости</td>
+</tr>
+<tr>
+<td><strong>P4</strong></td>
+<td>Возможные захардкоженные секреты</td>
+<td>Проверить строки вручную; реальные ключи вынести в Android Keystore</td>
+</tr>
+</tbody></table>
+<h2>9. Выводы</h2>
+<p>С помощью MobSF получен полный отчёт по APK Firefox for Android. Приложение набрало <strong>38/100 (Grade F)</strong>. Наиболее критичными находками являются разрешённый cleartext-трафик и доверие пользовательским CA (риск MITM), World Readable SharedPreferences (CWE-276) и небезопасный генератор случайных чисел в криптоконтексте (CWE-330).</p>
+<p>MobSF удобен тем, что покрывает сразу несколько уровней анализа — разрешения, манифест, код, нативные бинари — и легко встраивается в CI/CD через REST API. Автоматическое сканирование каждой релизной сборки позволяет обнаруживать уязвимости до попадания в production, что соответствует принципу <strong>Shift Left Security</strong> в DevSecOps.</p>
+
+</body>
+</html>

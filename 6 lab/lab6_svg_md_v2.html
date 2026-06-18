@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lab6_svg_md</title>
+  <style>
+    body { max-width: 980px; margin: 40px auto; padding: 0 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; line-height: 1.65; color: #1a1a1a; }
+    h1, h2, h3, h4 { line-height: 1.25; }
+    table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+    th, td { border: 1px solid #d9d9d9; padding: 8px 10px; vertical-align: top; text-align: left; }
+    th { background: #f7f7f7; }
+    code { background: #f4f4f4; padding: 2px 5px; border-radius: 4px; }
+    pre code { display: block; padding: 14px; overflow-x: auto; }
+    hr { border: 0; border-top: 1px solid #e0e0e0; margin: 28px 0; }
+  </style>
+</head>
+<body>
+<h1 id="no6">Лабораторная Работа №6</h1>
+<p><em>Черных Богдан Игоревич ' БИВТ-24-9</em>
+ㅤ</p>
+<h2 id="_1">Критерии оценки</h2>
+<p>"
+<strong>Результаты выполнения:</strong><br />
+Пришлите найденные вами "секреты" с описанием того, чтобы это могло быть (по вашему предположению).</p>
+<p><strong>Результаты выполнения</strong><br />
+Пришлите ответ в виде аналитики, аналитика должна отвечать на вопросы:</p>
+<ul>
+<li>Оозначение расположения секрета (файл/строка)</li>
+<li>Ваши объяснение - почему найденное является секретом</li>
+<li>Правильный способ хранения (по вашему предположению)</li>
+<li>Один найденный секрет - 1 балл (Максимум найдя секреты можно набрать 5 баллов)</li>
+<li>Один найденный секрет - описание секрета -рекомендации по устранению - оценивается в 2 балла (здесь тоже максимум 2 балла)
+"</li>
+</ul>
+<hr />
+<p>ㅤ
+ㅤ
+ㅤ</p>
+<h1 id="1-postgresql">🔸 Секрет 1 — <strong>строка подключения к PostgreSQL</strong> <em>[ВЫСОКИЙ]</em></h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hash коммита</td>
+<td><code>bc0d803123f5cd5e3f3e857398b8f2b0c4aad5b9</code></td>
+</tr>
+<tr>
+<td>Дата/Commit</td>
+<td><code>2019-05-13</code></td>
+</tr>
+<tr>
+<td>Файл</td>
+<td><code>docker-compose-postgres.yml</code></td>
+</tr>
+<tr>
+<td>Строка</td>
+<td><code>19</code></td>
+</tr>
+<tr>
+<td>Тип детектора</td>
+<td><code>Postgres</code></td>
+</tr>
+<tr>
+<td>Найденное значение</td>
+<td><code>postgresql://webgoat:webgoat@webgoat_db:5432</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="_2">⬩ Почему это секрет?</h2>
+<p>В найденной строке находится подключение к PostgreSQL бд. Внутри строки прямо указаны учетные данные</p>
+<pre><code class="language-text">webgoat:webgoat
+</code></pre>
+<p>Первое значение — имя пользователя, второе — пароль. Также указан хост базы данных <code>webgoat_db</code> и порт <code>5432</code>. TruffleHog нашел это как <code>**Detector Type: Postgres**</code>, а в логе указаны файл <code>docker-compose-postgres.yml</code>, строка 19 и сам результат <code>postgresql://webgoat:webgoat@webgoat_db:5432</code> .</p>
+<p>Очевидно, что логин и пароль к базе <strong>не должны</strong> лежать прямо в <code>docker-compose</code> или в истории Git. Например, OWASP относит database credentials, то есть наш случай, к секретам.</p>
+<h2 id="_3">⬩ Правильный способ хранения</h2>
+<p>Строку подключения лучше <strong>не хранить</strong> целиком в репозитории — пароли не должны присутствовать в коде в любом виде. Правильнее вынести чувствительные части отдельно</p>
+<pre><code class="language-yaml">POSTGRES_USER=${POSTGRES_USER}
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+POSTGRES_HOST=${POSTGRES_HOST}
+POSTGRES_PORT=${POSTGRES_PORT}
+</code></pre>
+<p>Реальные значения нужно хранить в <code>.env</code>, переменных окружения, <code>CI / CD secrets</code> или <code>secret manager</code>. <code>.env</code> при этом должен быть добавлен в <code>.gitignore</code> чтобы не было шансов случайно попасть в Git.</p>
+<p>Если такие данные уже попали в репозиторий, их нужно считать скомпрометированными — заменить пароль, удалить секрет из текущих файлов и при необходимости очистить <strong>Всю историю Gitа</strong>.</p>
+<p>ㅤ
+ㅤ</p>
+<h1 id="2-uri">🔸 Секрет 2 — URI с логином и паролем [СРЕДНИЙ]</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hash коммита</td>
+<td><code>68b80fa14f8c2ece71df20ac0a3e3e710bbcd368</code></td>
+</tr>
+<tr>
+<td>Дата/Commit</td>
+<td><code>2012-09-09</code></td>
+</tr>
+<tr>
+<td>Файл</td>
+<td><code>webgoat-5.4/src/main/scripts/webgoat.sh</code></td>
+</tr>
+<tr>
+<td>Строка</td>
+<td><code>53</code></td>
+</tr>
+<tr>
+<td>Тип детектора</td>
+<td><code>URI</code></td>
+</tr>
+<tr>
+<td>Найденное значение</td>
+<td><code>http://guest:guest@127.0.0.1:8080</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="_4">⬩ Почему это секрет?</h2>
+<p>В этом URI прямо указаны учетные данные для доступа</p>
+<pre><code class="language-text">guest:guest
+</code></pre>
+<p>Формат такой:</p>
+<pre><code class="language-text">http://username:password@host:port
+</code></pre>
+<p>То есть <code>guest</code> до двоеточия это имя пользователя, а <code>guest</code> после двоеточия это уже пароль пароль. <code>TruffleHog</code> определил это как <code>Detector Type: URI</code>.</p>
+<p>Это опасно даже если адрес локальный (<code>127.0.0.1</code>), потому что проблема не в самом адресе — а в том, что логин и пароль записаны в скрипте и попали в историю Git. Кроме этого, использование формата <code>user:password</code> в поле <code>userinfo</code> является устаревшим, а приложения не должны хранить такие данные в незашифрованном виде.</p>
+<h2 id="_5">⬩ Правильный способ хранения</h2>
+<p>Нельзя хранить логин и пароль прямо внутри URL, особенно в shell-скрипте, конфигурационном файле или другом файле, который попадает в Git. Формат <code>http://user:password@host</code> плох тем, что учетные данные становятся частью обычной строки — они могут попасть в историю команд, логи, скриншоты, историю Git или вывод ошибок.<br />
+Правильно делать так:</p>
+<ol>
+<li>
+<p><strong>Убрать пароль из URL</strong></p>
+<p>В адресе оставить только хост и порт, например <code>http://127.0.0.1:8080</code></p>
+</li>
+<li>
+<p><strong>Передавать учетные данные отдельно</strong></p>
+<p>Логин и пароль должны передаваться не как часть URL, а через отдельный механизм аутентификации.</p>
+</li>
+<li>
+<p><strong>Вынести значения из скрипта</strong></p>
+<p>В самом shell-скрипте не должно быть реальных значений <code>guest:guest</code>. Вместо этого нужно использовать переменные</p>
+</li>
+</ol>
+<pre><code class="language-bash">WEBGOAT_USER=&quot;${WEBGOAT_USER}&quot;
+WEBGOAT_PASSWORD=&quot;${WEBGOAT_PASSWORD}&quot;
+WEBGOAT_HOST=&quot;127.0.0.1&quot;
+WEBGOAT_PORT=&quot;8080&quot;
+</code></pre>
+<ol start="4">
+<li>
+<p><strong>Хранить реальные секреты вне репозитория</strong></p>
+<p>Для локального запуска можно использовать <code>.env</code>, но сам <code>.env</code> должен быть добавлен в <code>.gitignore</code>.</p>
+</li>
+<li>
+<p><strong>Заменить пароль, если он уже попал в Git</strong></p>
+<p>Если логин и пароль уже были закоммичены, простого удаления строки недостаточно. Старое значение остается в истории Gitа, поэтому пароль нужно считать скомпрометированным и заменить на новый.</p>
+</li>
+</ol>
+<p>ㅤ
+ㅤ</p>
+<h1 id="3-jdbc-">🔸 Секрет 3 — JDBC-строка подключения с паролем [ВЫСОКИЙ]</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hash коммита</td>
+<td><code>bc0d803123f5cd5e3f3e857398b8f2b0c4aad5b9</code></td>
+</tr>
+<tr>
+<td>Дата/Commit</td>
+<td><code>2019-05-13</code></td>
+</tr>
+<tr>
+<td>Файл</td>
+<td><code>docker-compose-postgres.yml</code></td>
+</tr>
+<tr>
+<td>Строка</td>
+<td><code>10</code></td>
+</tr>
+<tr>
+<td>Тип детектора</td>
+<td><code>JDBC</code></td>
+</tr>
+<tr>
+<td>Найденное значение</td>
+<td><code>jdbc:postgresql://webgoat_db:5432/webgoat?user=webgoat&amp;password=webgoat</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="_6">⬩ Почему это секрет?</h2>
+<p>Это JDBC-строка подключения к базе данных PostgreSQL. В ней указаны не только адрес базы и имя базы данных но и учетные данные — <code>user=webgoat&amp;password=webgoat</code>.</p>
+<p>То есть в конфигурации прямо записаны <strong>логин и пароль от базы данных</strong>.</p>
+<p>Опасность в том что любой человек, получивший доступ к репозиторию или его истории, может увидеть параметры подключения и попробовать использовать их для доступа к базе данных.</p>
+<h2 id="_7">⬩ Правильный способ хранения</h2>
+<p>Нельзя хранить JDBC-строку подключения вместе с реальным логином и паролем прямо в <code>docker-compose.yml</code>, Java-конфиге, shell-скрипте или другом файле, который попадает в Git.<br />
+Правильно делать так:</p>
+<ol>
+<li><strong>Разделить строку подключения и секретные значения</strong></li>
+<li>
+<p><strong>Передавать логин и пароль через переменные окружения</strong></p>
+<p>Например:</p>
+</li>
+</ol>
+<pre><code class="language-yaml">POSTGRES_USER: ${POSTGRES_USER}
+POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+</code></pre>
+<ol start="3">
+<li><strong>Не коммитить <code>.env</code> с реальными значениями</strong></li>
+<li><strong>Использовать secret manager или защищенные переменные CI/CD</strong></li>
+<li><strong>Заменить пароль после утечки</strong></li>
+</ol>
+<p>ㅤ
+ㅤ</p>
+<h1 id="4-sql-server">🔸 Секрет 4 — значение учетных данных SQL Server [СРЕДНИЙ]</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hash коммита</td>
+<td><code>fd9b60f98e18bf419b23d269840d133a7ad0512a</code></td>
+</tr>
+<tr>
+<td>Дата/Commit</td>
+<td><code>2007-01-16</code></td>
+</tr>
+<tr>
+<td>Файл</td>
+<td><code>webgoat/main/project/WebContent/WEB-INF/web.xml</code></td>
+</tr>
+<tr>
+<td>Строка</td>
+<td><code>113</code></td>
+</tr>
+<tr>
+<td>Тип детектора</td>
+<td><code>SQLServer</code></td>
+</tr>
+<tr>
+<td>Найденное значение</td>
+<td><code>webgoat</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="_8">⬩ Почему это секрет?</h2>
+<p><code>webgoat</code> в контексте SQL Server-детектора и файла <code>web.xml</code> похоже на значение из конфигурации подключения к базе данных: имя пользователя, пароль, имя базы.</p>
+<p>Опасность в том, что такие значения часто оказываются дефолтными логинами или паролями. Если приложение использует одинаковое значение <code>webgoat</code> как имя пользователя, пароль или имя базы — атакующий может попробовать его при подключении к базе данных.</p>
+<h2 id="_9">⬩ Правильный способ хранения</h2>
+<p>Нельзя хранить учетные данные базы данных или похожие конфигурационные секреты прямо в <code>web.xml</code> или других XML-конфигурациях, если эти файлы попадают в Git.</p>
+<p>Правильно делать так:</p>
+<ol>
+<li>
+<p><strong>Не использовать дефолтные пароли</strong></p>
+<p>Значения <code>webgoat</code>, <code>admin</code>, <code>password</code>, <code>test</code>, <code>guest</code> нельзя использовать как реальные пароли. Они легко угадываются и часто первыми проверяются при атаке.</p>
+</li>
+<li>
+<p><strong>Вынести значение из XML-конфига</strong></p>
+<p>В <code>web.xml</code> лучше оставить только ссылку на внешнюю настройку, а не само значение секрета.</p>
+</li>
+<li>
+<p><strong>Использовать разные значения для разных окружений</strong></p>
+<p>Для локальной разработки, тестового стенда и реального окружения должны быть разные учетные данные.</p>
+</li>
+<li>
+<p><strong>Хранить секреты отдельно от кода</strong></p>
+<p>Реальные значения нужно хранить в переменных окружения, защищенных переменных CI / CD или <code>secret manager</code>.</p>
+</li>
+<li>
+<p><strong>Заменить значение, если оно попало в Git</strong></p>
+</li>
+</ol>
+<p>ㅤ
+ㅤ</p>
+<h1 id="5-uri">🔸 Секрет 5 — URI с учетными данными без явного порта [СРЕДНИЙ]</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hash коммита</td>
+<td><code>68b80fa14f8c2ece71df20ac0a3e3e710bbcd368</code></td>
+</tr>
+<tr>
+<td>Дата/Commit</td>
+<td><code>2012-09-09</code></td>
+</tr>
+<tr>
+<td>Файл</td>
+<td><code>webgoat-5.4/src/main/scripts/webgoat.sh</code></td>
+</tr>
+<tr>
+<td>Строка</td>
+<td><code>43</code></td>
+</tr>
+<tr>
+<td>Тип детектора</td>
+<td><code>URI</code></td>
+</tr>
+<tr>
+<td>Найденное значение</td>
+<td><code>http://guest:guest@127.0.0.1</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="_10">⬩ Почему это секрет?</h2>
+<p>В этом значении снова используется URI-формат с учетными данными внутри адреса — <code>http://guest:guest@127.0.0.1</code>/<br />
+Здесь первое <code>guest</code> — имя пользователя, второе <code>guest</code> — пароль.</p>
+<p>Этот секрет похож на секрет #2, но это отдельная найденная строка: там был адрес с портом <code>:8080</code>, а здесь адрес без явного порта. То есть учетные данные встроены прямо в URL внутри shell-скрипта.</p>
+<p>Опасность в том, что URL с логином и паролем легко попадает в историю Git, логи, историю команд, скриншоты или вывод ошибок.</p>
+<h2 id="_11">⬩ Правильный способ хранения</h2>
+<p>Нельзя хранить логин и пароль прямо внутри URL, даже если адрес ведет на <code>127.0.0.1</code>. Локальный адрес не делает пароль безопасным — учетные данные лежат в открытом виде в скрипте и попадают в Git-историю. Также нельзя использовать одинаковые дефолтные значения вроде <code>guest:guest</code>.</p>
+<p>Правильно делать так:</p>
+<ol>
+<li>
+<p><strong>Убрать учетные данные из URL</strong></p>
+<p>В скрипте должен остаться только адрес без логина и пароля — <code>http://127.0.0.1</code>.</p>
+</li>
+<li>
+<p><strong>Передавать логин и пароль отдельно</strong></p>
+<p>Учетные данные должны передаваться через отдельный механизм авторизации, например через HTTP-заголовок <code>Authorization</code> — а не через <code>user:password@host</code>.</p>
+</li>
+<li>
+<p><strong>Вынести значения в переменные окружения</strong></p>
+<p>В скрипте лучше использовать не реальные значения, а переменные —</p>
+</li>
+</ol>
+<pre><code class="language-bash">WEBGOAT_USER=&quot;${WEBGOAT_USER}&quot;
+WEBGOAT_PASSWORD=&quot;${WEBGOAT_PASSWORD}&quot;
+WEBGOAT_HOST=&quot;127.0.0.1&quot;
+</code></pre>
+<ol start="4">
+<li>
+<p><strong>Хранить реальные значения вне Git</strong></p>
+<p>Для локального запуска можно использовать <code>.env</code> но его нужно добавить в <code>.gitignore</code>.</p>
+</li>
+<li>
+<p><strong>Заменить пароль после попадания в репозиторий</strong></p>
+<p>Если такие данные уже попали в репозиторий, их нужно считать скомпрометированными — заменить пароль, удалить секрет из текущих файлов и при необходимости очистить <strong>Всю историю Gitа</strong>.</p>
+</li>
+</ol>
+</body>
+</html>

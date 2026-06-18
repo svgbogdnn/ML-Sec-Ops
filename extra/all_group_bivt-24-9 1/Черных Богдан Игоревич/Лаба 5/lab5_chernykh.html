@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>svg_md</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Noto Sans', Arial, sans-serif; margin: 32px; line-height: 1.55; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+    pre { padding: 12px; border: 1px solid #ddd; border-radius: 8px; overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px 10px; vertical-align: top; }
+  </style>
+</head>
+<body>
+<h1>Лабораторная Работа №5</h1>
+<p><em>Черных Богдан Игоревич ' БИВТ-24-9</em><br />
+ㅤ<br />
+ㅤ</p>
+<h1>🌐 Часть 1</h1>
+<h4>Условие -</h4>
+<p><em>"скачать любой docker-образ из репозитория docker.io (можно использовать любой из предыдущих домашних заданий)<br />
+с помощью команды docker image ls посмотреть, какие образы есть на вашей машине<br />
+до запуска контейнера выполнить команду whoami<br />
+запустить командную оболочку sh внутри выбранного контейнера с помощью команды docker run -it &lt;имя_образа_из_пункта_2&gt; sh<br />
+внутри контейнера выполнить команду whoami и посмотреть пользователя. Сделать скриншот с пунктами 3-5, он и будет ответом на первую часть домашнего задания."</em><br />
+ㅤ<br />
+ㅤ<br />
+Скачал docker образ и посмотрел список образов через <code>docker image ls</code>.</p>
+<p>До запуска контейнера выполнил <code>whoami</code>. Ответ - <code>svg\lenovo</code>.</p>
+<p>Запустил контейнер с явным указанием начальной точки:</p>
+<pre><code class="language-sh">docker run -it --entrypoint sh ket9/otus-devsecops-owasp-rest:latest
+</code></pre>
+<p>Внутри контейнера выполнил <code>whoami</code>. Ответ - <code>root</code>. Значит исходный контейнер запускается от пользователя <code>root</code>, что плохо с точки зрения безопасности.</p>
+<h3>✔️ Скриншот с пунктами 3-5 в папке с названием <code>**part'1.png**</code></h3>
+<p>ㅤ</p>
+<h1>🌐 Часть 2</h1>
+<h4>Условие -</h4>
+<p><em>"Напишите простейший dockerfile, который выполнит build контейнера на основе базового контейнера из части 1 (например,<br />
+FROM ket9/otus-devsecops-owasp-rest:latest<br />
+EXPOSE 8080)<br />
+дополните dockerfile необходимыми инструкциями, чтобы внутри контейнера приложение запускалось не от пользователя root<br />
+зайдите внутрь контейнера и выполните whoami.<br />
+Подумайте, какие еще настройки безопасности можно указать в самом dockerfile и с какими флагами запускать контейнер.<br />
+Укажите это в комментарии внутри Dockerfile.<br />
+Ответом ко второй части задания будет написанный Dockerfile и скриншот из пункта 2."</em><br />
+ㅤ<br />
+ㅤ<br />
+Создал <code>Dockerfile</code> на основе исходного образа (<code>FROM ket9/otus-devsecops-owasp-rest:latest</code>). Сам файл как есть в папке, так и ниже.</p>
+<pre><code class="language-dockerfile">#Dockerfile
+FROM ket9/otus-devsecops-owasp-rest:latest
+
+LABEL lab=&quot;basic-docker-container-security&quot;
+LABEL description=&quot;Secure variant of OWASP REST container with non-root user&quot;
+
+ARG APP_USER=appuser
+ARG APP_GROUP=appgroup
+ARG APP_UID=10001
+ARG APP_GID=10001
+
+USER root
+
+ENV HOME=/home/appuser
+ENV TMPDIR=/tmp/app
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+SHELL [&quot;/bin/sh&quot;, &quot;-c&quot;]
+
+RUN set -eux; \
+    if command -v groupadd &gt;/dev/null 2&gt;&amp;1; then \
+        groupadd --gid &quot;${APP_GID}&quot; &quot;${APP_GROUP}&quot;; \
+        useradd \
+            --uid &quot;${APP_UID}&quot; \
+            --gid &quot;${APP_GID}&quot; \
+            --create-home \
+            --home-dir &quot;/home/${APP_USER}&quot; \
+            --shell /usr/sbin/nologin \
+            &quot;${APP_USER}&quot;; \
+    else \
+        addgroup -g &quot;${APP_GID}&quot; &quot;${APP_GROUP}&quot;; \
+        adduser \
+            -D \
+            -u &quot;${APP_UID}&quot; \
+            -G &quot;${APP_GROUP}&quot; \
+            -h &quot;/home/${APP_USER}&quot; \
+            -s /sbin/nologin \
+            &quot;${APP_USER}&quot;; \
+    fi; \
+    mkdir -p /tmp/app /var/tmp/app; \
+    chown -R &quot;${APP_UID}:${APP_GID}&quot; &quot;/home/${APP_USER}&quot; /tmp/app /var/tmp/app; \
+    chmod 700 &quot;/home/${APP_USER}&quot;; \
+    chmod 1777 /tmp/app /var/tmp/app
+
+WORKDIR /home/appuser
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD python -c &quot;import socket; s=socket.create_connection(('127.0.0.1', 8080), 2); s.close()&quot; || exit 1
+
+USER 10001:10001
+
+# Дополнительные настройки безопасности при запуске контейнера:
+# &quot;Подумайте, какие еще настройки безопасности можно указать в самом dockerfile и с какими флагами запускать контейнер. Укажите это в комментарии внутри Dockerfile.&quot;
+
+# docker run --rm -p 8080:8080 --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=100 --memory=256m --cpus=0.5 secure-owasp-rest
+#
+# --read-only                       делает файловую систему контейнера доступной только для чтения
+# --tmpfs /tmp                      дает контейнеру отдельную временную директорию для записи
+# --cap-drop=ALL                    убирает лишние Linux capabilities
+# --security-opt=no-new-privileges  запрещает повышение привилегий внутри контейнера
+# --pids-limit=100                  ограничивает количество процессов
+# --memory=256m                     ограничивает потребление памяти
+# --cpus=0.5                        ограничивает использование CPU
+# --privileged использовать нельзя т.к. он дает контейнеру слишком широкие права
+</code></pre>
+<p>ㅤ<br />
+В <code>Dockerfile</code> был добавлен отдельный пользователь <code>appuser</code>, после чего контейнер был переключен на запуск от непривилегированного пользователя <code>USER 10001:10001</code>. Смысл - контейнер больше не должен запускаться от лица <code>root</code>.</p>
+<p>После докерфайла собрал новый образ -</p>
+<pre><code class="language-sh">docker build -t secure-owasp-rest
+</code></pre>
+<p>Запустил контейнер -</p>
+<pre><code class="language-sh">docker run --rm -it --entrypoint sh secure-owasp-rest
+</code></pre>
+<p>Внутри контейнера <code>whoami</code>. Ответ - <code>appuser</code>. Это подтверждает что новый контейнер запускается не от <code>root</code> (<strong>что и требовалось сделать</strong>), а от отдельного непривилегированного пользователя.</p>
+<h3>✔️ Скриншот из пункта 2 в папке с названием <code>**part'2.png</code>**</h3>
+<h3>✔️ Dockerfile в папке с названием  <code>**Dockerfile</code>**</h3>
+<p>ㅤ<br />
+ㅤ</p>
+<h1>🌐 Часть 3</h1>
+<h4>Условие -</h4>
+<p><em>"Прогнать образ через один из сканеров безопасности:<br />
+<a href="https://github.com/quay/clair">https://github.com/quay/clair</a><br />
+<a href="https://github.com/aquasecurity/trivy">https://github.com/aquasecurity/trivy</a><br />
+Проанализировать его вывод. Ответ - ваши выводы про безопасность выбранного образа, а также скрин с выводом сканера."</em><br />
+ㅤ<br />
+ㅤ<br />
+Просканировал собранный образ <code>secure-owasp-rest</code> с помощью сканера безопасности <code>Trivy</code>.</p>
+<p>Для проверки использовалась команда -</p>
+<pre><code class="language-sh">docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --format table secure-owasp-rest
+</code></pre>
+<p>Здесь оставил только уязвимости уровня <code>HIGH</code> и <code>CRITICAL</code> чтобы отчет был хотя бы немного читаемым.</p>
+<p>Trivy определил что образ основан на <code>Alpine 3.14.2</code>.</p>
+<p>Также было предупреждение что версия <code>Alpine 3.14.2</code> больше не поддерживается дистрибутивом, поэтому обнаружение уязвимостей может быть неполным т.к. security updates уже не предоставляются.<br />
+ㅤ<br />
+ㅤ<br />
+В общем отчете Trivy показал, что для системной части образа найдено -</p>
+<pre><code class="language-sh">secure-owasp-rest (alpine 3.14.2)
+Total: 56
+HIGH: 48
+CRITICAL: 8
+</code></pre>
+<p>То есть в системных пакетах базового образа найдено <strong>56 уязвимостей высокого и критического уровня</strong>. Среди уязвимых компонентов например <code>busybox</code>, <code>expat</code>, <code>zlib</code>, <code>libcrypto</code>, <code>libssl</code>.<br />
+ㅤ<br />
+ㅤ<br />
+Также Trivy отдельно проверил Python-зависимости приложения. В блоке <code>Python (python-pkg)</code> было найдено:</p>
+<pre><code class="language-sh">Total: 14
+HIGH: 14
+CRITICAL: 0
+</code></pre>
+<p>Среди уязвимых питон пакетов были <code>Flask</code>, <code>PyJWT</code>, <code>Werkzeug</code>, <code>certifi</code>, <code>setuptools</code>, <code>urllib3</code>, <code>wheel</code>.<br />
+ㅤ<br />
+ㅤ  </p>
+<h3>🔹 <strong>Вывод</strong></h3>
+<p>По результатам сканирования видно что образ <code>secure-owasp-rest</code> <strong>нельзя считать безопасным</strong>. Несмотря на то что во второй части контейнер был переведен на запуск от пользователя <code>appuser</code>, внутри образа остались уязвимые системные пакеты и питон зависимости.</p>
+<p><strong>Главная проблема</strong> связана с устаревшей базовой системой <code>Alpine 3.14.2</code> которая <em>больше не поддерживается</em>. Из-за этого образ содержит большое количество известных CVE, включая уязвимости уровня <strong>HIGH</strong> и <strong>CRITICAL</strong>. Кроме того, приложение использует старые версии питон библиотек, например <code>Flask</code>, <code>PyJWT</code>, <code>Werkzeug</code>, <code>setuptools</code> и <code>urllib3</code>, для которых <code>Trivy</code> также нашел уязвимости.</p>
+<p>Итоговый вывод: запуск контейнера не от <code>root</code> улучшает безопасность - но этого, как видно, <strong>недостаточно</strong>. Безопасность Docker образа зависит не только от пользователя внутри контейнера - но и от актуальности базовой ОС, системных пакетов и зависимостей приложения. Для улучшения безопасности нужно обновить базовый образ, использовать поддерживаемую версию <code>Alpine</code> или другой актуальный образ, обновить питон зависимости до исправленных версий, пересобрать контейнер и <strong>регулярно</strong> повторять сканирование через <code>Trivy</code>.</p>
+<h3>✔️ Скриншоты с выводом сканера в папке с названиями <strong><code>part'3_1.png</code></strong>, <strong><code>part'3_2.png</code></strong>, <strong><code>part'3_3.png</code></strong>.</h3>
+</body>
+</html>

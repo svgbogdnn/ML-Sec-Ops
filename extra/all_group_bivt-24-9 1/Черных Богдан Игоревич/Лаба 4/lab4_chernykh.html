@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>svg_md</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Noto Sans', Arial, sans-serif; margin: 32px; line-height: 1.55; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+    pre { padding: 12px; border: 1px solid #ddd; border-radius: 8px; overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px 10px; vertical-align: top; }
+  </style>
+</head>
+<body>
+<h1>Лабораторная Работа №4</h1>
+<p><em>Черных Богдан Игоревич ' БИВТ-24-9</em><br />
+ㅤ<br />
+ㅤ</p>
+<h1>🌐 Часть 1</h1>
+<h4>Условие -</h4>
+<p><em>"Для приведенного фрагмента кода необходимо указать его недостаток, а также написать рекомендации по его устранению. Например, у такого кода:</em>  </p>
+<pre><code class="language-python">with connection.cursor() as cursor:
+    cursor.execute(&quot;&quot;&quot; SELECT admin FROM users WHERE username = '%s' &quot;&quot;&quot; % username)
+</code></pre>
+<p><em>недостаток заключается в том, что введенные пользователем данные не проверяются и "as is" передаются в базу данных.</em><br />
+<em>В качестве мер противодействия можно либо корректно обрабатывать пользовательский ввод, либо использовать библиотеки, которые экранируют все опасные символы, что является более предпочтительным вариантов."</em><br />
+ㅤ</p>
+<h2>🔸 Фрагмент кода 1</h2>
+<pre><code class="language-python">#!/usr/bin/env python3
+from flask import Flask
+from mod_api import mod_api
+app = Flask('vuln_app')
+app.config['SECRET_KEY'] = 'F0cUzh8BgYJSLXAU8qDmClM0dE8GJTpsiyVEl3BCqQMCABp1U$f%'
+app.register_blueprint(mod_api, url_prefix='/api')
+</code></pre>
+<h3>Недостаток</h3>
+<ul>
+<li><strong>Секретный ключ <code>SECRET_KEY</code> записан прямо в исходном коде приложения</strong>.<br />
+Это очень плохо потому что <code>SECRET_KEY</code> во <code>Flask</code> используется для безопасной подписи session cookie и других защитных механизмов приложения. В доках Flaskа написано, что секретный ключ нельзя раскрывать и нельзя коммитить в код. Если такой файл попадет в репозиторий или утечет — злоумышленник сможет использовать этот ключ для подделки или изменения подписанных данных, например сессионных cookie.<br />
+Если атакующий узнает <code>SECRET_KEY</code> он может попытаться подделать данные сессии. Например, если приложение хранит в session cookie информацию о пользователе или его роли — то при знании ключа появляется риск изменить эти данные и выдать себя за другого пользователя или администратора. Также этот ключ могут использовать расширения Flask для <code>CSRF</code> защиты и других механизмов безопасности.</li>
+</ul>
+<h3>Рекомендации по устранению</h3>
+<ul>
+<li>Не хранить <code>SECRET_KEY</code> прямо в коде. Например, вынести ключ в переменную окружения:</li>
+</ul>
+<pre><code class="language-python">import os
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+</code></pre>
+<ul>
+<li>Хранить значение ключа отдельно от кода — например в <code>.env-файле</code>, настройках сервера или секретах <code>CI / CD</code>.</li>
+<li>Добавить <code>.env</code> и другие файлы с секретами в <code>.gitignore</code>, чтобы они не попали в репозиторий.</li>
+<li>Использовать разные ключи для разработки и для продакшена.</li>
+<li>Если ключ уже мог попасть в открытый доступ, его <strong>нужно заменить на новый</strong>. После замены старые сессии пользователей могут стать недействительными, но это нормальное поведение при <em>ротации секретного ключа</em>.<br />
+ㅤ</li>
+</ul>
+<h2>🔸 Фрагмент кода 2</h2>
+<pre><code class="language-python">from flask_wtf import Form
+from wtforms import TextField
+class LoginForm(Form):
+    username = TextField('username')
+    password = TextField('password')
+</code></pre>
+<h3>Недостатки</h3>
+<ul>
+<li><strong>Поле <code>password</code> сделано как обычное текстовое поле <code>TextField</code></strong>.<br />
+Из-за этого пароль будет отображаться на экране <strong>как обычный текст</strong>, а не скрываться точками или звездочками. Для пароля нужно использовать <code>PasswordField</code>.</li>
+<li><strong>Нет валидаторов для обязательного заполнения</strong>.<br />
+Сейчас форма явно не требует чтобы <code>username</code> и <code>password</code> были заполнены. Пользователь может отправить пустые значения. В <code>WTForms</code> для таких проверок используются <strong>валидаторы</strong>, например <code>DataRequired</code>. Валидаторы проверяют, соответствует ли введенное значение нужному условию и при ошибке вызывают <code>ValidationError</code>.</li>
+<li><strong>Нет ограничения длины ввода</strong>.<br />
+Пользователь может отправить слишком длинный <code>username</code> или <code>password</code>. Это может привести к ошибкам обработки, проблемам в базе данных или лишней нагрузке. Для ограничения длины обычно используют <code>Length</code>.</li>
+</ul>
+<h3>Рекомендации по устранению</h3>
+<ul>
+<li>Вместо <code>password = TextField('password')</code> нужно использовать <code>PasswordField</code> (т.е. <code>password = PasswordField('password')</code>), чтобы пароль не отображался на экране открытым текстом.</li>
+<li>Поле <code>username</code> лучше оформить как <code>StringField</code> (т.е. вместо <code>username = TextField('username')</code> использовать <code>username = StringField('username')</code>), потому что это обычный текстовый идентификатор пользователя а не пароль.</li>
+<li>Добавить проверку (<em>валидаторы</em>) обязательного заполнения. Для <code>username</code> и <code>password</code> нужно добавить <code>DataRequired()</code> или <code>InputRequired()</code>, чтобы форма не принимала пустые значения. <code>WTForms валидаторы</code> проверяют, соответствует ли ввод нужному условию, а при ошибке вызывают <code>ValidationError</code>.</li>
+<li>Ограничить длину логина и пароля. Например для <code>username</code> поставить <code>Length(min=3, max=64)</code>, а для <code>password -</code> Length(min=8, max=128)`. Это защитит от пустых, слишком коротких и чрезмерно длинных значений.</li>
+<li>Использовать <code>FlaskForm</code> вместо обычного Form. <code>FlaskForm</code> лучше подходит для Flask-приложения и дает нормальную интеграцию с <code>Flask-WTF</code>, включая <code>CSRF-защиту</code>.</li>
+<li>Добавить <code>CSRF-токен</code>. В <code>HTML-форме</code> вывести <code>{{ form.csrf_token }}</code> — это нужно чтобы защитить форму логина от поддельных <code>POST-запросов</code> с другого сайта.<br />
+ㅤ</li>
+</ul>
+<h2>🔸 Фрагмент кода 3</h2>
+<pre><code class="language-python">def post(self):
+    username = self.get_argument('username')
+    password = self.get_argument('password').encode('utf-8')
+    email = self.get_argument('mail')
+try:
+    username = username.lower()
+    email = email.strip().lower()
+    user = User({'username': username, 'password': password, 'email': email, 'date_joined': curtime()})
+    user.validate()
+    save_user(self.db_conn, user)
+except Exception, e:
+    return self.render_template(&quot;success_create.html&quot;)
+</code></pre>
+<h3>Недостатки</h3>
+<ul>
+<li><strong>Пароль не хешируется перед сохранением, и хранитс просто в открытом виде</strong>.<br />
+В коде пароль только переводится в байты через <code>.encode('utf-8')</code>, но это не его не защищает. Если такой пароль сохранить в базу он фактически будет храниться в открытом виде. При утечке базы злоумышленник сразу получит настоящие пароли пользователей.</li>
+<li><strong>При любой ошибке показывается страница успешного создания пользователя</strong>.<br />
+В блоке <code>except Exception</code> приложение возвращает <code>success_create.html</code>. Это неправильно потому что ошибка могла произойти где угодно: невалидный <code>email</code>, занятый <code>username</code>, ошибка базы данных, ошибка валидации. Но пользователь все равно увидит страницу успеха и будет думать что аккаунт создан.</li>
+<li><strong>Исключение никак не логируется</strong>.<br />
+Код просто проглатывает ошибку и разработчик потом не увидит что именно сломалось.</li>
+</ul>
+<h3>Рекомендации по устранению</h3>
+<ul>
+<li><strong>Хешировать пароль перед сохранением</strong>.<br />
+Вместо сохранения <code>password</code> после <code>.encode('utf-8')</code> нужно сохранять <strong>только хеш пароля</strong>. Для этого лучше использовать специальные алгоритмы для паролей, например <code>Argon2id</code>, <code>bcrypt</code>, <code>scrypt</code> или <code>PBKDF2</code>.</li>
+<li><strong>Страницу успеха показывать только после реального сохранения пользователя</strong>, то есть е возвращать <code>success_create.html</code> при ошибке.<br />
+<code>success_create.html</code> должен возвращаться только после того как прошли <code>user.validate()</code> и <code>save_user(...)</code>. Сейчас в коде при любой ошибке приложение все равно показывает успех, хотя пользователь мог вообще не создаться.</li>
+<li><strong>В блоке <code>except</code> возвращать страницу ошибки, а не страницу успеха — то есть разделить успешный сценарий и ошибку</strong>.<br />
+Если произошла ошибка — нужно показать пользователю понятное сообщение: например <code>“Пользователь не был создан”</code>, <code>“Некорректный email”</code> и т.д. При этом нельзя показывать пользователю технический <code>traceback</code> или внутренние детали приложения, потому что ошибки могут раскрывать информацию о системе.</li>
+<li><strong>Разные ошибки обрабатывать отдельно</strong>.<br />
+Не стоит ловить все через общий <code>except Exception</code> без разбора. Ошибку валидации, ошибку дубликата пользователя и ошибку базы данных лучше обрабатывать разными блоками <code>except</code>, потому что действия в каждом случае разные.</li>
+<li><strong>Добавить логирование ошибок</strong>.<br />
+Если произошла неизвестная ошибка — ее нужно записать в лог. Удобно использовать <code>logger.exception(...)</code> потому что он записывает сообщение об ошибке вместе со <code>stack trace</code> и вызывается именно внутри обработчика исключения.</li>
+<li><strong>Нормализовать входные данные до создания пользователя</strong>.<br />
+<code>username</code> и <code>email</code> нужно приводить к нормальному виду — например, убрать пробелы через <code>.strip()</code>, привести к нижнему регистру через <code>.lower()</code>, проверить формат <code>email</code> и допустимую длину <code>username</code>. Это точно уменьшит риск дублей и ошибок при сохранении.<br />
+ㅤ<br />
+ㅤ<br />
+ㅤ</li>
+</ul>
+<h1>🌐 Часть 2</h1>
+<h4>Условие -</h4>
+<p><em>"Изучить модель безопасности django. Ответить на вопросы.</em><br />
+<em>1. Какие наиболее распространенные атаки предотвращает django?</em><br />
+<em>2. Описать, как устроено управление пользовательскими сессиями в django"</em></p>
+<h2>🔸 1. Какие наиболее распространенные атаки предотвращает django?</h2>
+<p>Django имеет встроенные механизмы защиты от нескольких распространенных атак на веб-приложения. Однако Django не делает приложение <strong>полностью</strong> безопасным автоматически — но он закрывает многие типовые ошибки, если разработчик использует стандартные механизмы фреймворка и не отключает их вручную.</p>
+<h3>1. XSS — Cross-Site Scripting</h3>
+<p><strong>XSS</strong> — атака при которой злоумышленник пытается внедрить JavaScript-код в страницу, которую потом откроет другой пользователь. <code>Django</code> защищает от <code>XSS</code> за счет автоматического экранирования данных в шаблонах. То есть если в шаблон передать строку с тегами <code>&lt;script&gt;</code> то <code>Django</code> по умолчанию <strong>не даст</strong> браузеру воспринять ее как настоящий HTML/JavaScript. Опасные символы будут преобразованы в безопасные HTML-сущности. Например <code>&lt;</code>, <code>&gt;</code>, <code>"</code>, <code>'</code>, <code>&amp;</code> будут показаны как текст, а не как начало HTML-тега.</p>
+<h3>2. CSRF — Cross-Site Request Forgery</h3>
+<p><strong>CSRF</strong> — атака при которой злоумышленник пытается заставить браузер авторизованного пользователя отправить нежелательный запрос на сайт. <code>Django</code> защищает от <code>CSRF</code> с помощью <strong>CSRF-токенов</strong>. В формы добавляется специальный токен, который должен присутствовать в небезопасных запросах, например в <code>POST</code> реквестах. Если запрос пришел без правильного токена, <code>Django</code> его отклонит. Это мешает стороннему сайту просто так отправить форму от имени пользователя.<br />
+То есть <code>Django</code> проверяет что запрос действительно был сформирован внутри приложения, а не пришел с чужого сайта. Для этого нужно чтобы в проекте был включен <code>CsrfViewMiddleware</code>, а в HTML-формах использовался <code>CSRF-токен</code>.</p>
+<h3>3. SQL-инъекции</h3>
+<p><strong>SQL-инъекция</strong> — атака при которой злоумышленник пытается вставить <code>SQL-код</code> в пользовательский ввод. <code>Django</code> защищает от <code>SQL-инъекций</code> за счет <code>ORM</code>. Когда разработчик использует стандартные методы <code>Django ORM</code>, параметры запроса передаются отдельно от <code>SQL-кода</code>. Это значит что пользовательский ввод не превращается в часть <code>SQL-команды</code>, а обрабатывается как значение. Но риск останется если разработчик пишет сырой SQL вручную через <code>raw()</code> или <code>cursor.execute()</code> и сам склеивает строку запроса с пользовательским вводом.</p>
+<h3>4. Clickjacking</h3>
+<p><strong>Clickjacking</strong> — атака при которой злоумышленник встраивает страницу настоящего сайта в невидимый или замаскированный <code>iframe</code> и заставляет пользователя нажать не туда. <code>Django</code> защищает от clickjacking с помощью специальных <code>HTTP-заголовков</code>, в частности через <code>X-Frame-Options</code>. Для этого используется <code>middleware</code> который запрещает или ограничивает встраивание страниц сайта во фреймы.</p>
+<h3>5. Host Header Injection</h3>
+<p><strong>Host Header Injection</strong> — атака связанная с подменой заголовка <code>Host</code>. <code>Django</code> защищает от таких атак через настройку <code>ALLOWED_HOSTS</code>. В этой настройке указывается список доменов, с которых приложение имеет право принимать запросы. Если заголовок <code>Host</code> не совпадает с разрешенным значением — Django вызывает ошибку <code>SuspiciousOperation</code>.</p>
+<h3>6. Атаки на сессии</h3>
+<p><code>Django</code> также помогает защищать пользовательские сессии. Для безопасности сессий <code>Django</code> поддерживает настройки cookie — <code>HttpOnly</code>, <code>Secure</code>, <code>SameSite</code>, время жизни сессии и другие параметры. Например <code>HttpOnly</code> мешает <code>JavaScript</code> читать cookie, что снижает риск кражи сессии при <code>XSS</code>. <code>Secure</code> заставляет передавать cookie только по HTTPS. <code>SameSite</code> помогает уменьшить риск <code>CSRF-атак</code>.</p>
+<h3>7. Небезопасная передача данных без HTTPS</h3>
+<p><code>Django</code> имеет настройки которые помогают безопаснее работать через <code>HTTPS</code>. Например можно включить перенаправление с <code>HTTP</code> на <code>HTTPS</code>, настроить <code>secure-cookie</code> и использовать <code>HSTS</code>. Это не атака в прямом смысле, скорее защита от перехвата данных при передаче.<br />
+ㅤ</p>
+<h2>🔸 2. Описать, как устроено управление пользовательскими сессиями в django</h2>
+<p>Сессии в <code>Django</code> нужны для чтобы сайт мог помнить пользователя между разными <code>HTTP-запросами</code>. Сам <code>HTTP</code> не хранит состояние — если пользователь открыл страницу, потом перешел на другую, сервер сам по себе не знает что это <em>тот же самый человек</em>. Сессия решает эту проблему — <code>Django</code> связывает браузер пользователя с определенными данными на сервере.</p>
+<h3>Как включить</h3>
+<p>Чтобы сессии работали, в проекте должны быть подключены два элемента.</p>
+<p>В <code>INSTALLED_APPS</code> должно быть:</p>
+<pre><code class="language-python">'django.contrib.sessions'
+</code></pre>
+<p>В <code>MIDDLEWARE</code> должно быть:</p>
+<pre><code class="language-python">'django.contrib.sessions.middleware.SessionMiddleware'
+</code></pre>
+<p><code>SessionMiddleware</code> добавляет к каждому запросу объект <code>request.session</code>. Через него в коде можно читать и записывать данные сессии.</p>
+<h3>Где хранятся данные сессии</h3>
+<p>По умолчанию Django хранит данные сессий в базе данных, через модель:</p>
+<pre><code class="language-python">'django.contrib.sessions.models.Session'
+</code></pre>
+<p>После миграций в базе появляется таблица:</p>
+<pre><code class="language-python">'django_session'
+</code></pre>
+<p>В этой таблице хранятся данные сессий, срок их действия и ключ сессии. При этом в браузер пользователя обычно отправляется не вся информация сессии — а только cookie с идентификатором сессии. То есть пользователь не получает сами данные — он получает только ключ по которому <code>Django</code> потом находит данные на сервере. <code>Django</code> также позволяет настроить другие хранилища — базу данных, <code>cache</code>, <code>filesystem</code> или <code>cookie-based backend</code>.</p>
+<h3>Рабочий цикл сессии</h3>
+<h4>1. <strong>Пользователь впервые открывает сайт</strong></h4>
+<p>Пользователь заходит на сайт, например <code>http://example.com/</code>. Браузер отправляет обычный <code>HTTP-запрос</code>. Если cookie сессии еще нет — Django пока не знает этого пользователя как постоянного посетителя.</p>
+<h4>2. <strong>Запрос проходит через <code>SessionMiddleware</code></strong></h4>
+<p>Когда запрос приходит в Django, его обрабатывает <code>SessionMiddleware</code>. <code>Middleware</code> смотрит, есть ли в запросе cookie с именем <code>sessionid</code>. Если cookie есть — Django берет из него ключ сессии. Если cookie нет — Django работает с новой пустой сессией.<br />
+В исходном коде <code>SessionMiddleware</code> при обработке запроса Django берет значение из <code>request.COOKIES</code> по имени session cookie и создает <code>request.session</code> через <code>SessionStore</code>.</p>
+<h4>3. <strong>В коде появляется объект <code>request.session</code></strong></h4>
+<p>После <code>middleware</code> во <code>view</code> можно работать с сессией как со словарем:</p>
+<pre><code class="language-python">request.session['cart_id'] = 21
+request.session['theme'] = 'pink rose'
+request.session['visited'] = True
+</code></pre>
+<p><code>request.session</code> — объект через который можно хранить и получать произвольные данные на посетителя сайта. Например, можно сохранить id корзины, язык интерфейса, временный флаг, id пользователя после авторизации или другие служебные данные.</p>
+<h4>4. <strong>Если сессия изменилась то Django сохраняет ее</strong></h4>
+<p>Если во <code>view</code> что-то записали в <code>request.session</code> — Django помечает сессию как измененную. Перед отправкой ответа пользователю Django сохраняет данные сессии в выбранное хранилище.<br />
+По умолчанию это база данных. То есть Django сохраняет данные в таблицу <code>django_session</code>, а не отправляет все эти данные в браузер.<br />
+Например <code>request.session['user_color'] = 'pretty green'</code> и после этого Django сохранит значение на сервере, а браузеру отправит только cookie с идентификатором сессии.</p>
+<h4>5. <strong>Браузеру отправляется cookie <code>sessionid</code></strong></h4>
+<p>В ответе сервер отправляет браузеру cookie примерно такого вида <code>Set-Cookie: sessionid=svgforlife21...</code>. Значение <code>svgforlife21...</code> это ключ сессии. Он нужен чтобы при следующем запросе Django понял, какую запись сессии искать в хранилище.</p>
+<h4>6. <strong>При следующем запросе браузер отправляет <code>sessionid</code> обратно</strong></h4>
+<p>Когда пользователь открывает следующую страницу, браузер автоматически отправляет cookie обратно на сервер <code>Cookie: sessionid=svgforlife21...</code>.<br />
+Django берет этот ключ, ищет соответствующую сессию в хранилище и снова делает данные доступными через <code>request.session</code>. Так сайт понимает, что это тот же самый браузер который уже был на сайте раньше.</p>
+<h4>7. <strong>Если пользователь входит в аккаунт</strong></h4>
+<p>Когда пользователь проходит логин, <code>Django authentication system</code> связывает его аккаунт с текущей сессией. Встроенная система аутентификации в Django работает с пользователями, группами, правами и cookie-based user sessions.<br />
+При входе Django сохраняет в сессию служебные данные, по которым потом понимает, какой пользователь авторизован. После этого на следующих страницах можно обращаться к <code>request.user</code> и Django будет знать, авторизован пользователь или нет.</p>
+<h4>8. <strong>При логине Django меняет ключ сессии</strong></h4>
+<p>При успешном входе Django вызывает смену <code>session key</code> чтобы защититься от <code>session fixation</code>, от атаки когда нехороший человек заранее навязывает жертве известный <code>session ID</code>, а потом пытается использовать его после авторизации. <code>django.contrib.auth.login()</code> вызывает создание нового <code>session key</code>, сохраняя текущие данные сессии чтобы снизить риск <code>session fixation</code>.</p>
+<h4>9. <strong>При выходе из аккаунта сессия очищается</strong></h4>
+<p>Когда пользователь нажимает <code>logout</code>, Django удаляет данные связанные с авторизацией. Обычно после выхода пользователь уже не считается авторизованным, а старые данные сессии очищаются. Это нужно чтобы после выхода нельзя было продолжить использовать прежнюю авторизованную сессию.</p>
+<h3>Какие бывают хранилища сессий</h3>
+<p>Django позволяет настроить, где именно будут храниться данные сессий.</p>
+<ul>
+<li>Стандартный вариант <strong>Database backend</strong> — данные хранятся в базе данных, обычно в таблице <code>django_session</code>.</li>
+<li><strong>Cache backend</strong> — данные хранятся в кэше, например <code>Redis</code> или <code>Memcached</code>.</li>
+<li><strong>File backend</strong> — данные хранятся в файлах на сервере.</li>
+<li><strong>Cookie-based backend</strong> — данные хранятся прямо в cookie но подписываются.</li>
+</ul>
+<h3>Главные настройки для безопасности cookie сессии в Django</h3>
+<table>
+<thead>
+<tr>
+<th>Настройка</th>
+<th>Что делает</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SESSION_COOKIE_HTTPONLY = True</code></td>
+<td>Запрещает JavaScript читать <code>session cookie</code> что снижает риск кражи cookie при <code>XSS</code></td>
+</tr>
+<tr>
+<td><code>SESSION_COOKIE_SECURE = True</code></td>
+<td>Cookie отправляется только по <code>HTTPS</code>, поэтому его сложнее перехватить в сети</td>
+</tr>
+<tr>
+<td><code>SESSION_COOKIE_SAMESITE = 'Lax'</code></td>
+<td>Ограничивает отправку cookie при межсайтовых запросах и помогает против части <code>CSRF-атак</code></td>
+</tr>
+<tr>
+<td><code>SESSION_COOKIE_AGE = 1209600</code></td>
+<td>Задает время жизни сессии в секундах (<em>по дефолту стоит 2 недели</em>)</td>
+</tr>
+<tr>
+<td><code>SESSION_EXPIRE_AT_BROWSER_CLOSE = True</code></td>
+<td>Завершает сессию после закрытия браузера</td>
+</tr>
+</tbody>
+</table>
+<p>ㅤ</p>
+<h3>Источники</h3>
+<ul>
+<li><a href="https://docs.djangoproject.com/en/6.0/topics/security">https://docs.djangoproject.com/en/6.0/topics/security</a></li>
+<li><a href="https://docs.djangoproject.com/en/6.0/topics/http/sessions">https://docs.djangoproject.com/en/6.0/topics/http/sessions</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Server-side/Django/web_application_security">https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Server-side/Django/web_application_security</a></li>
+<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Django_Security_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Django_Security_Cheat_Sheet.html</a></li>
+<li><a href="https://docs.djangoproject.com/en/6.0/ref/settings">https://docs.djangoproject.com/en/6.0/ref/settings</a></li>
+<li><a href="https://owasp.org/www-community/attacks/csrf">https://owasp.org/www-community/attacks/csrf</a></li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h3>Подготовка</h3>
+<pre><code class="language-powershell">docker run -it -v .:/opt/results python:3.12-buster bash
+
+apt update &amp;&amp; apt install -y git
+pip install trufflehog
+
+trufflehog git https://github.com/OtusTeam/DevSecOps_secret-finding.git --json &gt; /opt/results/scan.log
+</code></pre>
+<hr>
+<h3>Найденные секреты</h3>
+<h4>Секрет №1: Приватный RSA-ключ</h4>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Файл</strong></td>
+<td><code>webgoat-server/privatekey.key</code></td>
+</tr>
+<tr>
+<td><strong>Строка</strong></td>
+<td>1–28</td>
+</tr>
+<tr>
+<td><strong>Контекст</strong></td>
+<td><code>-----BEGIN PRIVATE KEY-----</code> ... <code>-----END PRIVATE KEY-----</code></td>
+</tr>
+</tbody></table>
+<p><strong>Почему это секрет:</strong></p>
+<ul>
+<li>Файл содержит полноценный приватный RSA-ключ в формате PEM</li>
+<li>Ключ может использоваться для подписи артефактов, аутентификации по SSH или расшифровки данных</li>
+<li>При компрометации злоумышленник получает полный доступ ко всему, что защищено этим ключом</li>
+</ul>
+<p><strong>Как должно быть:</strong></p>
+<ul>
+<li>Никогда не коммитить приватные ключи в репозиторий</li>
+<li>Хранить ключи в защищённом хранилище: HashiCorp Vault, AWS Secrets Manager, Azure Key Vault</li>
+<li>Для CI/CD использовать переменные окружения, настроенные в интерфейсе платформы (GitHub Secrets, GitLab CI Variables)</li>
+<li>Для локальной разработки - файл <code>~/.ssh/id_rsa</code> с правами <code>600</code>, добавленный в <code>.gitignore</code></li>
+</ul>
+<h4>Секрет №2: Захардкоженный GitHub Token</h4>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Файл</strong></td>
+<td><code>.github/workflows/release.yml</code></td>
+</tr>
+<tr>
+<td><strong>Строка</strong></td>
+<td>75</td>
+</tr>
+<tr>
+<td><strong>Контекст</strong></td>
+<td><code>GITHUB_TOKEN: cee3257f0e59d1d4975a35429cffc3d8b5fabe15ca2e9d47243cbc446d4894a5</code></td>
+</tr>
+</tbody></table>
+<p><strong>Почему это секрет:</strong></p>
+<ul>
+<li>Строка с высокой энтропией - типичный формат токена GitHub</li>
+<li>Токен даёт доступ к репозиторию: пуш кода, создание релизов, управление workflows</li>
+<li>Даже если токен позже заменили на <code>${{ secrets.GITHUB_TOKEN }}</code>, он остался в истории коммитов</li>
+</ul>
+<p><strong>Как должно быть:</strong></p>
+<ul>
+<li>Использовать встроенный механизм GitHub Actions: <code>${{ secrets.GITHUB_TOKEN }}</code></li>
+<li>Для внешних интеграций - хранить токены в <code>Settings → Secrets and variables → Actions</code></li>
+<li>Регулярно ротировать токены и ограничивать их права (scope)</li>
+<li>Для полной очистки истории использовать <code>git filter-branch</code></li>
+</ul>
+<h4>Секрет №3: Серийные данные для тестов десериализации</h4>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Файл</strong></td>
+<td><code>webgoat-lessons/insecure-deserialization/src/test/java/.../DeserializeTest.java</code></td>
+</tr>
+<tr>
+<td><strong>Строка</strong></td>
+<td>~70, ~85, ~100</td>
+</tr>
+<tr>
+<td><strong>Контекст</strong></td>
+<td><code>String token = &quot;rO0ABXNyADFvcmcuZHVtbXkuaW5zZWN1cmUuZnJhbWV3b3JrLlZ1bG5lcmFibGVUYXNrSG9sZGVy...&quot;</code></td>
+</tr>
+</tbody></table>
+<p><strong>Почему это секрет:</strong></p>
+<ul>
+<li>Строки <code>rO0ABX...</code> - это Java-сериализованные объекты в base64</li>
+<li>В данном случае это тестовые пейлоады для урока по insecure deserialization</li>
+<li>Хотя это учебные данные, в реальном проекте такие строки могут содержать чувствительную информацию или быть использованы для атаки</li>
+</ul>
+<p><strong>Как должно быть:</strong></p>
+<ul>
+<li>Для тестов использовать моки и фикстуры вместо реальных сериализованных данных</li>
+<li>Если тестовые данные необходимы - генерировать их динамически в <code>@BeforeEach</code></li>
+<li>Не хранить в коде примеры эксплойтов, даже для обучения; выносить в отдельную документацию с пометкой <code>EXAMPLE</code></li>
+</ul>
+<h4>Секрет №4: Хеш пользователя в тесте</h4>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Файл</strong></td>
+<td><code>webgoat-lessons/missing-function-ac/src/test/java/.../MissingFunctionACUsersTest.java</code></td>
+</tr>
+<tr>
+<td><strong>Строка</strong></td>
+<td>~45</td>
+</tr>
+<tr>
+<td><strong>Контекст</strong></td>
+<td><code>assertThat(displayUser.getUserHash()).isEqualTo(&quot;cplTjehjI/e5ajqTxWaXhU5NW9UotJfXj+gcbPvfWWc=&quot;)</code></td>
+</tr>
+</tbody></table>
+<p><strong>Почему это секрет:</strong></p>
+<ul>
+<li>Base64-строка с высокой энтропией - похоже на криптографический хеш</li>
+<li>В учебном контексте это тестовое значение, но в реальном проекте такие хардкоды могут раскрыть алгоритм хеширования или стать вектором для атаки на сравнение хешей</li>
+</ul>
+<p><strong>Как должно быть:</strong></p>
+<ul>
+<li>Для тестов использовать генерацию ожидаемых значений на лету, а не хардкод</li>
+<li>Если хеш должен быть фиксированным - документировать его происхождение и пометить как <code>@TestOnly</code></li>
+<li>В продакшене никогда не сравнивать хеши через <code>==</code> или <code>equals</code>, использовать <code>MessageDigest.isEqual()</code> для защиты от timing-атак</li>
+</ul>
+<h4>Секрет №5: JWT Payload в документации</h4>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Файл</strong></td>
+<td><code>webgoat-lessons/jwt/src/main/resources/lessonPlans/en/JWT_libraries_assignment.adoc</code></td>
+</tr>
+<tr>
+<td><strong>Строка</strong></td>
+<td>10</td>
+</tr>
+<tr>
+<td><strong>Контекст</strong></td>
+<td><code>eyJzdWIiOiIxMjM0NTY3ODkwIiwidXNlciI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0</code></td>
+</tr>
+</tbody></table>
+<p><strong>Почему это секрет:</strong></p>
+<ul>
+<li>Это base64-кодированный payload JWT-токена</li>
+<li>После декодирования видно: <code>&quot;admin&quot;: true, &quot;user&quot;: &quot;John Doe&quot;</code> - тестовые данные для урока</li>
+<li>В реальном проекте такие примеры могут быть использованы злоумышленником для понимания структуры токенов</li>
+</ul>
+<p><strong>Как должно быть:</strong></p>
+<ul>
+<li>В документации использовать только явно помеченные примеры: <code>EXAMPLE_TOKEN_PLACEHOLDER</code></li>
+<li>Не включать реальные или даже тестовые токены в файлы, которые попадают в репозиторий</li>
+<li>Для учебных целей выносить примеры в отдельный файл <code>.examples/</code> с <code>.gitkeep</code> и пометкой <code>DO NOT COMMIT REAL DATA</code></li>
+</ul>
+<h3>Выводы</h3>
+<ol>
+<li><p>truffleHog находит не только очевидные секреты - он детектирует строки с высокой энтропией, даже если это тестовые данные или документация. Это полезно, но требует ручной фильтрации ложных срабатываний.</p>
+</li>
+<li><p>История коммитов - это тоже риск. Даже если секрет удалили в последнем коммите, он остаётся в <code>.git/objects</code>. Для полной очистки нужен <code>BFG Repo-Cleaner</code>.</p>
+</li>
+</ol>
+
+</body>
+</html>

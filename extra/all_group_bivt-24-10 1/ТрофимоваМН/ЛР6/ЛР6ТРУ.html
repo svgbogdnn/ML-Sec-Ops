@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЛР6ТРУ</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="лабораторная-работа-№6-изучение-существующих-cicd-с-точки-зрения-доступных-инструментов-иб">Лабораторная работа №6: Изучение существующих CI/CD с точки зрения доступных инструментов ИБ</h1>
+<h2 id="цель-работы">Цель работы</h2>
+<p>Проверить репозиторий на наличие секретов с помощью инструментов анализа кода, изучить подходы к автоматизации поиска чувствительных данных в CI/CD.</p>
+<h2 id="инструменты">Инструменты</h2>
+<ul>
+<li><strong>TruffleHog</strong> — утилита поиска секретов в истории Git (высокая энтропия, регулярные выражения).</li>
+<li><strong>Docker</strong> — контейнеризация окружения (<code>python:buster</code>).</li>
+</ul>
+<h2 id="порядок-выполнения">Порядок выполнения</h2>
+<ol>
+<li>Запущен контейнер: <code>docker run -it python:buster /bin/bash</code></li>
+<li>Установлен TruffleHog: <code>pip install truffleHog</code></li>
+<li>Сканирование репозитория: <code>trufflehog https://github.com/OtusTeam/DevSecOps_secret-finding.git --json | tee results.json</code></li>
+<li>Анализ вывода, фильтрация ложных срабатываний, группировка по типам секретов.</li>
+</ol>
+<h2 id="аналитика-найденных-секретов">Аналитика найденных секретов</h2>
+<h3 id="aws-access-key-и-secret-access-key">1. AWS Access Key и Secret Access Key</h3>
+<ul>
+<li><strong>Расположение:</strong> <code>.travis.yml</code> (строка с <code>access_key_id: AKIAJQLKPGHXRH2AH5QA</code>, а также зашифрованный <code>secret_access_key</code>)</li>
+<li><strong>Почему является секретом:</strong> Access Key ID и Secret Key предоставляют полный доступ к сервисам AWS (S3, EC2 и др.). Компрометация позволяет злоумышленнику управлять ресурсами, воровать данные, запускать вредоносные активности.</li>
+<li><strong>Правильный способ хранения:</strong> Никогда не коммитить ключи в репозиторий. Использовать секретные переменные CI/CD (GitHub Actions Secrets, GitLab CI Variables), сервисы управления секретами (AWS Secrets Manager, HashiCorp Vault). Скомпрометированные ключи немедленно отозвать через AWS IAM.</li>
+</ul>
+<h3 id="зашифрованные-секреты-travis-ci-и-heroku">2. Зашифрованные секреты Travis CI и Heroku</h3>
+<ul>
+<li><strong>Расположение:</strong> <code>.travis.yml</code> (блоки <code>deploy.api_key.secure</code>, <code>notifications.slack.secure</code>, <code>env.global.secure</code> и аналогичные)</li>
+<li><strong>Почему является секретом:</strong> Хранящиеся в Base64 зашифрованные строки — это токены доступа к Heroku, Slack, Docker Hub и другим сервисам. Хотя они зашифрованы для Travis CI, их наличие в открытом коде увеличивает риск расшифровки при утечке ключа шифрования или злоупотреблении контекстом CI.</li>
+<li><strong>Правильный способ хранения:</strong> Перенести все секреты в защищённое хранилище CI/CD (секретные переменные проекта), не хранить в файлах конфигурации. Удалить <code>secure</code>-блоки из истории Git с помощью BFG Repo-Cleaner.</li>
+</ul>
+<h3 id="анти-csrf-токен">3. Анти-CSRF токен</h3>
+<ul>
+<li><strong>Расположение:</strong> <code>webgoat-lessons/csrf/src/main/java/org/owasp/webgoat/plugin/ForgedReviews.java</code> и <code>webgoat-lessons/csrf/src/main/resources/html/CSRF.html</code> (значение <code>2aa14227b9a13d0bede0388a7fba9aa9</code>)</li>
+<li><strong>Почему является секретом:</strong> Данный токен используется для проверки подлинности запросов при защите от CSRF. Раскрытие токена позволяет злоумышленнику формировать валидные поддельные запросы и обходить защиту.</li>
+<li><strong>Правильный способ хранения:</strong> Удалить хардкод из исходников, заменить на переменную окружения или генерировать токен на стороне сервера. Использовать встроенные CSRF-механизмы фреймворка без необходимости хранения токена в коде.</li>
+</ul>
+<h3 id="хардкод-паролей-и-ключей">4. Хардкод паролей и ключей</h3>
+<ul>
+<li><strong>Расположение:</strong> <code>webgoat-lessons/challenge/src/main/java/org/owasp/webgoat/plugin/SolutionConstants.java</code></li>
+<li><strong>Содержимое:</strong> <code>PASSWORD_TOM = "thisisasecretfortomonly"</code>, <code>PASSWORD_LARRY = "larryknows"</code>, <code>JWT_PASSWORD = "victory"</code>, <code>ADMIN_PASSWORD_LINK = "375afe1104f4a487a73823c50a9292a2"</code>, <code>PASSWORD_TOM_9 = "somethingVeryRandomWhichNoOneWillEverTypeInAsPasswordForTom"</code>.</li>
+<li><strong>Почему является секретом:</strong> Пароли и секретные ключи в открытом виде позволяют любому, кто имеет доступ к репозиторию, пройти аутентификацию, подписать JWT-токены или получить административные привилегии.</li>
+<li><strong>Правильный способ хранения:</strong> Вынести все пароли в переменные окружения или специализированные секретные хранилища (HashiCorp Vault). Пересоздать все скомпрометированные пароли. Использовать аннотации вроде <code>@Value("${jwt.secret}")</code> для инжекта значений на этапе выполнения.</li>
+</ul>
+<h3 id="jwt-signing-key-в-тестах">5. JWT Signing Key в тестах</h3>
+<ul>
+<li><strong>Расположение:</strong> <code>webgoat-lessons/jwt/src/test/java/org/owasp/webgoat/plugin/JWTFinalEndpointTest.java</code> (строка <code>String key = "deletingTom";</code>)</li>
+<li><strong>Почему является секретом:</strong> Ключ используется для подписи JWT-токенов. Попадание в репозиторий раскрывает ключ, с помощью которого злоумышленник может создавать произвольные валидные токены для любого пользователя системы.</li>
+<li><strong>Правильный способ хранения:</strong> Даже для тестов не следует хранить секретные ключи в коде. Использовать временные случайно сгенерированные ключи во время выполнения тестов, либо получать ключ из переменной окружения, заданной в CI.</li>
+</ul>
+<h2 id="общие-рекомендации-по-автоматизации">Общие рекомендации по автоматизации</h2>
+<ul>
+<li>Внедрить сканирование секретов (TruffleHog, Gitleaks) в CI/CD-пайплайн на этапе pull request.</li>
+<li>Дополнить pre-commit-хуками для предотвращения попадания секретов в коммиты.</li>
+<li>При обнаружении утечки использовать BFG Repo-Cleaner для полной очистки истории Git.</li>
+</ul>
+<h2 id="вывод">Вывод</h2>
+<p>В результате анализа репозитория обнаружены пять разнотипных секретов, связанных с облачными ключами, токенами CI/CD, паролями и ключами подписи. Все они представляют серьёзную угрозу безопасности. Применение инструментов вроде TruffleHog и соблюдение правил хранения секретов позволяют минимизировать риски утечек конфиденциальных данных в процессе разработки.</p>
+</div>
+</body>
+
+</html>

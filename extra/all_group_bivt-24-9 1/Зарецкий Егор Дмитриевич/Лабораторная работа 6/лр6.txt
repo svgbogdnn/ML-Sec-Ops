@@ -1,0 +1,152 @@
+ЛАБОРАТОРНАЯ 6 Изучение CI/CD с точки зрения инструментов ИБ (TruffleHog)
+В рамках лабораторной работы нужно было посмотреть, как в CI/CD можно использовать инструменты информационной безопасности для поиска секретов в коде. Для проверки был выбран TruffleHog.
+
+
+ХОД РАБОТЫ:
+1. Запуск контейнера
+Команда:
+docker run -it -p 8080:8080 python:buster /bin/bash
+Результат:
+Status: Downloaded newer image for python:buster
+
+2. Установка TruffleHog
+Команда:
+pip install truffleHog
+Результат:
+Installing collected packages: truffleHogRegexes, smmap, gitdb, gitdb2, GitPython, truffleHog
+Successfully installed GitPython-3.0.6 gitdb-4.0.12 gitdb2-4.0.2 smmap-5.0.3 truffleHog-2.2.1 truffleHogRegexes-0.0.7
+
+3. Клонирование репозитория
+Команда:
+git clone https://github.com/OtusTeam/DevSecOps_secret-finding.git
+Результат:
+Cloning into 'DevSecOps_secret-finding'...
+remote: Enumerating objects: 39723, done.
+remote: Total 39723 (delta 0), reused 0 (delta 0), pack-reused 39723 (from 1)
+Receiving objects: 100% (39723/39723), 98.67 MiB | 4.19 MiB/s, done.
+Resolving deltas: 100% (18496/18496), done.
+
+4. Проверка содержимого директории
+Команда:
+ls
+Результат:
+DevSecOps_secret-finding  boot  etc   lib    media  opt   root  sbin  sys  usr
+bin                       dev   home  lib64  mnt    proc  run   srv   tmp  var
+
+5. Переход в репозиторий
+Команда:
+cd DevSecOps_secret-finding
+
+6. Первое сканирование локальной папки
+Команда:
+trufflehog . | tee -a log.txt
+
+Результат:
+Ничего не произошло файл log.txt оказался пустым. Скорее всего локальное сканирование не показало нужные данные из истории коммитов
+
+7. Сканирование по ссылке на репозиторий
+Команда:
+trufflehog https://github.com/OtusTeam/DevSecOps_secret-finding.git | tee -a log.txt
+
+Результат:
+В терминале начал выводиться большой объем записей. Сканирование шло несколько минут
+
+8. Запуск HTTP-сервера
+Команда:
+python -m http.server 8080
+
+9. Просмотр результатов
+В браузере открывал http://localhost:8080 и смотрел содержимое файла log.txt.
+
+5 СЕКРЕТОВ
+
+Секрет 1
+1. Путь: .travis.yml
+Строка:
++      secure:  [93mpJOLBnl6427PcVg/tVy/qB18JC7b8cKpffau+IP0pjdSt7KUfBdBY3QuJ7mrM65zRoVILzggLckaew2PlRmYQRdumyWlyRn44XiJ9KO4n6Bsufbz+ictB4ggtozpp9+I9IIUh1TmqypL9lhkX2ONM9dSHmyblYpAAgMuYSK8FYc= [0m
+
+2. Что это и почему это секрет
+Похоже на зашифрованный токен Travis CI. С большой вероятностью это Personal Access Token GitHub или другой ключ доступа для CI если такой токен попадет к злоумышленнику то он сможет выполнять действия от имени владельца делать push, менять настройки, переписывать историю репозитория и т.д
+Надо отозвать старый токен. Создать новый с минимальными правами и обновить его в настройках CI/CD. После этого почистить историю Git, чтобы старое значение не осталось в коммитах.
+3. Как хранить
+Использовать GitHub Actions Secrets или другой защищенный раздел CI/CD. Токен должен храниться в зашифрованном виде. В репозиторий его коммитить нельзя. Нужно давать минимальные права и ограничивать срок действия.
+
+Секрет 2
+1. Путь: webgoat-server/privatekey.key
+Строка:
+------BEGIN PRIVATE KEY-----
+- [93mMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCpuOH6AnMc/xdJ [0m
+- [93mFo/8z5j+MTLS1yVHANOgQgAxrIczt9uS9vi9UtE0377fL0TQs5Uo97rSuS6ZJ0ac [0m
+- [93mWKhNEMBFhR3unINs1FC9PzEjI7UDnSacZNg19eCsAn8hdO88TTt5YhIsPZyg0E29 [0m
+- [93mKbzuLiBhSaKFmnmGbh+T4l9ZIy/t1BcOfzFOpvhEMIriRgA3asZpg8CnNosvbO2A [0m
+- [93mlZ6Z7nFOibJ1hrzQQgl2Ev+nf5VRxo34UGGbF+65mCGFmBvOYn+IbsciADT+2/4T [0m
+- [93mgr3aVWD5zwn2NRQI5FKpFePVArpfI85Lxt4eHYzpTWI5dYd++H1BesjoT0ZEM0DP [0m
+- [93mIVfvMN4XAgMBAAECggEAfkD6WXDZEQjx2XzfP8FunikbFZzWLit/QgfW/RzKtr5e [0m
+- [93mqMTv5GZnGl4XLw+KsXXlz8P5RihbcbK15DhPeoSrgwuzaH0lhx+psB4B/5HgZf/R [0m
+- [93maSXbcMiniU2SJOFH1iPdyj4aJq7uhPJv4ffag5PsonKUY662GDpzYx9SroxuawvU [0m
+- [93mkUyHGnXP+QN3obFbHUqVx72GhwbyvKUXU4wMdQob+QRmB1excNCGVoGDfKVVOev6 [0m
+- [93mS38+rDCbHo0gK+4UF4ljlJAhbZwQTvv7LoXJu27kUlAvGObjFY8hfbs9T2BStnmh [0m
+- [93m8D87TMp77gAhymqB+OS6OQrbnO/4HG7L+hgougmfgQKBgQDXYycFMwRoR4qyeKNa [0m
+- [93mmGxQghvsfJdaWO2axS5RikPi5YkpIfYwuUKLL/niRwCslBz20iFihIJS2dWuOLYD [0m
+- [93mOqAXUbUDAMbjYioWoMNDp6D3Y3eqSkmMAU3Ra+qBusQmp0Ffcr0GNL5xnsu1nmO+ [0m
+- [93mjOOBZ7YD5Hry5oIjvfDmBMTumwKBgQDJuXQbGYz/0d12Feg616zyqDUXcLSQWK7F [0m
+- [93mnz1140VPdwfvWHMYWomUats5yMxycuGGDe/DH779rKJHT9U9xGsjlSQvLex0QMy8 [0m
+- [93mddn7vvfLoPzhQx6NAVvobaobY2+MSgJmOedrd2n7p/RGTTSAwdIsghy2BNxdYgZD [0m
+- [93mP4uBMf3oNQKBgQDIS7OQuTXDB6yqdVdru00WvTfcfqx9Xy9ueymsuEiTKuOXdbas [0m
+- [93m7ss8Bpx5WY/97SrWOOjE5fcPtvVoM+LHM/CGXvxW05UhBTugmVWch7k/9ablnHmy [0m
+- [93mkc/dDV8hzx3z2BwJ9/hiWhA0Nvi3Z5jYLcqvn1N7YTEYy1WAiXUJYqwEOwKBgQCM [0m
+- [93mm3D7pr6qXi1Arxp1UXoile6TzSJ+7uG7rDhZ4LWiIzTrtzpaglkdk7IFQBqJt9vM [0m
+- [93m5g/2cT1ecqOWk2XurOeFIOLc4+TKT5Sl1HvBxyXP0QITPgaggI8AntgQSSoqnje3 [0m
+- [93m66qMNOsx16skCZKMIQ2Pqo26rf6wNLBq1XM29ZKm9QKBgGeefgyYgirI1TdjpqVk [0m
+- [93mB5GhVf+D4wozBvJFAwmVBAQFFU1wCJV7aiwT/RL9KP21Ahfil5Ll7OHE80S4yRU2 [0m
+- [93mg5Y5/F3ExwrIUWdnnMgsO3VtmpgBR5ADBbMQ2Wyo8VF9+tENtlFfnRDRFZl09x1H [0m
+-oX44T7mclitCYaOuoRnC2V5H
+------END PRIVATE KEY-----
+
+
+Это RSA приватный ключ. Скорее всего он входит в пару ключей для какого-то сервиса или сервера. Если злоумышленник получит такой ключ, он сможет расшифровывать трафик, подключаться к системам от имени владельца ключа и получать несанкционированный доступ.
+
+Надо сгенерировать новую пару ключей. Заменить публичный ключ во всех местах, где он используется. Удалить старый приватный ключ из проекта и очистить историю Git.
+
+Хранить в системах управления секретами: Vault, AWS Secrets Manager, GitHub Secrets и т.д. В репозиторий приватный ключ попадать не должен.
+
+Секрет 3
+1. Путь: webgoat-integration-tests/src/test/java/org/owasp/webgoat/CSRFTest.java
+Строки:
+"<input type=\"hidden\" name=\"username\" value=\"csrf-USERNAME\"/>\n" +
+            "<input type=\"hidden\" name=\"password\" value=\"password\"/>\n" +
+            "<input type=\"hidden\" name=\"matchingPassword\" value=\"password\"/>\n" +
+
+params.put("username", "csrf-"+getWebgoatUser());
+params.put("password","password");
+
+В коде прямо указаны логин и пароль. Даже если это тестовые данные, так хранить учетные записи нельзя. Если эти значения использовались в реальной среде, злоумышленник сможет войти в аккаунт.
+
+надо почистить историю Git. Сменить пароль во всех местах, где он мог использоваться. Убрать пароль из исходного кода.
+
+Передавать логин и пароль через переменные окружения или секреты CI/CD. Такие значения не должны попадать в коммиты.
+
+Секрет 4
+1. Путь: README.md, Codacy Badge
+Строка:
+[![Codacy Badge](https://api.codacy.com/project/badge/ [93mb69ee3a86e3b4afcaf993f210fccfb1d [0m)](https://www.codacy.com/app/dm/WebGoat)
+
+Похоже на API-ключ для интеграции с Codacy. Такой ключ может давать доступ к данным проекта, метрикам качества кода и настройкам сервиса. Если его получит посторонний человек, он сможет собирать информацию о проекте.
+
+Надо отозвать API-ключ. Удалить его из README и других мест, где он виден. Очистить историю Git.
+Хранить в GitHub Actions Secrets или переменных окружения. Для локальной разработки можно держать ключ в json-файле и добавить его в .gitignore. В README ключ размещать не нужно.
+
+Секрет 5
+1. Путь: webgoat-lessons/insecure-deserialization/src/test/java/org/owasp/webgoat/deserialization/DeserializeTest.java
+Строка:
+String token = " [93mrO0ABXNyADFvcmcuZHVtbXkuaW5zZWN1cmUuZnJhbWV3b3JrLlZ1bG5lcmFibGVUYXNrSG9sZGVyAAAAAAAAAAECAANMABZyZXF1ZXN0ZWRFeGVjdXRpb25UaW1ldAAZTGphdmEvdGltZS9Mb2NhbERhdGVUaW1lO0wACnRhc2tBY3Rpb250ABJMamF2YS9sYW5nL1N0cmluZztMAAh0YXNrTmFtZXEAfgACeHBzcgANamF2YS50aW1lLlNlcpVdhLobIkiyDAAAeHB3DgUAAAfjCR4GIQgMLRSoeHQACmVjaG8gaGVsbG90AAhzYXlIZWxsbw [0m";
+
+Это закодированный Java-объект. При десериализации он может выполнять команды на сервере. Если злоумышленник поймет формат такого объекта, он сможет создать свой payload и отправить его на сервер, который выполнит вредоносный код.
+надо почистить историю Git. Заменить готовую строку на объект, который генерируется во время выполнения. Настроить фильтр десериализации, чтобы разрешались только нужные классы. Обновить зависимости проекта.
+
+Не надо хранить такие объекты в открытом виде в репозитории. Лучше создавать их на лету, хранить в зашифрованном виде или держать только в приватном репозитории.
+
+ВЫВОД
+Главный вывод такой: секреты нельзя хранить в коде, README и конфигах. 
+Для CI/CD надо юзать защищенные секреты и переменные окружения 
+Если секрет уже попал в гит, недостаточно просто удалить его из текущего файла нужно заменить секрет, отозвать старый доступ и очистить историю репозитория.

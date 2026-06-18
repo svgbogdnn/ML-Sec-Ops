@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Лабораторная работа 6</title>
+  <style>
+    body {
+      font-family: Arial, "DejaVu Sans", sans-serif;
+      line-height: 1.55;
+      color: #111827;
+      background: #ffffff;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+    h1, h2, h3 {
+      color: #111827;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      line-height: 1.25;
+      display: block;
+      clear: both;
+    }
+    h1 { font-size: 30px; }
+    h2 { font-size: 24px; }
+    h3 { font-size: 20px; }
+    p { margin: 10px 0; }
+    hr { border: none; border-top: 1px solid #d1d5db; margin: 24px 0; }
+    ul { margin-top: 8px; }
+    code {
+      font-family: Consolas, "DejaVu Sans Mono", monospace;
+      background: #f3f4f6;
+      padding: 2px 5px;
+      border-radius: 4px;
+      color: #111827;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    pre {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin: 12px 0 18px;
+    }
+    pre code {
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      white-space: pre-wrap;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 18px 0;
+      font-size: 14px;
+      table-layout: fixed;
+    }
+    th, td {
+      border: 1px solid #d1d5db;
+      padding: 10px;
+      vertical-align: top;
+      text-align: left;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    th { background: #f3f4f6; font-weight: 700; }
+    tr:nth-child(even) td { background: #fafafa; }
+  </style>
+</head>
+<body>
+<h1>Лабораторная работа 6</h1>
+<h2>Изучение существующих CI/CD с точки зрения доступных инструментов ИБ</h2>
+<hr />
+<h3>1. Используемый инструмент</h3>
+<p>Для проверки репозитория был выбран инструмент <code>truffleHog</code>.</p>
+<p><code>truffleHog</code> — это инструмент для поиска секретов в git-репозиториях. Он анализирует историю изменений, коммиты, ветки и diff-файлы. Инструмент может находить:</p>
+<ul>
+<li>пароли;</li>
+<li>токены доступа;</li>
+<li>приватные ключи;</li>
+<li>секреты приложений;</li>
+<li>строки с высокой энтропией;</li>
+<li>другие чувствительные данные.</li>
+</ul>
+<p>Особенность инструмента заключается в том, что он проверяет не только актуальное состояние файлов, но и историю git. Это важно, потому что даже если секрет был удален из текущей версии файла, он мог остаться в старых коммитах.</p>
+<hr />
+<h3>2. Подготовка окружения</h3>
+<p>Для выполнения лабораторной работы использовался Docker-контейнер с образом Python.</p>
+<p>Сначала был выполнен переход в рабочую папку:</p>
+<pre><code class="language-bash">cd &quot;/mnt/c/Users/vkatr/OneDrive/Рабочий стол/Инфобез/lab6&quot;
+</code></pre>
+<p>Далее был запущен Docker-контейнер:</p>
+<pre><code class="language-bash">docker run -it -p 8080:8080 python:buster /bin/bash
+</code></pre>
+<p>После запуска контейнера была выполнена установка <code>truffleHog</code>:</p>
+<pre><code class="language-bash">pip install truffleHog
+</code></pre>
+<hr />
+<h3>3. Проверяемый репозиторий</h3>
+<p>Для анализа использовался репозиторий:</p>
+<pre><code class="language-bash">https://github.com/OtusTeam/DevSecOps_secret-finding.git
+</code></pre>
+<p>Данный репозиторий был указан в методических материалах как специально подготовленный репозиторий для поиска секретов.</p>
+<hr />
+<h3>4. Запуск сканирования</h3>
+<p>Сканирование репозитория было выполнено командой:</p>
+<pre><code class="language-bash">trufflehog https://github.com/OtusTeam/DevSecOps_secret-finding.git | tee -a log.txt
+</code></pre>
+<p>Команда <code>tee -a log.txt</code> использовалась для того, чтобы одновременно вывести результат проверки в терминал и сохранить его в файл <code>log.txt</code>.</p>
+<p>После выполнения проверки лог был просмотрен командой:</p>
+<pre><code class="language-bash">cat log.txt | more
+</code></pre>
+<p>Так как вывод оказался очень большим, дополнительно были использованы команды фильтрации по ключевым словам:</p>
+<pre><code class="language-bash">grep -n -i -B6 -A8 &quot;GITHUB_TOKEN:&quot; log.txt &gt; useful.txt
+grep -n -i -B6 -A8 &quot;PASSWORD=&quot; log.txt &gt;&gt; useful.txt
+grep -n -i -B6 -A8 &quot;APP_SECRET&quot; log.txt &gt;&gt; useful.txt
+grep -n -i -B6 -A15 &quot;BEGIN PRIVATE KEY&quot; log.txt &gt;&gt; useful.txt
+grep -n -i -B6 -A15 &quot;BEGIN RSA PRIVATE KEY&quot; log.txt &gt;&gt; useful.txt
+</code></pre>
+<p>Затем был просмотрен сокращенный файл с полезными находками:</p>
+<pre><code class="language-bash">cat useful.txt | more
+</code></pre>
+<hr />
+<h3>5. Найденные секреты</h3>
+<table>
+<thead>
+<tr>
+  <th>№</th>
+  <th>Расположение секрета</th>
+  <th>Найденное значение</th>
+  <th>Почему это является секретом</th>
+  <th>Правильный способ хранения</th>
+  <th>Рекомендации по устранению</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>1</td>
+  <td><code>.github/workflows/release.yml</code>, строка около 72</td>
+  <td><code>GITHUB_TOKEN: cee3257f0e59d1d4975a35429cffc3d8b5fabe15ca2e9d47243cbc446d4894a5</code></td>
+  <td>Это токен GitHub, записанный прямо в CI/CD workflow. Такой токен может использоваться для доступа к GitHub API, репозиторию, публикации релизов или выполнения действий от имени владельца токена. Если токен активен, злоумышленник может получить несанкционированный доступ к репозиторию или процессу CI/CD.</td>
+  <td>Хранить токен в GitHub Actions Secrets и использовать обращение вида <code>${{ secrets.GITHUB_TOKEN }}</code> или <code>${{ secrets.RELEASE_TOKEN }}</code>.</td>
+  <td>Удалить токен из файла workflow. Отозвать найденный токен в настройках GitHub. Выпустить новый токен с минимально необходимыми правами. Добавить новый токен в GitHub Actions Secrets. В файле <code>.github/workflows/release.yml</code> заменить прямое значение на <code>${{ secrets.GITHUB_TOKEN }}</code> или <code>${{ secrets.RELEASE_TOKEN }}</code>.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>webgoat-server/privatekey.key</code>, строка 1</td>
+  <td><code>-----BEGIN PRIVATE KEY-----</code></td>
+  <td>Это приватный криптографический ключ. Приватные ключи не должны храниться в репозитории, так как они могут использоваться для аутентификации, подписи, TLS или других криптографических операций. При утечке такого ключа злоумышленник может использовать его как доверенный ключ.</td>
+  <td>Хранить приватные ключи в защищенном хранилище секретов: HashiCorp Vault, Kubernetes Secrets, Docker Secrets или CI/CD Secrets.</td>
+  <td>Удалить файл <code>privatekey.key</code> из репозитория. Считать найденный ключ скомпрометированным. Перевыпустить новый приватный ключ и сертификат, если он использовался. Добавить <code>*.key</code>, <code>*.pem</code>, <code>*.p12</code>, <code>*.jks</code> в <code>.gitignore</code>. Удалить старый ключ из истории git с помощью BFG Repo-Cleaner или <code>git filter-repo</code>.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>docker/.env</code>, строка 2</td>
+  <td><code>APP_SECRET=666666666666666</code></td>
+  <td>Это секрет приложения. Такие значения обычно используются для подписи cookies, JWT, сессий или внутренних токенов. Если злоумышленник получит этот секрет, он потенциально сможет подделывать служебные данные приложения.</td>
+  <td>Хранить значение в переменных окружения или secret manager. В репозитории оставить только файл <code>.env.example</code> с шаблонными значениями без реальных секретов.</td>
+  <td>Удалить реальное значение <code>APP_SECRET</code> из файла <code>.env</code>. Сгенерировать новый секрет приложения. Добавить <code>.env</code> в <code>.gitignore</code>. Создать <code>.env.example</code>, где вместо реального значения будет указано <code>APP_SECRET=change_me</code>. Реальное значение передавать через переменные окружения при запуске приложения или через secrets CI/CD.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>docker/.env</code>, строка 3</td>
+  <td><code>USER=alex675</code></td>
+  <td>Сам по себе логин не всегда является секретом, но в данном случае он находится рядом с паролем и образует часть учетной пары. Это упрощает злоумышленнику использование найденных учетных данных.</td>
+  <td>Не хранить реальные учетные данные в <code>.env</code> внутри репозитория. Использовать переменные окружения CI/CD или secret-хранилище. В примере оставить только шаблонное значение.</td>
+  <td>Удалить реальный логин из <code>.env</code>. Заменить его на переменную окружения, например <code>USER=${APP_USER}</code>. В <code>.env.example</code> указать шаблон <code>USER=change_me</code>. Проверить, где используется данная учетная запись, и при необходимости изменить логин или ограничить права доступа.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>docker/.env</code>, строка 4</td>
+  <td><code>PASSWORD=#!qerge34t423sdfvdsfgeR</code></td>
+  <td>Это пароль в открытом виде. Пароль может давать доступ к учетной записи, базе данных, сервису или приложению. Его хранение в git является критичной ошибкой, так как даже после удаления из файла пароль может остаться в истории коммитов.</td>
+  <td>Перенести пароль в secret-хранилище. Найденный пароль необходимо считать скомпрометированным, заменить на новый, а файл <code>.env</code> добавить в <code>.gitignore</code>.</td>
+  <td>Немедленно заменить найденный пароль. Удалить пароль из <code>.env</code>. Добавить <code>.env</code> в <code>.gitignore</code>. В <code>.env.example</code> оставить только <code>PASSWORD=change_me</code>. Проверить историю git и удалить старое значение из коммитов с помощью BFG Repo-Cleaner или <code>git filter-repo</code>. В дальнейшем хранить пароль только в GitHub Actions Secrets, GitLab CI/CD Variables, Vault, Docker Secrets или Kubernetes Secrets.</td>
+</tr>
+</tbody>
+</table>
+
+</body>
+</html>

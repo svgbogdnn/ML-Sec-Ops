@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>236790580</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<h1 id="лр-7.-инструмент-sast-анализа-и-проведение-sast-тестирования">ЛР
+7. Инструмент SAST-анализа и проведение SAST-тестирования</h1>
+<p><strong>Приложение:</strong> Telegram 12.7.3</p>
+<p><strong>Общий рейтинг безопасности:</strong> 44/100</p>
+<h2 id="опасные-разрешения-приложения">1. Опасные разрешения
+приложения</h2>
+<p><strong>Разрешения геолокации (ACCESS_FINE_LOCATION,
+ACCESS_COARSE_LOCATION, ACCESS_BACKGROUND_LOCATION)</strong></p>
+<p><strong>Описание проблемы:</strong> Приложение запрашивает доступ к
+точной и приблизительной геолокации, а также к геолокации в фоновом
+режиме. Это создает риски несанкционированного отслеживания
+местоположения пользователя и повышенного расхода заряда батареи</p>
+<p><strong>План митигации:</strong> Реализовать запрос разрешений
+геолокации только в момент использования соответствующих функций
+(runtime permissions) Добавить понятное обоснование для пользователя,
+зачем приложению нужен доступ к геолокации Реализовать возможность
+работы приложения без предоставления доступа к геолокации Добавить
+индикатор активности геолокации в интерфейсе приложения</p>
+<p>Приоритет: Высокий</p>
+<p><strong>Разрешения доступа к контактам (READ_CONTACTS,
+WRITE_CONTACTS, GET_ACCOUNTS)</strong></p>
+<p><strong>Описание проблемы:</strong> Приложение имеет полный доступ к
+чтению и записи контактов пользователя, а также к списку аккаунтов на
+устройстве. При компрометации приложения злоумышленник может получить
+доступ ко всей адресной книге пользователя</p>
+<p><strong>План митигации:</strong> Реализовать синхронизацию контактов
+только по явному запросу пользователя Добавить настройку для полного
+отключения синхронизации контактов Реализовать локальное шифрование базы
+контактов Добавить информацию о использовании контактов в политику
+приватности</p>
+<p>Приоритет: Высокий</p>
+<p><strong>Разрешения записи аудио и доступа к камере (RECORD_AUDIO,
+CAMERA)</strong></p>
+<p><strong>Описание проблемы:</strong> Приложение может записывать аудио
+и делать фотографии/видео без ведома пользователя. Это создает риски
+несанкционированной записи приватных разговоров</p>
+<p><strong>План митигации:</strong> Реализовать индикатор активности
+микрофона и камеры в системной панели уведомлений Запрашивать разрешения
+только при активации функций голосовых сообщений или видеозвонков
+Автоматически очищать кэш записей после их отправки или отмены</p>
+<p>Приоритет: Высокий</p>
+<p><strong>Разрешение чтения журнала вызовов
+(READ_CALL_LOG)</strong></p>
+<p><strong>Описание проблемы:</strong> Приложение может читать журнал
+телефонных звонков пользователя, что является чувствительной
+информацией</p>
+<p><strong>План митигации:</strong> Пересмотреть необходимость данного
+разрешения для функционала мессенджера Если разрешение не критично -
+удалить из манифеста Если необходимо - запросить только при
+использовании конкретной функции и объяснить пользователю причину</p>
+<p>Приоритет: Средний</p>
+<p><strong>Разрешение доступа к хранилищу (READ_EXTERNAL_STORAGE,
+WRITE_EXTERNAL_STORAGE, READ_MEDIA_IMAGES, READ_MEDIA_VIDEO,
+READ_MEDIA_AUDIO)</strong></p>
+<p><strong>Описание проблемы:</strong> Приложение имеет широкий доступ к
+файлам на устройстве, включая изображения, видео и аудио файлы</p>
+<p><strong>План митигации:</strong> Использовать Scoped Storage для
+Android 10+ вместо общих разрешений Запрашивать доступ к конкретным
+файлам через системный файловый picker Ограничить доступ только к
+необходимым типам файлов</p>
+<p>Приоритет: Высокий</p>
+<h1 id="уязвимости-manifest-analysis">УЯЗВИМОСТИ MANIFEST ANALYSIS</h1>
+<p><strong>Включен cleartext traffic
+(android:usesCleartextTraffic=true)</strong></p>
+<p><strong>Описание проблемы:</strong> Приложение разрешает
+использование незашифрованного HTTP-трафика, что делает возможным
+перехват данных злоумышленником через MITM-атаку.</p>
+<p><strong>План митигации:</strong> Установить
+android:usesCleartextTraffic=“false” в AndroidManifest.xml Настроить
+network_security_config.xml с разрешением HTTPS только для доверенных
+доменов Реализовать Certificate Pinning для критически важных API
+endpoints Обновить все API endpoints на использование HTTPS</p>
+<p>Приоритет: КРИТИЧЕСКИЙ</p>
+<p><strong>Поддержка устаревших версий Android (minSdk=23)</strong></p>
+<p><strong>Описание проблемы:</strong> Приложение может устанавливаться
+на Android 6.0, который больше не получает обновлений безопасности от
+Google</p>
+<p><strong>План митигации:</strong> Поднять minSdkVersion до 29 (Android
+10) для получения современных механизмов безопасности Уведомить
+пользователей о необходимости обновления ОС Прекратить поддержку
+устаревших версий Android</p>
+<p>Приоритет: Высокий</p>
+<p><strong>Экспортированные компоненты без защиты (exported
+components)</strong></p>
+<p><strong>Описание проблемы:</strong> Многие Activities, Services,
+Broadcast Receivers и Content Providers экспортированы и доступны другим
+приложениям на устройстве без защиты</p>
+<p><strong>План митигации:</strong> Добавить android:exported=“false”
+для всех компонентов, не предназначенных для внешнего использования Для
+публичных компонентов добавить android:permission с кастомными
+разрешениями Реализовать валидацию всех входящих Intent данных Провести
+аудит всех exported компонентов</p>
+<p>Приоритет: Высокий</p>
+<p><strong>Отсутствует verification App Links
+(assetlinks.json)</strong></p>
+<p><strong>Описание проблемы:</strong> Для доменов telegram.me,
+telegram.dog, t.me отсутствует файл assetlinks.json для верификации App
+Links. Это позволяет злоумышленникам перехватывать URL и проводить
+фишинговые атаки</p>
+<p><strong>План митигации:</strong> Разместить файл
+.well-known/assetlinks.json на всех доменах приложения Добавить
+android:autoVerify=“true” в intent-filter Activities Протестировать
+верификацию ссылок</p>
+<p>Приоритет: Высокий</p>
+<h1 id="уязвимости-сетевой-безопасности">УЯЗВИМОСТИ СЕТЕВОЙ
+БЕЗОПАСНОСТИ</h1>
+<p><strong>Отсутствие защиты сетевого трафика</strong></p>
+<p><strong>Описание проблемы:</strong> Отсутствует полноценная
+конфигурация network security для защиты сетевого трафика</p>
+<p><strong>План митигации:</strong> Настроить
+network_security_config.xml с принудительным HTTPS Включить HSTS (HTTP
+Strict Transport Security) Реализовать Certificate Transparency
+Настроить регулярную ротацию SSL сертификатов</p>
+<p>Приоритет: Высокий</p>
+<h1 id="уязвимости-анализа-кода">УЯЗВИМОСТИ АНАЛИЗА КОДА</h1>
+<p><strong>Небезопасный генератор случайных чисел</strong></p>
+<p><strong>Описание проблемы:</strong> В коде обнаружено использование
+java.util.Random вместо криптографически стойкого генератора. Это может
+привести к предсказуемости генерируемых значений (токенов, ключей)</p>
+<p><strong>План митигации:</strong> Заменить java.util.Random на
+java.security.SecureRandom во всех местах генерации криптографических
+значений Провести аудит всех мест генерации токенов, сессионных
+идентификаторов и ключей Добавить статический анализ в CI/CD pipeline
+для предотвращения подобных проблем</p>
+<p>Приоритет: Средний</p>
+<p><strong>Логирование чувствительной информации</strong></p>
+<p><strong>Описание проблемы:</strong> В коде присутствует логирование
+информации, которое может содержать чувствительные данные</p>
+<p><strong>План митигации:</strong> Отключить логирование в production
+сборках Использовать ProGuard/R8 для удаления отладочного кода
+Реализовать безопасное логирование без PII (Personally Identifiable
+Information) Провести ревью всех логов на предмет чувствительных
+данных</p>
+<p>Приоритет: Средний</p>
+</body>
+</html>

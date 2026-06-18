@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 26.2.3.2 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changed" content="00:00:00"/>
+	<style type="text/css">
+		@page { size: 8.27in 11.69in; margin: 0.79in }
+		p { margin-bottom: 0.1in; line-height: 115%; background: transparent }
+		h2 { margin-top: 0.14in; margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h2.western { font-weight: bold; font-size: 16pt; font-family: "Liberation Sans", sans-serif }
+		h2.cjk { font-weight: bold; font-size: 16pt; font-family: "AR PL SungtiL GB" }
+		h2.ctl { font-weight: bold; font-family: "Noto Sans Devanagari"; font-size: 16pt }
+		pre { font-size: 10pt; font-family: "Liberation Mono", monospace; background: transparent }
+		h3 { margin-top: 0.1in; margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h3.western { font-weight: bold; font-size: 14pt; font-family: "Liberation Sans", sans-serif }
+		h3.cjk { font-weight: bold; font-size: 14pt; font-family: "AR PL SungtiL GB" }
+		h3.ctl { font-weight: bold; font-family: "Noto Sans Devanagari"; font-size: 14pt }
+	</style>
+</head>
+<body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><h2 class="western">
+SAST анализ мобильного приложения через
+MobSF</h2>
+<p>В этой работе развернул MobSF и проверил
+через него apk файл мобильного приложения.</p>
+<p>Для проверки я взял приложение:&nbsp;<font face="Liberation Mono, monospace">Clash
+of Clans_18.367.1_APKPure.apk</font></p>
+<p>Файл был скачан с
+APKPure:&nbsp;<font face="Liberation Mono, monospace">https://apkpure.net/clash-of-clans-android-app/com.supercell.clashofclans/download</font></p>
+<p>MobSF запускал через Docker</p>
+<h2 class="western">Запуск MobSF</h2>
+<p>MobSF был запущен в Docker. После запуска я
+открыл веб-интерфейс MobSF в браузере и
+загрузил туда APK-файл.</p>
+<p>После загрузки MobSF сам провёл статический
+анализ приложения и показал отчёт.</p>
+<h2 class="western">Общий результат</h2>
+<p>По результатам проверки MobSF показал:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">Security Score: 38/100</pre><p>
+Также в отчёте были такие результаты:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">HIGH: 4<br/>
+WARNING: 6<br/>
+INFO: 1</pre><p>
+Ещё MobSF нашёл 5 privacy trackers:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">AppsFlyer<br/>
+Google Firebase Analytics<br/>
+HelpShift<br/>
+Sentry<br/>
+Snowplow</pre><h2 class="western">
+Найденные проблемы</h2>
+<h3 class="western">1. Dangerous permissions</h3>
+<p>MobSF показал 2 dangerous permission:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">android.permission.POST_NOTIFICATIONS<br/>
+android.permission.CAMERA</pre><p>
+<font face="Liberation Mono, monospace">POST_NOTIFICATIONS</font> -
+это разрешение на уведомления. Для игры
+это нормально, но всё равно такое
+разрешение должно быть понятно
+пользователю.&nbsp;<font face="Liberation Mono, monospace">CAMERA</font>
+- это уже более чувствительное разрешение,
+потому что приложение получает доступ
+к камере телефона. Даже если оно нужно
+для какой-то функции, его лучше запрашивать
+только тогда, когда пользователь реально
+использует эту функцию.</p>
+<p>Проверить, действительно ли приложению
+нужна камера. Если не нужна — убрать
+разрешение из манифеста. Если нужна -
+запрашивать его только при использовании
+функции.</p>
+<h3 class="western">2. Cleartext traffic</h3>
+<p>В отчёте MobSF было найдено:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">Clear text traffic is Enabled For App [android:usesCleartextTraffic=true]</pre><p>
+Это значит, что приложение разрешает
+незашифрованный трафик.</p>
+<p>Если приложение использует HTTP вместо
+HTTPS, данные могут быть перехвачены или
+изменены в сети.</p>
+<p>Отключить cleartext traffic:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">android:usesCleartextTraffic=&quot;false&quot;</pre><p>
+Также нужно проверить network security config и
+использовать только HTTPS.</p>
+<h3 class="western">3. Старая версия Android</h3>
+<p>MobSF показал:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">App can be installed on a vulnerable unpatched Android version 7.0, [minSdk=24]</pre><p>
+То есть приложение можно установить на
+Android 7.0. Такая версия Android уже старая и
+может не получать обновления
+безопасности.&nbsp;На старых версиях
+Android могут быть уязвимости, которые уже
+не исправляются.&nbsp;По возможности
+поднять <font face="Liberation Mono, monospace">minSdkVersion</font>
+на более новую версию Android.</p>
+<h3 class="western">4. Алгоритм подписи SHA1</h3>
+<p>MobSF также нашёл проблему:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">Certificate algorithm vulnerable to hash collision</pre><p>
+В отчёте указано, что используется:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">SHA1withRSA</pre><p>
+SHA-1 считается устаревшим алгоритмом.
+Сейчас его лучше не использовать.&nbsp;Проверить
+подпись приложения и использовать более
+современный алгоритм подписи.</p>
+<h3 class="western">5. Privacy trackers</h3>
+<p>MobSF нашёл несколько privacy trackers:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">AppsFlyer<br/>
+Google Firebase Analytics<br/>
+HelpShift<br/>
+Sentry<br/>
+Snowplow</pre><p>
+Для игры это может быть нормально, потому
+что используются аналитика, ошибки и
+реклама. Но всё равно это связано со
+сбором данных пользователя.</p>
+<p>Проверить, какие SDK реально нужны.
+Ненужные удалить, остальные обновить
+до актуальных версий. Также нужно, чтобы
+в политике конфиденциальности было
+понятно описано, какие данные собираются.</p>
+<h2 class="western">Code Analysis</h2>
+<p>В разделе Code Analysis для этого APK MobSF не
+показал high findings.&nbsp;То есть основные
+проблемы были не в коде, а в настройках
+приложения, разрешениях, сетевой
+безопасности и подписи.</p>
+<h2 class="western">План митигации</h2>
+<ol>
+	<li><p>Отключить cleartext traffic и использовать
+	только HTTPS.</p></li>
+	<li><p>Проверить dangerous permissions, особенно
+	<font face="Liberation Mono, monospace">CAMERA</font>.</p></li>
+	<li><p>Если камера не нужна — удалить
+	разрешение.</p></li>
+	<li><p>Поднять минимальную версию Android,
+	если это возможно.</p></li>
+	<li><p>Обновить алгоритм подписи, не
+	использовать SHA-1.</p></li>
+	<li><p>Проверить сторонние SDK и privacy
+	trackers.</p></li>
+	<li><p>Удалить лишние SDK и обновить нужные.</p></li>
+	<li><p>Повторно просканировать APK в MobSF
+	после исправлений.</p></li>
+</ol>
+<h2 class="western">Вывод</h2>
+<p>В ходе работы развернул MobSF через
+Docker и проверил APK приложения Clash of Clans.</p>
+<p>MobSF показал Security Score 38/100. В приложении
+были найдены проблемы: dangerous permissions,
+разрешённый cleartext traffic, поддержка старой
+версии Android, устаревший алгоритм
+SHA1withRSA и privacy trackers.</p>
+<p>Главные рекомендации: отключить
+HTTP-трафик, использовать HTTPS, пересмотреть
+разрешения, обновить подпись приложения
+и проверить сторонние SDK.</p>
+<p>К работе также нужно приложить
+PDF-отчёт, который был выгружен из MobSF.</p>
+<p><br/>
+<br/>
+
+</p>
+</body>
+</html>

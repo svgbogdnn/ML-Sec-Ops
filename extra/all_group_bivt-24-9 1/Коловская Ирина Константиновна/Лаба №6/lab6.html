@@ -1,0 +1,227 @@
+<h1 id="-1-">Секрет #1 - Захардкоженный пароль приложения [КРИТИЧЕСКИЙ]</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hash коммита</td>
+<td><code>e8d086ac9b62efebc9937c5b41659b454f2973c3</code></td>
+</tr>
+<tr>
+<td>Дата/Commit</td>
+<td><code>2019-09-20</code> \</td>
+<td><code>&quot;All successful&quot;</code></td>
+</tr>
+<tr>
+<td>Файл</td>
+<td><code>webgoat-lessons/challenge/src/main/java/org/owasp/webgoat/plugin/SolutionConstants.java</code></td>
+</tr>
+<tr>
+<td>Строка/контекст</td>
+<td>Строки 12–14 (интерфейс <code>SolutionConstants</code>)</td>
+</tr>
+<tr>
+<td>Найденное значение</td>
+<td><code>String PASSWORD = &quot;!!webgoat_admin_1234!!&quot;;</code><br><code>String PASSWORD_TOM = &quot;thisisasecretfortomonly&quot;;</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="-">Почему это секрет?</h2>
+<p>Пароли администратора и пользователя Tom хранятся как Java-константы прямо в исходном коде. Файл попал в репозиторий и навсегда остался в истории Git. Любой, у кого был доступ к репозиторию (даже временный), мог извлечь пароли.  </p>
+<p>Комментарий в коде:</p>
+<pre><code class="lang-java"><span class="hljs-comment">//TODO should be random generated when starting the server</span>
+</code></pre>
+<p>Разработчики сами понимали проблему, но так и не исправили.</p>
+<h2 id="-">Правильный способ хранения</h2>
+<p>Пароли не должны присутствовать в коде.</p>
+<p>Можно:</p>
+<ul>
+<li>генерировать при старте приложения (SecureRandom)</li>
+<li>передавать через переменные окружения (System.getenv)</li>
+<li>хранить в HashiCorp Vault/AWS Secrets Manager</li>
+</ul>
+<p>Конфиг с реальными значениями в <code>.gitignore</code></p>
+<h1 id="-2-jwt-hmac-">Секрет #2 - JWT-токен со слабым HMAC-ключом [ВЫСОКИЙ]</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hash коммита</td>
+<td><code>e8d086ac9b62efebc9937c5b41659b454f2973c3</code></td>
+</tr>
+<tr>
+<td>Дата/Commit</td>
+<td><code>2019-09-20</code> \</td>
+<td><code>&quot;All successful&quot;</code></td>
+</tr>
+<tr>
+<td>Файл</td>
+<td><code>webgoat-lessons/jwt/src/main/resources/lessonPlans/en/JWT_weak_keys</code></td>
+</tr>
+<tr>
+<td>Строка/контекст</td>
+<td>Добавлен блок с токеном в diff</td>
+</tr>
+<tr>
+<td>Найденное значение</td>
+<td><code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="-">Почему это секрет?</h2>
+<p>Реальный подписанный JWT-токен для пользователя Tom опубликован в учебном файле.</p>
+<p>Payload содержит:</p>
+<ul>
+<li>username: Tom</li>
+<li>Role: Manager/Project Administrator</li>
+</ul>
+<p>Ключ подписи настолько слабый, что взламывается офлайн-атакой по словарю.</p>
+<p>Например:</p>
+<ul>
+<li>hashcat</li>
+<li>jwt_tool</li>
+</ul>
+<p>Получив ключ, злоумышленник генерирует произвольный токен с любой ролью.</p>
+<h2 id="-">Правильный способ хранения</h2>
+<p>Использовать только фиктивные невалидные токены с пометкой: EXAMPLE/PLACEHOLDER</p>
+<h1 id="-3-api-ci-cd-">Секрет #3 - API-ключ CI/CD сервиса [КРИТИЧЕСКИЙ]</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hash коммита</td>
+<td><code>5dd6b3190592fca16b6d2ea5a5c7f5485be04ebf</code></td>
+</tr>
+<tr>
+<td>Дата/Commit</td>
+<td><code>2019-11-17</code> \</td>
+<td><code>&quot;Adjust lesson template (#704)&quot;</code></td>
+</tr>
+<tr>
+<td>Файл</td>
+<td><code>.travis.yml</code></td>
+</tr>
+<tr>
+<td>Строка/контекст</td>
+<td>Блок <code>deploy.api_key.secure</code> и <code>env.global</code></td>
+</tr>
+<tr>
+<td>Найденное значение</td>
+<td>Travis API key, Docker login/password, Slack token</td>
+</tr>
+</tbody>
+</table>
+<h2 id="-">Почему это секрет?</h2>
+<p>В файле .travis.yml находятся три вида зашифрованных секретов:</p>
+<ul>
+<li>GitHub Release API key</li>
+<li>логин и пароль Docker Hub</li>
+<li>токен Slack для уведомлений</li>
+</ul>
+<p>Хотя они зашифрованы ключом Travis CI, сам факт хранения в репозитории опасен. При компрометации Travis-аккаунта или утечке RSA-ключа Travis все три секрета будут раскрыты одновременно.  </p>
+<h2 id="-">Правильный способ хранения</h2>
+<p>Использовать переменные окружения, настроенные в UI Travis CI: Settings → Environment Variables  </p>
+<p>Для GitHub Actions - использовать OIDC-интеграцию без долгосрочных токенов.<br>Для Docker Hub - токены с минимальным scope вместо пароля аккаунта.  </p>
+<h1 id="-4-csrf-">Секрет #4 - Статический CSRF-токен [ВЫСОКИЙ]</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hash коммита</td>
+<td><code>1a83e2825e2b1e040e2a2042677f03727f654150</code></td>
+</tr>
+<tr>
+<td>Дата/Commit</td>
+<td><code>2019-11-03</code> \</td>
+<td><code>&quot;Code style (#696)&quot;</code></td>
+</tr>
+<tr>
+<td>Файл</td>
+<td><code>webgoat-lessons/csrf/src/main/java/org/owasp/webgoat/csrf/ForgedReviews.java</code></td>
+</tr>
+<tr>
+<td>Строка/контекст</td>
+<td>Строка ~52</td>
+</tr>
+<tr>
+<td>Найденное значение</td>
+<td><code>private static final String weakAntiCSRF = &quot;2aa14227b9a13d0bede0388a7fba9aa9&quot;;</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="-">Почему это секрет?</h2>
+<p>MD5-строка используется как токен защиты от CSRF-атак, но она статическая и одинаковая для всех пользователей и сессий. Злоумышленник, один раз узнав значение из кода или перехватив запрос, может подделывать любые формы от имени любого пользователя.</p>
+<h2 id="-">Правильный способ хранения</h2>
+<p>Anti-CSRF токен должен:</p>
+<ul>
+<li>быть уникальным для каждой сессии</li>
+<li>генерироваться криптографически стойким генератором (SecureRandom)</li>
+<li>проверяться на сервере</li>
+</ul>
+<p>Следует использовать встроенные механизмы фреймворка: Spring Security CSRF protection  </p>
+<h1 id="-5-">Секрет #5 - Захардкоженный пароль модуля сброса пароля [ВЫСОКИЙ]</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hash коммита</td>
+<td><code>1a83e2825e2b1e040e2a2042677f03727f654150</code></td>
+</tr>
+<tr>
+<td>Дата/Commit</td>
+<td><code>2019-11-03</code> \</td>
+<td><code>&quot;Code style (#696)&quot;</code></td>
+</tr>
+<tr>
+<td>Файл</td>
+<td><code>webgoat-lessons/password-reset/src/main/java/org/owasp/webgoat/password_reset/ResetLinkAssignment.java</code></td>
+</tr>
+<tr>
+<td>Строка/контекст</td>
+<td>Строка ~47</td>
+</tr>
+<tr>
+<td>Найденное значение</td>
+<td><code>static final String PASSWORD_TOM_9 = &quot;somethingVeryRandomWhichNoOneWillEverTypeInAsPasswordForTom&quot;;</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="-">Почему это секрет?</h2>
+<p>Пароль пользователя Tom захардкожен прямо в Java-классе, реализующем логику сброса пароля.
+Тип секрета: credential внутри security-логики восстановления доступа.</p>
+<p>Дополнительная опасность:</p>
+<pre><code class="lang-java"><span class="hljs-attr">TOM_EMAIL</span> = <span class="hljs-string">"tom@webgoat-cloud.org"</span>
+</code></pre>
+<p>Email и пароль раскрываются вместе.</p>
+<h2 id="-">Правильный способ хранения</h2>
+<p>Для модуля сброса пароля необходимо:</p>
+<ul>
+<li>генерировать одноразовый токен (UUID, SecureRandom)</li>
+<li>хранить только его хеш (bcrypt, Argon2)</li>
+<li>задавать TTL и флаг использования</li>
+</ul>
+<p>Текущий пароль пользователя при сбросе не нужен</p>

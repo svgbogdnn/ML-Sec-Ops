@@ -1,0 +1,44 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h4 id="-1-github-token">Секрет 1 - GitHub Token</h4>
+<p><strong>Расположение:</strong> .github/workflows/release.yml, коммит 34f1faad (&quot;your commit&quot;)</p>
+<p><strong>Найденное</strong> значение:
+  GITHUB_TOKEN: cee3257f0e59d1d4975a35429cffc3d8b5fabe15ca2e9d47243cbc446d4894a5</p>
+<p><strong>Почему секрет:</strong> GitHub Token даёт programmatic-доступ к репозиторию от имени владельца.</p>
+<p>Правильный <strong>способ</strong> <strong>хранения:</strong> GitHub Actions Secrets - переменная должна быть ${{ secrets.GITHUB_TOKEN }}</p>
+<h4 id="-2-r-sa-private-key-">Секрет 2 - R<strong>SA</strong> <strong>Private</strong> <strong>Key</strong></h4>
+<p><strong>Расположение:</strong> webgoat-server/privatekey.key, коммит 34f1faad</p>
+<p><strong>Найденное</strong> <strong>значение:</strong>
+  -----BEGIN PRIVATE KEY-----
+  MIIEvgIBADANBgkqhkiG9w0BAQEFAASC...</p>
+<p><strong>Почему</strong> <strong>секрет:</strong> Закрытый RSA-ключ. Если сертификат действующий, атакующий может выдавать себя за легитимный сервер или расшифровывать TLS-трафик.</p>
+<p><strong>Правильный</strong> <strong>способ</strong> <strong>хранения:</strong> Приватные ключи никогда не кладут в репозиторий. Используют Vault или что то другое.</p>
+<h4 id="-3-csr-certificate-signing-request-">Секрет 3 - <strong>CSR</strong> <strong>(Certificate</strong> <strong>Signing</strong> <strong>Request)</strong></h4>
+<p><strong>Расположение:</strong> webgoat-server/certificatesigningrequest.csr, коммит 34f1faad</p>
+<p><strong>Найденное</strong> <strong>значение:</strong>
+  -----BEGIN CERTIFICATE REQUEST-----
+  MIIC4zCCAcsCAQAwdDELMAkGA1UEBhMCNDQ...</p>
+<p><strong>Почему</strong> <strong>секрет:</strong> CSR содержит публичный ключ и данные организации. Сам по себе менее критичен, чем приватный ключ, но его наличие в репозитории вместе с privatekey.key подтверждает, что пара ключей скомпрометирована. Утечка CSR даёт атакующему информацию о структуре PKI организации.</p>
+<p><strong>Правильный</strong> <strong>способ</strong> <strong>хранения:</strong> CSR генерируют, отправляют в CA и немедленно удаляют из рабочего каталога. В репозитории не хранят никогда.</p>
+<h4 id="-4-aws-access-key-id-secret-"><strong>Секрет</strong> <strong>4</strong> <strong>-</strong> <strong>AWS</strong> <strong>Access</strong> <strong>Key</strong> <strong>ID</strong> <strong>+</strong> <strong>Secret</strong></h4>
+<p><strong>Расположение:</strong> .travis.yml (история коммитов)</p>
+<p><strong>Найденные</strong> <strong>значения:</strong>
+  access_key_id: AKIAJQLKPGHXRH2AH5QA
+  secret_access_key:
+    secure: 45+SwWlPFujD9FOOFLA9Lz0CaePVrn/SEsAhAn0Ve9sYpI0Vsij...</p>
+<p><strong>Почему</strong> <strong>секрет:</strong> AKIA-префикс - стандартный формат AWS IAM Access Key ID. Это реальные учётные данные для доступа к AWS. Даже если secret_access_key зашифрован через Travis CI, access_key_id уже публичен и достаточен для идентификации аккаунта. AWS автоматически уведомляет об утечках таких ключей через партнёрство с GitHub.</p>
+<p><strong>Правильный</strong> <strong>способ</strong> <strong>хранения:</strong> AWS Secrets Manager / Parameter Store</p>
+<h4 id="-5-jwt-payload-"><strong>Секрет 5 - JWT токен с закодированным payload</strong></h4>
+<p><strong>Расположение:</strong> webgoat-lessons/jwt/src/test/java/org/owasp/webgoat/jwt/JWTFinalEndpointTest.java, коммит cda852f4</p>
+<p><strong>Найденное значение:</strong>
+TOKEN_JERRY =&quot;eyJraWQiOiJ3ZWJnb2F0X2tleSIsImFsZyI6IkhTNTEyIn0.eyJhdWQiOiJ3ZWJnb2F0Lm9yZyIsImVtYWlsIjoiamVycnlAd2ViZ29hdC5jb20iLCJ1c2VybmFtZSI6IkplcnJ5In0.xBc5FFwaOcuxjdr_VJ16n8Jb7vScuaZulNTl66F2MWF1aBe47QsUosvbjWGORNcMPiPNwnMu1Yb0WZVNrp2ZXA&quot;</p>
+<p><strong>Почему секрет:</strong> Это реальный подписанный JWT токен, закоммиченный в тестовый код.</p>
+<p><strong>Правильный способ хранения:</strong> В тестах JWT токены должны генерироваться динамически</p>
+<h4 id="-">Дополнительно</h4>
+<p><strong>BFG Repo-Cleaner</strong> - это утилита для удаления чувствительных данных из истории репозитория. Работает быстрее стандартного git filter-branch, потому что заточена под вырезать файлы или строки из всех коммитов сразу.</p>
+<p>Нужна она, когда секрет уже закоммичен. Просто удалить файл и сделать новый коммит не поможет: данные останутся в истории и будут доступны через git log или git show. BFG переписывает историю, стирая нужные данные из всех коммитов ретроспективно.</p>
+<p>Минус в том, что после такой чистки хэши всех затронутых коммитов меняются, и приходится делать git push --force. Это ломает историю у всех, кто уже склонировал репозиторий.</p>
+<p>Что касается автоматизации — truffleHog и похожие инструменты (gitleaks, detect-secrets) можно запускать прямо в CI/CD пайплайне или через pre-commit хуки. Тогда каждый коммит или pull request будет автоматически проверяться на наличие секретов ещё до того, как код попадёт в основную ветку.</p>
+<p>Это правильный подход, потому что стоимость ошибки до мержа мала: просто не пропускаем коммит. А стоимость после - отзыв токена, чистка истории через BFG, уведомление команды, потенциальный инцидент безопасности.</p>
+</body></html>

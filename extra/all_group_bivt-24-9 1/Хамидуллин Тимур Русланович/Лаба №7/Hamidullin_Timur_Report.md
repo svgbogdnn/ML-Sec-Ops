@@ -1,0 +1,107 @@
+# Лабораторная работа №7
+
+Студент: Хамидуллин Тимур Русланович
+
+## Ход выполнения
+
+В рамках лабораторной работы был развернут инструмент статического анализа мобильных приложений MobSF и выполнено SAST-тестирование APK-приложения VLC для Android.
+
+Для развертывания MobSF использовался Docker-контейнер.
+
+```bash
+docker run -d --name mobsf-lab7 -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
+```
+
+После запуска MobSF был доступен по адресу:
+
+```text
+http://localhost:8000
+```
+
+В качестве тестируемого приложения использовался VLC 3.7.0.
+
+## Информация о приложении
+
+| Поле | Значение |
+|---|---|
+| Название | VLC |
+| Пакет | org.videolan.vlc |
+| Версия | 3.7.0 |
+| Размер | 47.65 MB |
+| Target SDK | 36 |
+| Min SDK | 17 |
+
+## Основные находки
+
+### Dangerous permissions
+
+Были обнаружены следующие опасные разрешения:
+
+- READ_LOGS
+- MANAGE_EXTERNAL_STORAGE
+- WRITE_SETTINGS
+- RECORD_AUDIO
+- SYSTEM_ALERT_WINDOW
+- READ_EXTERNAL_STORAGE
+- WRITE_EXTERNAL_STORAGE
+
+### Network Security
+
+В AndroidManifest.xml обнаружено:
+
+```xml
+android:usesCleartextTraffic="true"
+```
+
+Это означает возможность передачи данных по незашифрованному HTTP.
+
+### Manifest Analysis
+
+Основные проблемы:
+
+1. Min SDK = 17.
+2. Разрешен cleartext traffic.
+3. Наличие exported components.
+
+### Code Analysis
+
+Обнаружено:
+
+- использование MD5;
+- использование SHA1;
+- insecure random;
+- world-readable files.
+
+## План по митигации
+
+### 1. Удаление лишних permissions
+
+Необходимо убрать:
+
+- READ_LOGS
+- SYSTEM_ALERT_WINDOW
+- WRITE_SETTINGS
+
+### 2. Обновление Min SDK
+
+Рекомендуется повысить Min SDK минимум до Android 7.0.
+
+### 3. Отключение HTTP
+
+Следует использовать только HTTPS.
+
+### 4. Ограничение exported components
+
+Для ненужных компонентов установить:
+
+```xml
+android:exported="false"
+```
+
+### 5. Использование современных алгоритмов
+
+Необходимо отказаться от MD5 и SHA1 в пользу SHA-256.
+
+## Вывод
+
+В ходе лабораторной работы был развернут инструмент MobSF и выполнен статический анализ Android-приложения VLC.

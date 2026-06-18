@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 26.2.2.2 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changed" content="00:00:00"/>
+	<style type="text/css">
+		@page { size: 8.27in 11.69in; margin: 0.79in }
+		p { margin-bottom: 0.1in; line-height: 115%; background: transparent }
+	</style>
+</head>
+<body lang="en-US" link="#000080" vlink="#800000" dir="ltr">
+<ol><li><p>Первый секрет: private final static String
+	WEBGOAT_URL =
+	&quot;aHR0cDovL2xvY2FsaG9zdC9XZWJHb2F0L2NhdGNoZXI/UFJPUEVSVFk9eWVz&quot;;
+	Написано, что это url, то есть ссылка,
+	надо придумать, как бы её раскодировать.
+	Расположние секрета:
+	webgoat-5.4/src/main/java/org/owasp/webgoat/lessons/BlindScript.java</p></li>
+	<li><p>Начинаем раскодировать ссылку.  
+	Декодеры в интернете мне выдали такое
+	http://localhost/WebGoat/catcher?PROPERTY=yes. Это похоже
+	на какой-то эндпоинт. Он используется
+	в&nbsp;методе&nbsp;<font face="Liberation Mono, monospace">executeSpyWare()</font>&nbsp;для
+	отправки украденной истории браузера
+	пользователя на удаленный сервер.</p></li>
+	<li><p>Это является секретом, так как есть
+	кодировка, то есть попытка скрыть
+	реальное содержимое и используется
+	для вредоносной цели</p></li>
+	<li><p>Правильный способ хранения - не
+	кодировать URL в Base64 и использовать
+	переменные окружения для хранения
+	секретов</p></li>
+</ol>
+<hr/>
+
+<p>Второе место: var coupons = [&quot;nvojubmq&quot;,
+&quot;emph&quot;, &quot;sfwmjt&quot;, &quot;faopsc&quot;, &quot;fopttfsq&quot;,
+&quot;pxuttfsq&quot;];&nbsp;Расположение секрета:
+webgoat-5.4/src/main/webapp/javascript/clientSideValidation.js</p>
+<ol>
+	<li><p>Эти элементы проходят через функцию
+	decrypt. Эта функция раскодирует элементы
+	шифром Цезаря.</p></li>
+	<li><p>Это является секретом, так как
+	информация хотя бы как-то закодирована
+	и используется в клиентском коде</p></li>
+	<li><p>Чтобы защитить подобные данные
+	надо делать их валидацию на сервисе
+	или хранить в БД с хешированием, но
+	точно не хранить в коде</p></li>
+</ol>
+<hr/>
+
+<p>Третье место: if (&quot;B_Admin443&quot;.equals(me)) {
+s.setAdmin(true); }&nbsp;Расположение:
+webgoat-5.4/src/main/java/org/owasp/webgoat/lessons/BlindScript.java</p>
+<ol>
+	<li><p>Это секретный пароль, который даёт
+	пользователю права администратора.
+	Пароль это B_Admin443, который открыто
+	хранится в коде</p></li>
+	<li><p>Это является секретом, так как это
+	пароль для получения повышенного
+	доступа</p></li>
+	<li><p>Правильный способ хранения: точно
+	не хранить в коде, хранить в БД с
+	хешированием и использовать многофакторную
+	аутентификацию для администраторов</p></li>
+</ol>
+<hr/>
+
+<p>Четвертый секрет:&nbsp;Calendar cal2 =
+Calendar.getInstance();&nbsp;cal2.set(2010, 1, 13);&nbsp;if
+(cal1.getTime().after(cal2.getTime())) {&nbsp;String query = &quot;DELETE
+employee&quot;;&nbsp;}&nbsp;Расположение:
+webgoat-5.4/src/main/java/org/owasp/webgoat/lessons/BlindScript.java</p>
+<ol>
+	<li><p>Это код, который активируется после
+	13 января 2010 года и удаляет все записи
+	из таблицы employee</p></li>
+	<li><p>Это является секретом, так как здесь
+	скрыто вредоностное поведение и жёстко
+	закодирована дата как триггер</p></li>
+	<li><p>Правильный способ хранения: не
+	писать скрытые триггеры, все изменения
+	в коде должны быть явными и логируемыми,
+	удаление должно требовать явного
+	подтверждения</p></li>
+</ol>
+<hr/>
+
+<p>И пятый секрет: String userHome =
+System.getProperty(&quot;user.home&quot;) + &quot;\Local
+Settings\Temporary Internet Files&quot;;&nbsp;Расположение:
+webgoat-5.4/src/main/java/org/owasp/webgoat/lessons/BlindScript.java</p>
+<ol>
+	<li><p>Это является секретом, так как
+	это&nbsp;путь к чувствительным данным
+	пользователя&nbsp;(кэш браузера, временные
+	файлы). Код собирает имена файлов из
+	этой папки и отправляет их на удаленный
+	сервер.</p></li>
+	<li><p>Правильный способ хранения: не
+	хардкодить пути к файлам пользователя,
+	использовать&nbsp;стандартные API&nbsp;для
+	доступа к временным файлам, не собирать
+	личные данные&nbsp;пользователя без
+	явного согласия</p></li>
+</ol>
+<p><br/>
+<br/>
+
+</p>
+</body>
+</html>

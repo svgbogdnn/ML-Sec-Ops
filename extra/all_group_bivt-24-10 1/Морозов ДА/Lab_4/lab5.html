@@ -1,0 +1,89 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h1 id="-5">ЛР 5</h1>
+<hr>
+<h1 id="-1">Часть 1</h1>
+<h2 id="-1">Фрагмент кода 1</h2>
+<pre><code class="lang-python">#!/usr/bin/env python3
+<span class="hljs-keyword">from</span> flask <span class="hljs-keyword">import</span> Flask
+
+<span class="hljs-keyword">from</span> mod_api <span class="hljs-keyword">import</span> mod_api
+
+app = Flask(<span class="hljs-string">'vuln_app'</span>)
+app.config[<span class="hljs-string">'SECRET_KEY'</span>] = <span class="hljs-string">'F0cUzh8BgYJSLXAU8qDmClM0dE8GJTpsiyVEl3BCqQMCABp1U$f%'</span>
+
+app.register_blueprint(mod_api, url_prefix=<span class="hljs-string">'/api'</span>)
+</code></pre>
+<h3 id="-">Недостаток</h3>
+<p><code>SECRET_KEY</code> передается в коде. Это плохо, потому что при попадании кода в открытый репозиторий или к посторонним людям ключ тоже будет слит.</p>
+<h3 id="-">Рекомендации</h3>
+<p>Нужно вынести ключ из исходного кода. Лучше хранить его в переменных окружения или в отдельном конфигурационном файле, который не попадает в git.</p>
+<hr>
+<h2 id="-2">Фрагмент кода 2</h2>
+<pre><code class="lang-python"><span class="hljs-title">from</span> flask_wtf <span class="hljs-keyword">import</span> Form
+<span class="hljs-title">from</span> wtforms <span class="hljs-keyword">import</span> TextField
+<span class="hljs-class">
+<span class="hljs-keyword">class</span> <span class="hljs-type">LoginForm</span>(<span class="hljs-type">Form</span>):
+    username = <span class="hljs-type">TextField</span>('<span class="hljs-title">username'</span>)
+    password = <span class="hljs-type">TextField</span>('<span class="hljs-title">password'</span>)</span>
+</code></pre>
+<h3 id="-">Недостаток</h3>
+<p>Пароль вводится как обычное текстовое поле и он будет виден.</p>
+<p>Также в форме нет валидации введенных данных: не проверяется, что логин и пароль заполнены, не ограничивается длина данных.</p>
+<h3 id="-">Рекомендации</h3>
+<p>Для пароля нужно использовать специальное поле <code>PasswordField</code>. Также нужно добавить валидаторы для проверки данных.</p>
+<hr>
+<h2 id="-3">Фрагмент кода 3</h2>
+<pre><code class="lang-python"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">post</span><span class="hljs-params">(<span class="hljs-keyword">self</span>)</span></span>:
+    username = <span class="hljs-keyword">self</span>.get_argument(<span class="hljs-string">'username'</span>)
+    password = <span class="hljs-keyword">self</span>.get_argument(<span class="hljs-string">'password'</span>).encode(<span class="hljs-string">'utf-8'</span>)
+    email = <span class="hljs-keyword">self</span>.get_argument(<span class="hljs-string">'mail'</span>)
+
+<span class="hljs-symbol">try:</span>
+    username = username.lower()
+    email = email.strip().lower()
+    user = User({<span class="hljs-string">'username'</span>: username, <span class="hljs-string">'password'</span>: password, <span class="hljs-string">'email'</span>: email, <span class="hljs-string">'date_joined'</span>: curtime()})
+    user.validate()
+    save_user(<span class="hljs-keyword">self</span>.db_conn, user)
+except Exception, <span class="hljs-symbol">e:</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">self</span>.render_template(<span class="hljs-string">"success_create.html"</span>)
+</code></pre>
+<h3 id="-">Недостатки</h3>
+<p>Пароль не хешируется. Он только кодируется в <code>utf-8</code>, но это не является защитой. Если база данных будет украдена, пароль можно будет получить почти в открытом виде.</p>
+<p>Некорректная обработка исключений. При любой ошибке пользователю возвращается страница <code>success_create.html</code>, то есть сообщение об успешной регистрации.</p>
+<h3 id="-">Рекомендации</h3>
+<p>Пароли нужно хранить только в виде хеша. </p>
+<p>Также нужно возвращать страницу успеха только в том случае, если пользователь действительно создан. Ошибки нужно обрабатывать отдельно.</p>
+<hr>
+<h1 id="-2">Часть 2</h1>
+<h2 id="1-django-">1. Какие наиболее распространенные атаки предотвращает Django?</h2>
+<p>Django имеет встроенные механизмы защиты от распространенных веб-уязвимостей.</p>
+<p>Основные атаки, от которых защищает Django:</p>
+<ul>
+<li><strong>XSS</strong> — Django по умолчанию экранирует данные в шаблонах, поэтому вредоносный HTML или JavaScript не выполняется как код.</li>
+<li><strong>CSRF</strong> — Django использует CSRF-токены, которые проверяются при отправке форм и POST-запросов.</li>
+<li><strong>SQL injection</strong> — При использовании Django ORM данные передаются в запросы безопасно, без прямой подстановки пользовательского ввода в SQL.</li>
+</ul>
+<hr>
+<h2 id="2-django-">2. Как устроено управление пользовательскими сессиями в Django?</h2>
+<p>Сессии нужны для хранения информации о пользователе между запросами. Так как HTTP не хранит состояние, Django использует session cookie.</p>
+<p>Обычно процесс работает так:</p>
+<ol>
+<li>Пользователь заходит на сайт.</li>
+<li>Django создает для него случайный <code>session_id</code>.</li>
+<li>Этот <code>session_id</code> отправляется пользователю в cookie.</li>
+<li>Браузер пользователя сохраняет cookie и отправляет ее при следующих запросах.</li>
+<li>Django по <code>session_id</code> находит данные сессии на сервере.</li>
+<li>Через <code>request.session</code> приложение может читать и изменять данные сессии.</li>
+</ol>
+<p>По умолчанию данные сессий могут храниться в базе данных, но Django также поддерживает хранение в кэше, файлах или подписанных cookies.</p>
+<p>Для безопасности сессий используются следующие механизмы:</p>
+<ul>
+<li>cookie подписываются, чтобы пользователь не мог незаметно изменить данные.</li>
+<li><code>HttpOnly</code> запрещает JavaScript получать доступ к session cookie.</li>
+<li><code>Secure</code> позволяет передавать cookie только по HTTPS.</li>
+<li><code>SameSite</code> ограничивает отправку cookie при межсайтовых запросах.</li>
+<li>сессии имеют срок жизни и могут автоматически удаляться.</li>
+</ul>
+</body></html>

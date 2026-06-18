@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>лабораторная работа №7</title>
+<style>body{color:#111;font-family:Arial,sans-serif;line-height:1.5;max-width:920px;margin:32px auto;padding:0 18px}h1,h2,h3{line-height:1.25}code{background:#f4f4f4;padding:2px 4px;border-radius:3px}pre{background:#f4f4f4;padding:12px;overflow:auto;border-radius:4px}pre code{background:transparent;padding:0}li{margin:4px 0}table{border-collapse:collapse;margin:14px 0;width:100%}th,td{border:1px solid #ccc;padding:7px 9px;text-align:left}th{background:#f4f4f4}</style>
+</head>
+<body>
+<h1>лабораторная работа №7</h1>
+<p>студент: Халибеков Алан, БИВТ-24-9</p>
+<h2>ход выполнения</h2>
+<p>в этой работе нужно было развернуть инструмент sast для мобильных приложений, просканировать apk и составить план по митигации найденных рисков.</p>
+<p>для анализа я использовал mobsf. контейнер был запущен через docker на отдельном порту, потому что порт <code>8000</code> уже был занят другим сервисом:</p>
+<pre><code class="language-bash">docker run -d --name mobsf-hw7-alan -p 8010:8000 opensecurity/mobile-security-framework-mobsf:latest</code></pre>
+<p>после запуска интерфейс был доступен по адресу <code>http://localhost:8010</code>. api key взял из логов контейнера.</p>
+<p>для скана я взял официальный apk клиента F-Droid:</p>
+<pre><code class="language-bash">curl -s -L https://f-droid.org/F-Droid.apk -o F-Droid.apk</code></pre>
+<p>дальше загрузил apk в mobsf и запустил статический анализ через api:</p>
+<pre><code class="language-bash">curl -F "file=@F-Droid.apk" http://localhost:8010/api/v1/upload -H "Authorization: $API_KEY"
+curl -X POST -d "hash=$HASH&amp;scan_type=apk&amp;file_name=F-Droid.apk" http://localhost:8010/api/v1/scan -H "Authorization: $API_KEY"</code></pre>
+<p>после завершения скана выгрузил pdf отчет через <code>/api/v1/download_pdf</code>. файл с отчетом mobsf лежит рядом с работой и называется <code>mobsf_report.pdf</code>.</p>
+<h2>информация о приложении</h2>
+<table><thead><tr><th>поле</th><th>значение</th></tr></thead><tbody><tr><td>приложение</td><td>F-Droid</td></tr><tr><td>файл</td><td>F-Droid.apk</td></tr><tr><td>пакет</td><td>org.fdroid.fdroid</td></tr><tr><td>версия</td><td>1.23.2</td></tr><tr><td>размер</td><td>11.85 MB</td></tr><tr><td>app security score</td><td>62/100</td></tr><tr><td>grade</td><td>A</td></tr><tr><td>target sdk</td><td>30</td></tr><tr><td>min sdk</td><td>23</td></tr><tr><td>main activity</td><td>org.fdroid.fdroid.panic.CalculatorActivity</td></tr></tbody></table>
+<h2>основные результаты анализа</h2>
+<h3>dangerous permissions</h3>
+<p>mobsf нашел 10 разрешений, которые попали в критичные или dangerous. для F-Droid часть из них объяснима, потому что приложение ставит apk, работает с репозиториями, камерой для qr-кодов и локальным обменом. но все равно каждое такое разрешение надо проверять.</p>
+<p>самые важные разрешения:</p>
+<ul><li><code>BLUETOOTH_CONNECT</code> и <code>BLUETOOTH_SCAN</code> - нужны для поиска и подключения nearby устройств, но дают доступ к bluetooth окружению;</li><li><code>READ_EXTERNAL_STORAGE</code> и <code>WRITE_EXTERNAL_STORAGE</code> - чтение и запись во внешнее хранилище;</li><li><code>MANAGE_EXTERNAL_STORAGE</code> - широкий доступ к файлам во внешнем хранилище;</li><li><code>WRITE_SETTINGS</code> - изменение системных настроек;</li><li><code>REQUEST_INSTALL_PACKAGES</code> - возможность запрашивать установку apk;</li><li><code>POST_NOTIFICATIONS</code> - показ уведомлений;</li><li><code>CAMERA</code> - доступ к камере, скорее всего для сканирования qr-кодов;</li><li><code>ACCESS_COARSE_LOCATION</code> - примерное местоположение, часто связано с bluetooth или wi-fi сканированием.</li></ul>
+<p>главный риск тут не в самом факте наличия разрешений, а в том, что F-Droid является менеджером приложений. если злоумышленник сможет использовать эти возможности через баг в приложении, последствия будут заметнее, чем у обычного клиента.</p>
+<h3>network security</h3>
+<p>в network security mobsf показал 2 high, 1 warning и 7 secure.</p>
+<p>high находки:</p>
+<pre><code class="language-text">Base config is insecurely configured to permit clear text traffic to all domains.
+Base config is configured to trust user installed certificates.</code></pre>
+<p>первая проблема означает, что базовая конфигурация сети разрешает cleartext traffic. если какой-то запрос уйдет по http, его можно перехватить или изменить в сети.</p>
+<p>вторая проблема в том, что приложение доверяет пользовательским сертификатам. это удобно для некоторых сценариев отладки или корпоративных прокси, но для приложения, которое скачивает apk и индексы репозиториев, это повышает риск mitm.</p>
+<p>warning:</p>
+<pre><code class="language-text">Base config is configured to trust system certificates.</code></pre>
+<p>само по себе доверие системным сертификатам нормально, но для загрузки приложений и метаданных репозиториев лучше дополнительно использовать pinning или проверку подписи данных.</p>
+<p>положительный момент: для отдельных доменов, например <code>f-droid.org</code>, <code>github.com</code>, <code>gitlab.com</code> и связанных доменов, cleartext traffic запрещен.</p>
+<h3>manifest analysis</h3>
+<p>в manifest analysis найдено 1 high и 9 warning.</p>
+<p>high:</p>
+<pre><code class="language-text">App can be installed on a vulnerable unpatched Android version 6.0-6.0.1, [minSdk=23]</code></pre>
+<p>приложение поддерживает android 6.0. это уже старая версия платформы, которая не получает нормальные обновления безопасности. для приложения, которое устанавливает другие apk, поддержка старых устройств увеличивает риск.</p>
+<p>warning находки:</p>
+<ul><li><code>android:allowBackup=true</code> - данные приложения можно попытаться забрать через adb backup при включенной отладке;</li><li>несколько activity экспортированы через <code>android:exported=true</code>;</li><li><code>PanicPreferencesActivity</code>, <code>PanicResponderActivity</code>, <code>AddRepoActivity</code>, <code>AppDetailsActivity</code>, <code>MainActivity</code> доступны другим приложениям;</li><li><code>SystemJobService</code> и несколько receiver экспортированы и защищены разрешениями, уровень защиты которых нужно дополнительно проверять.</li></ul>
+<p>часть exported activity ожидаема, например deep links для открытия страниц приложений или добавления репозитория. но такие точки входа должны очень строго проверять входящие данные.</p>
+<h3>certificate analysis</h3>
+<p>high проблем в certificate analysis нет, но есть 2 warning.</p>
+<pre><code class="language-text">Application vulnerable to Janus Vulnerability
+Certificate algorithm might be vulnerable to hash collision</code></pre>
+<p>первое связано с тем, что приложение подписано с поддержкой v1 signature scheme. в отчете видно, что v2 и v3 тоже включены, поэтому риск ниже, чем при одной только v1 подписи, но старую схему лучше оставлять только если нужна поддержка старых android.</p>
+<p>второе предупреждение связано с SHA1withRSA. mobsf пишет, что sha1 имеет проблемы с коллизиями, хотя манифест указывает SHA256withRSA. это надо перепроверить в процессе подписи релизов.</p>
+<h3>code analysis</h3>
+<p>в code analysis нет high находок. mobsf показал 7 warning, 2 info и 1 secure.</p>
+<p>warning находки:</p>
+<ul><li>приложение создает временные файлы;</li><li>в файлах могут быть hardcoded sensitive data;</li><li>приложение читает и пишет во внешнее хранилище;</li><li>используется небезопасный генератор случайных чисел;</li><li>используется md5;</li><li>используется sha1;</li><li>есть раскрытие ip адресов.</li></ul>
+<p>info находки:</p>
+<ul><li>приложение пишет данные в логи;</li><li>приложение копирует данные в clipboard.</li></ul>
+<p>secure находка:</p>
+<pre><code class="language-text">This App uses SSL certificate pinning to detect or prevent MITM attacks.</code></pre>
+<p>это хороший момент, потому что для менеджера приложений защита от mitm особенно важна. но pinning не отменяет проблему общей сетевой конфигурации, где cleartext разрешен на базовом уровне.</p>
+<h3>shared library binary analysis</h3>
+<p>в нативных библиотеках анализировался <code>libandroidx.graphics.path.so</code> для разных архитектур.</p>
+<p>критичных high проблем не видно: nx, pie, relro и stack canary включены. символы stripped.</p>
+<p>основной warning:</p>
+<pre><code class="language-text">The binary does not have any fortified functions.</code></pre>
+<p>это означает, что для части native сборок не включены fortified functions. они дают дополнительные проверки против некоторых ошибок работы с памятью.</p>
+<h2>план по митигации рисков</h2>
+<h3>1. dangerous permissions</h3>
+<p>нужно проверить каждое dangerous permission и оставить только те, которые реально нужны.</p>
+<p><code>REQUEST_INSTALL_PACKAGES</code> для F-Droid ожидаемо, но его использование должно быть ограничено только сценариями установки проверенных apk. <code>MANAGE_EXTERNAL_STORAGE</code> и <code>WRITE_SETTINGS</code> стоит пересмотреть отдельно, потому что это слишком широкие разрешения.</p>
+<p>камера должна запрашиваться только перед сканированием qr-кода. bluetooth и location должны запрашиваться только перед nearby-функциями, а не заранее.</p>
+<h3>2. cleartext traffic</h3>
+<p>нужно запретить cleartext traffic в base config. базовая конфигурация должна быть безопасной по умолчанию.</p>
+<p>если http нужен для локального обмена или пользовательских репозиториев, лучше разрешать его точечно и явно показывать предупреждение пользователю. для основных доменов F-Droid должен использовать только https.</p>
+<h3>3. user installed certificates</h3>
+<p>для загрузки apk и индексов репозиториев лучше не доверять пользовательским ca без дополнительной проверки. если такая поддержка нужна, ее можно оставить только для debug-сборок или сделать отдельной настройкой с явным предупреждением.</p>
+<p>важные данные репозитория нужно проверять криптографически, например через подписи индексов и apk, чтобы даже при mitm нельзя было незаметно подменить пакет.</p>
+<h3>4. min sdk</h3>
+<p><code>minSdk=23</code> означает поддержку android 6.0. лучше поднять минимальную версию хотя бы до android 8 или android 10, если это допустимо для аудитории приложения.</p>
+<p>если старые версии нельзя отключить сразу, для них стоит ограничивать самые рискованные функции и явно учитывать старые баги платформы.</p>
+<h3>5. exported components</h3>
+<p>для всех exported activity, service и receiver нужно проверить, действительно ли им нужен внешний доступ.</p>
+<p>если компонент не должен открываться извне, надо поставить:</p>
+<pre><code class="language-xml">android:exported="false"</code></pre>
+<p>если внешний доступ нужен, например для deep links, нужно валидировать uri, package name, intent extras и не выполнять опасные действия только на основе внешнего intent.</p>
+<h3>6. allowBackup</h3>
+<p>для релизной сборки лучше отключить backup:</p>
+<pre><code class="language-xml">android:allowBackup="false"</code></pre>
+<p>если backup нужен, надо настроить backup rules и исключить базу, токены, настройки репозиториев и другие чувствительные данные.</p>
+<h3>7. подпись приложения</h3>
+<p>нужно проверить процесс подписи релизов. v2 и v3 должны быть включены обязательно. v1 стоит оставлять только если это нужно для поддержки старых устройств.</p>
+<p>sha1 в подписи лучше не использовать. для новых релизов надо применять sha256 или более сильный алгоритм.</p>
+<h3>8. внешнее хранилище</h3>
+<p>чувствительные данные нельзя хранить во внешнем хранилище. apk, индексы и кеши надо разделять по важности.</p>
+<p>служебные данные приложения должны лежать в приватной директории. если файлы нужно отдавать наружу, лучше использовать content provider с ограничением доступа.</p>
+<h3>9. временные файлы</h3>
+<p>временные файлы нужно создавать через приватный cache directory приложения и удалять сразу после использования.</p>
+<p>если во временный файл попадает apk или индекс репозитория, после скачивания надо проверять подпись и хеш, а потом очищать ненужные временные данные.</p>
+<h3>10. hardcoded sensitive data</h3>
+<p>нужно вручную проверить строки, которые mobsf пометил как возможные hardcoded credentials. часть таких находок может быть ложной, например названия http headers или тестовые строки.</p>
+<p>если там окажутся реальные токены, ключи или пароли, их нужно убрать из apk. секреты не должны попадать в мобильное приложение, потому что apk можно разобрать.</p>
+<h3>11. md5 и sha1</h3>
+<p>md5 и sha1 надо заменить на sha256 или sha512 там, где хеш связан с безопасностью.</p>
+<p>если md5 или sha1 используются только как техническая контрольная сумма для кеша, это можно оставить после ревью, но в коде должно быть понятно, что это не криптографическая защита.</p>
+<h3>12. insecure random</h3>
+<p>в местах, где случайные значения используются для токенов, ключей, имен временных файлов или идентификаторов, нужно использовать <code>SecureRandom</code>.</p>
+<p>обычный <code>Random</code> можно оставлять только для незащищенных сценариев, где предсказуемость не влияет на безопасность.</p>
+<h3>13. логи и clipboard</h3>
+<p>логи нужно почистить от чувствительных данных: url приватных репозиториев, локальных путей, токенов, ошибок подписи и данных пользователя.</p>
+<p>clipboard лучше не использовать для чувствительной информации. если копирование нужно, стоит предупреждать пользователя и очищать clipboard после короткого времени.</p>
+<h3>14. native libraries</h3>
+<p>для <code>libandroidx.graphics.path.so</code> стоит включить fortified functions:</p>
+<pre><code class="language-bash">-D_FORTIFY_SOURCE=2</code></pre>
+<p>остальные защитные признаки уже выглядят нормально: nx, pie, relro, stack canary и stripped symbols включены.</p>
+<h2>вывод</h2>
+<p>я просканировал F-Droid версии 1.23.2. mobsf поставил приложению score 62/100 и grade A. критичных находок немного, но есть важные риски: cleartext traffic в base config, доверие пользовательским сертификатам, поддержка старого android 6.0, exported components, dangerous permissions и использование слабых md5/sha1 в коде.</p>
+<p>главный план митигации: запретить cleartext по умолчанию, аккуратно ограничить доверие пользовательским ca, поднять min sdk, проверить exported components, убрать лишние dangerous permissions и заменить слабые криптографические места. mobsf удобно использовать как автоматический шаг в ci/cd перед публикацией новой apk сборки.</p>
+</body>
+</html>

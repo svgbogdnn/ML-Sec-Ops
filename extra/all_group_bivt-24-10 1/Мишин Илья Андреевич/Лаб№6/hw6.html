@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 26.2.3.2 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changed" content="00:00:00"/>
+	<style type="text/css">
+		@page { size: 8.27in 11.69in; margin: 0.79in }
+		p { margin-bottom: 0.1in; line-height: 115%; background: transparent }
+		h1 { margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h1.western { font-weight: bold; font-size: 18pt; font-family: "Liberation Sans", sans-serif }
+		h1.cjk { font-weight: bold; font-size: 18pt; font-family: "AR PL SungtiL GB" }
+		h1.ctl { font-weight: bold; font-family: "Noto Sans Devanagari"; font-size: 18pt }
+		pre { font-size: 10pt; font-family: "Liberation Mono", monospace; background: transparent }
+		h2 { margin-top: 0.14in; margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h2.western { font-weight: bold; font-size: 16pt; font-family: "Liberation Sans", sans-serif }
+		h2.cjk { font-weight: bold; font-size: 16pt; font-family: "AR PL SungtiL GB" }
+		h2.ctl { font-weight: bold; font-family: "Noto Sans Devanagari"; font-size: 16pt }
+	</style>
+</head>
+<body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><h1 class="western">
+Поиск секретов в репозитории</h1>
+<p>Для этой лабораторной работы я проверил
+репозиторий:
+<font face="Liberation Mono, monospace">https://github.com/OtusTeam/DevSecOps_secret-finding</font></p>
+<p>Задача была найти секреты в репозитории
+и описать, почему это секреты и как их
+правильно хранить.</p>
+<p>Для проверки можно использовать
+TruffleHog или Gitleaks. В моём случае были найдены
+несколько подозрительных мест, где в
+коде лежат пароли, токены и ключи.</p>
+<h2 class="western">1. Приватный ключ</h2>
+<p><b>Где найдено:</b><br/>
+<font face="Liberation Mono, monospace">webgoat-server/privatekey.key</font></p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">-----BEGIN PRIVATE KEY-----<br/>
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASC...<br/>
+-----END PRIVATE KEY-----</pre><p>
+Это приватный ключ. Такие ключи нельзя
+хранить в репозитории, потому что с их
+помощью можно подписывать данные или
+использовать ключ вместо настоящего
+владельца.</p>
+<p>Приватные ключи нужно хранить в
+специальных хранилищах секретов,
+например Vault или в секретах CI/CD. Если
+ключ уже попал в Git, его лучше считать
+скомпрометированным и заменить.</p>
+<h2 class="western">2. Пароль в <font face="Liberation Mono, monospace">.env</font>
+файле</h2>
+<p><b>Где найдено:</b><br/>
+<font face="Liberation Mono, monospace">docker/.env</font>,
+строки 3–4</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">USER=alex675<br/>
+PASSWORD=#!qerge34t423sdfvdsfgeR</pre><p>
+Тут прямо указан пользователь и пароль.
+Если репозиторий увидит кто-то посторонний,
+он сможет использовать эти данные для
+входа в сервис.</p>
+<p>Файл <font face="Liberation Mono, monospace">.env</font> с
+реальными паролями не нужно коммитить.
+Его надо добавить в <font face="Liberation Mono, monospace">.gitignore</font>,
+а в репозитории оставить только пример
+<font face="Liberation Mono, monospace">.env.example</font> без
+настоящих значений.</p>
+<h2 class="western">3. GitHub token в workflow</h2>
+<p><b>Где найдено:</b><br/>
+<font face="Liberation Mono, monospace">.github/workflows/release.yml</font>,
+строка 75</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">GITHUB_TOKEN: cee3257f0e59d1d4975a35429cffc3d8b5fabe15ca2e9d47243cbc446d4894a5</pre><p>
+GitHub token даёт доступ к действиям в
+репозитории. Через него можно делать
+релизы, пушить изменения или выполнять
+другие операции, если у токена есть
+такие права.</p>
+<p>Токен нельзя писать прямо в workflow-файле.
+Нужно использовать секреты GitHub Actions:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}</pre><p>
+Если токен уже попал в репозиторий, его
+надо удалить и перевыпустить.</p>
+<h2 class="western">4. App Secret</h2>
+<p><b>Где найдено:</b><br/>
+<font face="Liberation Mono, monospace">docker/.env</font>,
+строка 2</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">APP_SECRET=666666666666666</pre><p>
+<font face="Liberation Mono, monospace">APP_SECRET</font> обычно
+используется приложением для подписи
+cookie, сессий или токенов. Если этот ключ
+известен другим людям, они могут
+попробовать подделать данные приложения.</p>
+<p>Такое значение должно быть случайным
+и длинным. Хранить его надо в переменных
+окружения или в секретах CI/CD, а не в
+репозитории.</p>
+<h2 class="western">5. Пароль к PostgreSQL в строке
+подключения</h2>
+<p><b>Где найдено:</b><br/>
+<font face="Liberation Mono, monospace">docker-compose-postgres.yml</font></p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">jdbc:postgresql://webgoat_db:5432/webgoat?user=webgoat&amp;password=webgoat</pre><p>
+Также встречается такой вариант:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">postgresql://webgoat:webgoat@webgoat_db:5432</pre><p>
+В строке подключения указан логин и
+пароль от базы данных. Даже если пароль
+выглядит тестовым, всё равно это плохая
+практика, потому что в настоящем проекте
+так можно случайно открыть доступ к
+базе.&nbsp;Логин и пароль от базы надо
+выносить в переменные окружения или
+секреты CI/CD. В репозитории можно оставить
+только шаблон или пример без настоящего
+пароля.</p>
+<h2 class="western">Что делать, если секрет уже
+попал в Git</h2>
+<p>Если секрет уже был закоммичен, просто
+удалить его из файла недостаточно. Он
+всё равно останется в истории коммитов.&nbsp;Для
+очистки истории можно использовать:</p>
+<ul>
+	<li><p>BFG Repo-Cleaner;</p></li>
+	<li><p>git filter-repo.</p></li>
+</ul>
+<p>Но даже после удаления из истории
+секрет всё равно лучше заменить, потому
+что он уже мог быть скопирован.</p>
+<h2 class="western">Как это можно автоматизировать</h2>
+<p>Чтобы такие ошибки не попадали в
+репозиторий, можно добавить проверку
+секретов:</p>
+<ul>
+	<li><p>локально перед коммитом;</p></li>
+	<li><p>в CI/CD pipeline;</p></li>
+	<li><p>при каждом pull request;</p></li>
+	<li><p>периодически по расписанию для
+	всей истории репозитория.</p></li>
+</ul>
+<p>Для этого подходят инструменты</p>
+<ul>
+	<li><p>TruffleHog;</p></li>
+	<li><p>Gitleaks;</p></li>
+	<li><p>detect-secrets.</p></li>
+</ul>
+<h2 class="western">Вывод</h2>
+<p>В репозитории были найдены несколько
+секретов: приватный ключ, пароль в <font face="Liberation Mono, monospace">.env</font>,
+GitHub token, App Secret и пароль к PostgreSQL.</p>
+<p>Все эти данные нельзя хранить в коде,
+потому что они могут дать доступ к
+сервисам, базе данных или репозиторию.
+Правильнее хранить их в переменных
+окружения, секретах CI/CD или специальных
+хранилищах секретов.</p>
+<p>Также лучше сразу настроить автоматическую
+проверку, чтобы секреты не попадали в
+Git в будущем.</p>
+<p><br/>
+<br/>
+
+</p>
+</body>
+</html>

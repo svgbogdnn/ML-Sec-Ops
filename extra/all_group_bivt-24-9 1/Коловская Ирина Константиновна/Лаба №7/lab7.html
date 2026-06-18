@@ -1,0 +1,145 @@
+<p><strong>Сделала задание, которое вы предложили вместо основного, потому что так и не заработал пайплайн</strong> </p>
+<h1 id="-sast-tiktok-">Отчёт SAST-анализа моб. приложения (TikTok)</h1>
+<h2 id="1-">1. Сводка результатов сканирования</h2>
+<p><img src="svodka.png" alt="Скриншот"> </p>
+<h2 id="2-app-permissions-dangerous">2. App Permissions - Dangerous</h2>
+<table>
+<thead>
+<tr>
+<th>Разрешение</th>
+<th>Риск</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ACCESS_COARSE_LOCATION</td>
+<td>Приблизительное местоположение (отслеживание пользователя)</td>
+</tr>
+<tr>
+<td>ACCESS_FINE_LOCATION</td>
+<td>Точное GPS (определение местонахождения в реальном времени)</td>
+</tr>
+<tr>
+<td>ACCESS_MEDIA_LOCATION</td>
+<td>Геолокация из EXIF медиафайлов</td>
+</tr>
+<tr>
+<td>BLUETOOTH_ADVERTISE</td>
+<td>Реклама ближайшим блютуз устройствам</td>
+</tr>
+<tr>
+<td>BLUETOOTH_CONNECT</td>
+<td>Подключение к сопряжённым устройствам</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-network-security-high">3. Network Security - HIGH</h2>
+<table>
+<thead>
+<tr>
+<th>№</th>
+<th>Проблема</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Base config разрешает cleartext (HTTP) для всех доменов</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Base config обходит certificate pinning</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Domain config разрешает cleartext для zero-rating.tiktok.com</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Base config доверяет системным сертификатам</td>
+<td>WARNING</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-manifest-analysis-high">4. Manifest Analysis - HIGH</h2>
+<table>
+<thead>
+<tr>
+<th>№</th>
+<th>Проблема</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>minSdk=23 - приложение работает на Android 6.0, который не получает патчи безопасности</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td>2</td>
+<td>android:usesCleartextTraffic=true - незашифрованный HTTP трафик разрешён глобально</td>
+<td>HIGH</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5-code-analysis-high">5. Code Analysis - HIGH</h2>
+<table>
+<thead>
+<tr>
+<th>№</th>
+<th>Проблема</th>
+<th>CWE</th>
+<th>Файл</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7</td>
+<td>ECB-режим шифрования - одинаковый шифротекст для одинаковых блоков</td>
+<td>CWE-327</td>
+<td>X/C1531540pxZ.java</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Слабый алгоритм шифрования</td>
+<td>CWE-327</td>
+<td>com/heytap/mcssdk/utils/c.java</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Запись чувствительных данных в логи</td>
+<td>CWE-532</td>
+<td>X/C1036660d5N.java</td>
+<td>INFO</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-">6. План митигации</h2>
+<p><strong>Cleartext HTTP + certificate pinning bypass</strong></p>
+<ul>
+<li>Установить <code>android:usesCleartextTraffic=false</code> в AndroidManifest.xml</li>
+<li>Убрать из Network Security Config разрешение cleartext для всех доменов</li>
+<li>Удалить bypass certificate pinning, внедрить Public Key Pinning для API-доменов</li>
+</ul>
+<p><strong>Слабая криптография (CWE-327)</strong></p>
+<ul>
+<li>Заменить ECB на <code>AES/GCM/NoPadding</code> с уникальным IV для каждой операции</li>
+<li>Заменить слабые алгоритмы на AES-256 или ChaCha20-Poly1305</li>
+</ul>
+<p><strong>minSdk=23</strong></p>
+<ul>
+<li>Поднять <code>minSdkVersion</code> до 29 (Android 10), Android 6.x не получает патчи с 2019 года</li>
+</ul>
+<p><strong>Dangerous permissions</strong></p>
+<ul>
+<li>Запрашивать геолокацию только в момент использования функции (геотег к видео)</li>
+<li>Оценить необходимость BLUETOOTH_ADVERTISE/CONNECT, может быть можно удалить</li>
+</ul>

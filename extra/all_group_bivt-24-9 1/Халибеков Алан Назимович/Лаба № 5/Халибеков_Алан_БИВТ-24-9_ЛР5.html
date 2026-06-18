@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>лабораторная работа №5</title>
+<style>body{color:#111;font-family:Arial,sans-serif;line-height:1.5;max-width:900px;margin:32px auto;padding:0 18px}h1,h2,h3{line-height:1.25}code{background:#f4f4f4;padding:2px 4px;border-radius:3px}pre{background:#f4f4f4;padding:12px;overflow:auto;border-radius:4px}pre code{background:transparent;padding:0}li{margin:4px 0}img{display:block;max-width:100%;height:auto;border:1px solid #ddd;border-radius:4px;margin:12px 0 20px}</style>
+</head>
+<body>
+<h1>лабораторная работа №5</h1>
+<p>студент: Халибеков Алан, БИВТ-24-9</p>
+<h2>ход выполнения</h2>
+<p>в этой работе нужно было проверить базовую безопасность docker-контейнера: посмотреть, от какого пользователя запускается базовый образ, собрать свой образ с не-root пользователем и проверить его сканером уязвимостей.</p>
+<p>для работы я выбрал официальный образ из docker hub:</p>
+<pre><code class="language-text">postgres:16-alpine</code></pre>
+<p>образ удобен для задания, потому что он небольшой, основан на alpine и при этом является реальным сервисом, а не пустым тестовым контейнером.</p>
+<h2>часть i</h2>
+<p>сначала я посмотрел, какие docker-образы есть локально:</p>
+<pre><code class="language-bash">docker image ls</code></pre>
+<p>в списке был выбранный образ:</p>
+<pre><code class="language-text">REPOSITORY             TAG          IMAGE ID       CREATED        SIZE
+postgres               16-alpine    4db228bee7e7   13 days ago    272MB</code></pre>
+<p>потом проверил пользователя на хосте и внутри контейнера:</p>
+<pre><code class="language-bash">whoami
+alan
+
+docker run --rm --entrypoint sh postgres:16-alpine -c whoami
+root</code></pre>
+<p>получилось, что на хосте используется обычный пользователь, а внутри базового контейнера команда <code>whoami</code> показывает <code>root</code>. это не лучший вариант с точки зрения безопасности, потому что при ошибке в приложении или неправильном монтировании файлов атакующий получает больше возможностей внутри контейнера.</p>
+<p>скриншот выполнения первой части:</p>
+<p><img src="screenshots/part1.png" alt="часть i"></p>
+<h2>часть ii</h2>
+<p>для второй части я написал Dockerfile на основе того же образа. в нем создается отдельный пользователь <code>appuser</code>, под него готовятся рабочие каталоги PostgreSQL, после чего через <code>USER appuser</code> контейнер переключается с root на обычного пользователя.</p>
+<pre><code class="language-dockerfile">FROM postgres:16-alpine
+
+RUN addgroup -S appgroup &amp;&amp; adduser -S appuser -G appgroup
+RUN mkdir -p /home/appuser /tmp/app /var/lib/postgresql/data /var/run/postgresql \
+    &amp;&amp; chown -R appuser:appgroup /home/appuser /tmp/app /var/lib/postgresql /var/run/postgresql
+
+ENV PGDATA=/var/lib/postgresql/data
+
+USER appuser
+
+# дополнительные настройки безопасности при запуске контейнера:
+# docker run --read-only --cap-drop ALL --security-opt no-new-privileges
+# docker run --memory 256m --cpus 1
+# docker run -p 127.0.0.1:5432:5432
+# также лучше не передавать секреты через аргументы командной строки</code></pre>
+<p>после этого я собрал образ:</p>
+<pre><code class="language-bash">docker build -t infobez-hw5-nonroot ./hw5</code></pre>
+<p>сборка завершилась успешно:</p>
+<pre><code class="language-text">writing image sha256:de8a9ba9cdd611156db849ae4dbe27ac39a5c1b258936c525eec11dacc7f5a9a done
+naming to docker.io/library/infobez-hw5-nonroot done</code></pre>
+<p>проверка пользователя внутри нового контейнера:</p>
+<pre><code class="language-bash">docker run --rm --entrypoint sh infobez-hw5-nonroot -c whoami
+appuser</code></pre>
+<p>теперь контейнер открывает shell уже не от root, а от пользователя <code>appuser</code>. дополнительно я проверил обычный запуск контейнера с переменной <code>POSTGRES_PASSWORD</code>, PostgreSQL стартовал и в логах дошел до состояния <code>database system is ready to accept connections</code>.</p>
+<p>скриншот сборки и проверки пользователя:</p>
+<p><img src="screenshots/part2.png" alt="часть ii"></p>
+<p>дополнительные настройки безопасности, которые я указал в комментариях Dockerfile:</p>
+<ul><li><code>--read-only</code> - запуск файловой системы контейнера только на чтение;</li><li><code>--cap-drop ALL</code> - отключение лишних linux capabilities;</li><li><code>--security-opt no-new-privileges</code> - запрет повышения привилегий внутри контейнера;</li><li><code>--memory 256m</code> и <code>--cpus 1</code> - ограничение ресурсов, чтобы контейнер не мог забрать всю машину;</li><li><code>-p 127.0.0.1:5432:5432</code> - публикация порта только на localhost, а не на все сетевые интерфейсы;</li><li>секреты лучше передавать через защищенные переменные окружения или secret manager, а не писать в командной строке.</li></ul>
+<h2>часть iii</h2>
+<p>для сканирования я использовал trivy:</p>
+<pre><code class="language-bash">docker run --rm aquasec/trivy:latest image --scanners vuln --timeout 10m --severity HIGH,CRITICAL postgres:16-alpine</code></pre>
+<p>первый запуск с настройками по умолчанию шел слишком долго на анализе файлов, поэтому для части с уязвимостями я явно оставил scanner <code>vuln</code>. для задания этого достаточно, потому что нужно проверить образ на high и critical уязвимости.</p>
+<p>сводка по результатам:</p>
+<pre><code class="language-text">Report Summary
+
+postgres:16-alpine (alpine 3.23.4)
+Total: 0
+
+usr/local/bin/gosu (gobinary)
+Total: 26 (HIGH: 25, CRITICAL: 1)</code></pre>
+<p>скриншот вывода trivy:</p>
+<p><img src="screenshots/part3.png" alt="часть iii"></p>
+<p>по системным пакетам alpine scanner не нашел high или critical уязвимостей. это хороший признак: базовая часть образа выглядит достаточно свежей.</p>
+<p>основные проблемы нашлись в бинарном файле <code>gosu</code>, точнее в встроенной go standard library версии <code>v1.24.6</code>. trivy показал 26 уязвимостей: 25 high и 1 critical. самая важная находка:</p>
+<pre><code class="language-text">CVE-2025-68121
+Severity: CRITICAL
+Package: stdlib
+Installed Version: v1.24.6
+Fixed Version: 1.24.13, 1.25.7, 1.26.0-rc.3
+Title: crypto/tls: Incorrect certificate validation during TLS session resumption</code></pre>
+<p>также были high-уязвимости в пакетах go standard library, например в <code>net/url</code>, <code>net/http</code>, <code>crypto/x509</code>, <code>encoding/pem</code>, <code>archive/tar</code>, <code>archive/zip</code> и <code>os</code>. почти для всех проблем trivy указывает исправленные версии go.</p>
+<h2>вывод</h2>
+<p>по первой части видно, что базовый контейнер при запуске shell работает от root. это плохая привычка для production-контейнеров, даже если сам сервис потом может сбрасывать привилегии.</p>
+<p>во второй части я собрал свой образ и переключил его на отдельного пользователя <code>appuser</code>. проверка <code>whoami</code> подтвердила, что root больше не используется для shell внутри контейнера. также в Dockerfile указал дополнительные флаги безопасного запуска: read-only filesystem, cap-drop, no-new-privileges, ограничения cpu и памяти, а также привязку порта только к localhost.</p>
+<p>по результатам trivy сам alpine-слой выглядит нормально, но в <code>gosu</code> есть high и critical уязвимости из go standard library. поэтому образ нельзя просто считать полностью безопасным. правильное действие - обновить базовый образ, когда выйдет версия с исправленным <code>gosu</code>, либо пересобрать вспомогательный бинарник на исправленной версии go. еще такой scan нужно добавить в ci/cd, чтобы новые уязвимости ловились автоматически.</p>
+</body>
+</html>

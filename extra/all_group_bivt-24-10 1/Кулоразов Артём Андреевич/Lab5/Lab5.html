@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 26.2.2.2 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changed" content="00:00:00"/>
+	<style type="text/css">
+		@page { size: 8.27in 11.69in; margin: 0.79in }
+		p { margin-bottom: 0.1in; line-height: 115%; background: transparent }
+		h1 { margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h1.western { font-weight: bold; font-size: 18pt; font-family: "Liberation Sans", sans-serif }
+		h1.cjk { font-weight: bold; font-size: 18pt; font-family: "Noto Sans CJK SC" }
+		h1.ctl { font-weight: bold; font-family: "Droid Sans"; font-size: 18pt }
+		h2 { margin-top: 0.14in; margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h2.western { font-weight: bold; font-size: 16pt; font-family: "Liberation Sans", sans-serif }
+		h2.cjk { font-weight: bold; font-size: 16pt; font-family: "Noto Sans CJK SC" }
+		h2.ctl { font-weight: bold; font-family: "Droid Sans"; font-size: 16pt }
+		pre { background: transparent }
+		pre.western { font-family: "Liberation Mono", monospace; font-size: 10pt }
+		pre.cjk { font-family: "Noto Sans Mono CJK SC", monospace; font-size: 10pt }
+		pre.ctl { font-family: "Liberation Mono", monospace; font-size: 10pt }
+	</style>
+</head>
+<body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><h1 class="western">
+Лабораторная работа №5</h1>
+<h2 class="western">Часть 1</h2>
+<p>Образ ket9/otus-devsecops-owasp-rest:latest.&nbsp;На
+хосте:<br/>
+whoami<br/>
+Ответ: laptop-72p9afnc\artmk.<br/>
+sh
+внутри контейнера:<br/>
+docker run -it --rm
+--entrypoint /bin/sh
+ket9/otus-devsecops-owasp-rest:latest<br/>
+Внутри:<br/>
+whoami<br/>
+Ответ:
+root.<br/>
+По умолчанию процессы в контейнере
+работают от root.</p>
+<h2 class="western">Часть 2</h2>
+<p>Создал Dockerfile в C:\Users\artmk\Desktop\Lab5:</p>
+<pre class="western" style="margin-bottom: 0.2in; background: #e1e1e1">FROM ket9/otus-devsecops-owasp-rest:latest<br/>
+EXPOSE 8080<br/>
+RUN adduser -D -H -s /bin/sh appuser<br/>
+USER appuser<br/>
+# Безопасный запуск:<br/>
+# --read-only<br/>
+# --cap-drop=ALL<br/>
+# --security-opt=no-new-privileges<br/>
+# --memory=256m --cpus=1<br/>
+# не использовать --privileged</pre><p>
+Сборка: docker build -t mysecureapp .<br/>
+Запуск с
+проверкой:<br/>
+docker run -it --rm --entrypoint /bin/sh
+mysecureapp<br/>
+whoami<br/>
+Ответ: appuser. Пользователь
+не root.</p>
+<h2 class="western">Часть 3</h2>
+<p>Сканирование Trivy:<br/>
+docker run --rm -v
+//var/run/docker.sock:/var/run/docker.sock -v
+$HOME/.cache/trivy:/root/.cache/ aquasec/trivy:latest image
+mysecureapp</p>
+<p>Найдено 72 уязвимости в системных
+пакетах (alpine 3.14.2) и 41 в Python-библиотеках.
+Из них 8 критических (zlib, expat), 48 высоких,
+16 средних. Критические позволяют
+выполнить произвольный код или вызвать
+переполнение буфера.<br/>
+Вывод: базовый
+образ содержит известные уязвимости.
+Нужно обновлять образы, использовать
+не-root пользователя и флаги безопасности,
+регулярно сканировать образы.</p>
+<p><br/>
+<br/>
+
+</p>
+</body>
+</html>

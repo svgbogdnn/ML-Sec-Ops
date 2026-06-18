@@ -1,0 +1,70 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h1 id="-6">Лабораторная работа №6</h1>
+<p>Студент: Ананьев Даниил Евгеньевич</p>
+<h2 id="-">Ход выполнения</h2>
+<p>В работе нужно было проверить репозиторий на секреты с помощью трафлхога.</p>
+<p>Поднял докер контейнер с питоном и поставил туда трафлхог.</p>
+<pre><code class="lang-bash">docker <span class="hljs-keyword">run</span><span class="bash"> <span class="hljs-_">-d</span> --name trufflehog-lab6 python:buster sleep 3600
+</span>docker exec trufflehog-lab6 pip install truffleHog
+</code></pre>
+<p>Потом запустил скан и сохранил вывод.</p>
+<pre><code class="lang-bash">docker <span class="hljs-built_in">exec</span> trufflehog-lab6 bash -c <span class="hljs-string">"trufflehog https://github.com/OtusTeam/DevSecOps_secret-finding.git | tee /log.txt"</span>
+docker cp trufflehog-lab6:/<span class="hljs-built_in">log</span>.txt ./<span class="hljs-built_in">log</span>.txt
+</code></pre>
+<p>Лог получился большой, потому что трафлхог проходит по всей истории комитов. Сам файл лежит рядом с отчетом.</p>
+<p>Большая часть срабатываний оказалась ложной, в основном на минифицированном джс типа ace.js и на хешах из package-lock.json. Я отобрал 5 разных по типу секретов.</p>
+<h2 id="-">Найденные секреты</h2>
+<h3 id="1-">1. Токен гитхаба в релизном пайплайне</h3>
+<p>Файл <code>.github/workflows/release.yml</code>.</p>
+<pre><code><span class="hljs-symbol">GITHUB_TOKEN:</span> cee3257f0e59d1d4975a35429cffc3d8b5fabe15ca2e9d47243cbc446d4894a5
+</code></pre><p>Это токен доступа к гитхабу, через него можно создавать релизы и пушить в репозиторий. Позже его заменили на <code>${{ secrets.GITHUB_TOKEN }}</code>, но в истории комитов он все равно остался.</p>
+<p>Хранить такие токены надо в секретах репозитория и подставлять через <code>${{ secrets.NAME }}</code>. Если токен уже утек, нужно отозвать его и выпустить новый.</p>
+<h3 id="2-">2. Приватный ключ</h3>
+<p>Файл <code>webgoat-server/privatekey.key</code>.</p>
+<p>Внутри обычный приватный ключ rsa в формате pem.</p>
+<pre><code>-<span class="ruby">----<span class="hljs-keyword">BEGIN</span> PRIVATE KEY-----
+</span>MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCpuOH6AnMc/xdJ
+...
+-<span class="ruby">----<span class="hljs-keyword">END</span> PRIVATE KEY-----</span>
+</code></pre><p>Им подписывают и расшифровывают трафик, например по тлс. Если он утек, то можно выдать себя за сервер.</p>
+<p>Приватный ключ вообще не должен лежать в репозитории. Его кладут в защищенное хранилище типа ваулта или в секреты кубернетеса. Если уже утек, надо отозвать сертификат и перевыпустить новый.</p>
+<h3 id="3-">3. Зашифрованные секреты тревиса</h3>
+<p>Файл <code>.travis.yml</code>.</p>
+<pre><code class="lang-yaml"><span class="hljs-attribute">deploy</span>:
+  - <span class="hljs-attribute">provider</span>: releases
+    <span class="hljs-attribute">token</span>:
+      <span class="hljs-attribute">secure</span>: pJOLBnl6427PcVg/tVy/qB18JC7b8cKpffau+IP0pjdSt7KUfBdBY3QuJ7mrM65zRoVILz...
+<span class="hljs-attribute">env</span>:
+  <span class="hljs-attribute">global</span>:
+    - <span class="hljs-attribute">secure</span>: XgPc0UKRTUI70I4YWNQpThPPWeQIxkmzh1GNoR/SSDC2GPIBq3EfkkbSQewqil8stTy...
+    - <span class="hljs-attribute">secure</span>: aly5TKBUK9sIiqtMbytNNPZHQhC0a7Yond5tEtuJ8fO+j/KZB4Uro3I6BhzYjGWFb5K...
+</code></pre>
+<p>Это блоки <code>secure:</code> тревиса. Внутри них реальные креды, насколько я понял там токен гитхаба для релизов, логин и пароль от докер хаба и слак вебхук. Они зашифрованы публичным ключом проекта в тревисе и расшифровываются только в его окружении.</p>
+<p>После того как проект переехал на гитхаб экшенс, эти креды надо было отозвать. Хранить их вообще лучше в секретах самого сициди, а не в файле в репозитории.</p>
+<h3 id="4-">4. Пароль прямо в коде</h3>
+<p>Файл <code>webgoat-lessons/password-reset/src/main/java/org/owasp/webgoat/password_reset/ResetLinkAssignment.java</code>.</p>
+<pre><code class="lang-java"><span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-built_in">String</span> PASSWORD_TOM_9 = <span class="hljs-string">"somethingVeryRandomWhichNoOneWillEverTypeInAsPasswordForTom"</span>;
+<span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-built_in">String</span> TOM_EMAIL = <span class="hljs-string">"tom@webgoat-cloud.org"</span>;
+</code></pre>
+<p>Пароль пользователя записан прямо в коде в виде константы. Любой кто откроет файл его увидит. Тут хоть и учебная лаба, но если так делать в реальном проекте, это будет утечка.</p>
+<p>Пароли в коде хранить нельзя. Для тестов их выносят в переменные окружения. А пароли реальных пользователей надо хранить в базе только как хеш с солью, например через bcrypt.</p>
+<h3 id="5-jwt-">5. jwt токен в тестах</h3>
+<p>Файл <code>webgoat-lessons/jwt/src/test/java/org/owasp/webgoat/jwt/JWTFinalEndpointTest.java</code>.</p>
+<pre><code class="lang-java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">String</span> TOKEN_JERRY = <span class="hljs-string">"eyJraWQiOiJ3ZWJnb2F0X2tleSIsImFsZyI6IkhTNTEyIn0.eyJhdWQiOiJ3ZWJnb2F0Lm9yZyIsImVtYWlsIjoiamVycnlAd2ViZ29hdC5jb20iLCJ1c2VybmFtZSI6IkplcnJ5In0.xBc5FFwaOcuxjdr_VJ16n8Jb7vScuaZulNTl66F2MWF1aBe47QsUosvbjWGORNcMPiPNwnMu1Yb0WZVNrp2ZXA"</span>;
+</code></pre>
+<p>Это подписанный jwt токен. Если он валиден на сервере, то можно просто скопировать его и ходить по апи как этот пользователь. Еще по нему можно попробовать подобрать секрет подписи брутфорсом.</p>
+<p>Готовые токены в коде держать не надо. Для тестов их лучше генерировать на месте, причем подписывать не боевым ключом. Сам секрет подписи лежит в секретах сициди.</p>
+<h2 id="-">Дополнительные вопросы</h2>
+<h3 id="-bfg-repo-cleaner">Что такое BFG Repo-Cleaner</h3>
+<p>Это утилита для чистки истории гит репозитория. Если объяснять просто, это более удобная и быстрая замена <code>git filter-branch</code>. Она умеет удалять большие файлы и заменять секреты в истории комитов на маркер типа <code>***REMOVED***</code>.</p>
+<p>Используют ее, когда секрет уже попал в репозиторий и просто удалить его из последнего комита недостаточно, так как в истории он все равно остается. Но даже после чистки секрет надо считать утекшим и отзывать его, потому что репозиторий могли уже клонировать.</p>
+<h3 id="-">Можно ли автоматизировать поиск секретов и насколько это правильный подход</h3>
+<p>Да, поиск секретов можно автоматизировать, и это нормальный подход.</p>
+<p>Обычно его встраивают сразу в нескольких местах. Сначала локально через прекомит хук, чтобы плохой комит просто не прошел. Потом как обязательный шаг в сициди пайплайне. Еще можно включить встроенный сканер на стороне самого гитхаба или гитлаба.</p>
+<p>Это правильно, потому что человек может забыть про секрет, а автомат нет. Минусы тоже есть. Сканеры ловят не все, особенно произвольные пароли. Бывает много ложных срабатываний, у меня в логе так и было на минифицированном джс. И главное, если секрет уже попал в репозиторий, никакая автоматизация не отменяет того, что его надо отзывать.</p>
+<p>То есть автоматизация полезна, но сама по себе она не решает проблему. Нужно еще, чтобы секреты с самого начала лежали в нормальных хранилищах, а не в коде.</p>
+<h2 id="-">Вывод</h2>
+<p>С помощью трафлхога удалось найти 5 разных по типу секретов, от приватного ключа до токенов сициди и обычного пароля в коде. Все они уже попали в историю комитов и фактически считаются утекшими. Это показывает, что инструменты вроде трафлхога лучше встраивать в сициди как можно раньше, чтобы такие вещи туда вообще не доходили.</p>
+</body></html>

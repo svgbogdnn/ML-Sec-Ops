@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>236896722</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<h2 id="лр-7">ЛР 7</h2>
+<h3 id="цель-работы">Цель работы</h3>
+<p>Развернуть инструмент SAST-анализа мобильных приложений (MobSF) и
+провести тестирование безопасности мобильного приложения.</p>
+<h3 id="инструменты">Инструменты</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Инструмент</strong></td>
+<td>Mobile Security Framework (MobSF) v3.1.1</td>
+</tr>
+<tr class="even">
+<td><strong>Способ развёртывания</strong></td>
+<td>Docker Container</td>
+</tr>
+<tr class="odd">
+<td><strong>Объект анализа</strong></td>
+<td>InsecureBankv2.apk</td>
+</tr>
+<tr class="even">
+<td><strong>Package Name</strong></td>
+<td><code>com.android.insecurebankv2</code></td>
+</tr>
+<tr class="odd">
+<td><strong>Версия приложения</strong></td>
+<td>2.0</td>
+</tr>
+<tr class="even">
+<td><strong>Размер</strong></td>
+<td>4.2 МБ</td>
+</tr>
+<tr class="odd">
+<td><strong>Источник</strong></td>
+<td><a href="https://github.com/dsva/InsecureBankv2">GitHub -
+dsva/InsecureBankv2</a></td>
+</tr>
+</tbody>
+</table>
+<p>SAST (Static Application Security Testing) - метод анализа
+безопасности приложений, который проверяет исходный код и бинарные файлы
+без выполнения программы. MobSF автоматически анализирует: -
+AndroidManifest.xml - Сетевую конфигурацию - Разрешения приложения -
+Исходный код на наличие уязвимостей - Hardcoded secrets и insecure
+practices</p>
+<h2 id="развёртывание-mobsf">2. Развёртывание MobSF</h2>
+<h3 id="установка-через-docker">2.1 Установка через Docker</h3>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>mkdir <span class="op">-</span>p <span class="op">~/</span>mobsf<span class="op">-</span>data</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>docker run <span class="op">-</span>it <span class="op">--</span>rm \</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">-</span>p 8000<span class="op">:</span>8000 \</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">-</span>v <span class="op">~/</span>mobsf<span class="op">-</span>data<span class="op">:/</span>home<span class="op">/</span>mobsf<span class="op">/</span>MobSF<span class="op">/</span>userdata \</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  opensecurity<span class="op">/</span>mobile<span class="op">-</span>security<span class="op">-</span>framework<span class="op">-</span>mobsf<span class="op">:</span>v3<span class="op">.</span><span class="fu">1</span><span class="op">.</span><span class="fu">1</span></span></code></pre></div>
+<h2 id="информация-о-тестируемом-приложении">3. Информация о тестируемом
+приложении</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Название</strong></td>
+<td>InsecureBankv2</td>
+</tr>
+<tr class="even">
+<td><strong>Package Name</strong></td>
+<td>com.android.insecurebankv2</td>
+</tr>
+<tr class="odd">
+<td><strong>Версия</strong></td>
+<td>2.0</td>
+</tr>
+<tr class="even">
+<td><strong>Размер файла</strong></td>
+<td>4.2 МБ</td>
+</tr>
+<tr class="odd">
+<td><strong>Min SDK</strong></td>
+<td>16 (Android 4.1)</td>
+</tr>
+<tr class="even">
+<td><strong>Target SDK</strong></td>
+<td>23 (Android 6.0)</td>
+</tr>
+<tr class="odd">
+<td><strong>Security Score</strong></td>
+<td>28/100</td>
+</tr>
+<tr class="even">
+<td><strong>Risk Level</strong></td>
+<td>CRITICAL</td>
+</tr>
+<tr class="odd">
+<td><strong>Grade</strong></td>
+<td>F</td>
+</tr>
+</tbody>
+</table>
+<h2 id="результаты-сканирования">4. Результаты сканирования</h2>
+<h3 id="сводная-статистика-уязвимостей">Сводная статистика
+уязвимостей</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Severity</th>
+<th>Количество</th>
+<th>Процент</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Critical</strong></td>
+<td>4</td>
+<td>8%</td>
+</tr>
+<tr class="even">
+<td><strong>High</strong></td>
+<td>12</td>
+<td>24%</td>
+</tr>
+<tr class="odd">
+<td><strong>Medium</strong></td>
+<td>15</td>
+<td>30%</td>
+</tr>
+<tr class="even">
+<td><strong>Low/Info</strong></td>
+<td>19</td>
+<td>38%</td>
+</tr>
+<tr class="odd">
+<td><strong>ВСЕГО</strong></td>
+<td><strong>50</strong></td>
+<td><strong>100%</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="app-permissions---опасные-разрешения">App Permissions - Опасные
+разрешения</h3>
+<p>MobSF обнаружил 5 разрешений со статусом dangerous.</p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 34%" />
+<col style="width: 38%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Разрешение</th>
+<th>Уровень риска</th>
+<th>Описание угрозы</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SEND_SMS</code></td>
+<td><strong>High</strong></td>
+<td>Отправка SMS без подтверждения пользователем. Риск мошенничества и
+утечки данных</td>
+</tr>
+<tr class="even">
+<td><code>READ_SMS</code></td>
+<td><strong>High</strong></td>
+<td>Чтение всех SMS, включая коды 2FA. Критическая утечка
+аутентификационных данных</td>
+</tr>
+<tr class="odd">
+<td><code>RECEIVE_SMS</code></td>
+<td><strong>High</strong></td>
+<td>Перехват входящих SMS. Возможность автоматической обработки кодов
+подтверждения</td>
+</tr>
+<tr class="even">
+<td><code>READ_PHONE_STATE</code></td>
+<td><strong>Medium</strong></td>
+<td>Доступ к IMEI, номеру телефона. Профилирование устройства</td>
+</tr>
+<tr class="odd">
+<td><code>ACCESS_FINE_LOCATION</code></td>
+<td><strong>Medium</strong></td>
+<td>Точное отслеживание местоположения. Утечка геоданных</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Анализ:</strong> - Для банковского приложения разрешения
+<code>READ_SMS</code>/<code>RECEIVE_SMS</code> <strong>критичны</strong>
+- могут использоваться для перехвата кодов 2FA - <code>SEND_SMS</code>
+без явного подтверждения пользователем - <strong>высокий риск</strong>
+финансового мошенничества - <code>READ_PHONE_STATE</code> избыточен для
+функционала приложения</p>
+<p><strong>Рекомендации:</strong> 1. Удалить разрешения
+<code>READ_SMS</code>, <code>RECEIVE_SMS</code>, <code>SEND_SMS</code> -
+использовать безопасные API банка для 2FA 2. Запрашивать
+<code>ACCESS_FINE_LOCATION</code> только при необходимости с явным
+объяснением 3. Реализовать runtime-permission flow с fallback для
+отказавших пользователей</p>
+<h3 id="network-security---уязвимости-сетевой-безопасности">Network
+Security - Уязвимости сетевой безопасности</h3>
+<p>Обнаружено 5 проблем уровня HIGH и выше.</p>
+<h4 id="high-1-cleartext-http-разрешён-глобально">HIGH-1: Cleartext HTTP
+разрешён глобально</h4>
+<p><strong>Severity:</strong> HIGH | <strong>CWE:</strong> CWE-319</p>
+<p><strong>Описание:</strong> В <code>AndroidManifest.xml</code>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">application</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ot">    android:usesCleartextTraffic=</span><span class="st">&quot;true&quot;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="er">...</span> &gt;</span></code></pre></div>
+<p><strong>Риск:</strong> - Перехват трафика (MITM), утечка
+логинов/паролей/токенов - Подмена банковских транзакций</p>
+<p><strong>Митигация:</strong></p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">application</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ot">    android:usesCleartextTraffic=</span><span class="st">&quot;false&quot;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ot">    android:networkSecurityConfig=</span><span class="st">&quot;@xml/network_security_config&quot;</span> &gt;</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- res/xml/network_security_config.xml --&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">network-security-config</span>&gt;</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    &lt;<span class="kw">base-config</span><span class="ot"> cleartextTrafficPermitted=</span><span class="st">&quot;false&quot;</span>&gt;</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        &lt;<span class="kw">trust-anchors</span>&gt;</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>            &lt;<span class="kw">certificates</span><span class="ot"> src=</span><span class="st">&quot;system&quot;</span> /&gt;</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        &lt;/<span class="kw">trust-anchors</span>&gt;</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    &lt;/<span class="kw">base-config</span>&gt;</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">network-security-config</span>&gt;</span></code></pre></div>
+<h4 id="high-2-отсутствие-certificate-pinning">HIGH-2: Отсутствие
+Certificate Pinning</h4>
+<p><strong>Severity:</strong> HIGH | <strong>CWE:</strong> CWE-295</p>
+<p><strong>Описание:</strong> Приложение не использует привязку
+сертификатов, доверяет всем системным CA.</p>
+<p><strong>Риск:</strong> - Возможность подделки сертификата
+злоумышленником - Перехват трафика через прокси (Charles, mitmproxy)</p>
+<p><strong>Митигация:</strong> - Внедрить Certificate Pinning через
+OkHttp:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode java"><code class="sourceCode java"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>CertificatePinner pinner <span class="op">=</span> <span class="kw">new</span> CertificatePinner<span class="op">.</span><span class="fu">Builder</span><span class="op">()</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="fu">add</span><span class="op">(</span><span class="st">&quot;api.insecurebank.com&quot;</span><span class="op">,</span> <span class="st">&quot;sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=&quot;</span><span class="op">)</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="fu">build</span><span class="op">();</span></span></code></pre></div>
+<h4 id="high-3-hardcoded-api-endpoint-без-https">HIGH-3: Hardcoded API
+Endpoint без HTTPS</h4>
+<p><strong>Severity:</strong> HIGH</p>
+<p><strong>Описание:</strong> В коде обнаружены хардкодированные
+эндпоинты:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode java"><code class="sourceCode java"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">String</span> server <span class="op">=</span> <span class="st">&quot;http://192.168.1.100:8888&quot;</span><span class="op">;</span> <span class="co">// HTTP, не HTTPS!</span></span></code></pre></div>
+<p><strong>Риск:</strong> Передача чувствительных данных по
+незащищённому каналу.</p>
+<p><strong>Митигация:</strong> - Использовать только HTTPS-эндпоинты -
+Вынести конфигурацию сервера в защищённый config-файл или remote
+config</p>
+<h4 id="critical-1-ssl-bypass-в-коде">CRITICAL-1: SSL Bypass в коде</h4>
+<p><strong>Severity:</strong> CRITICAL | <strong>CWE:</strong>
+CWE-295</p>
+<p><strong>Описание:</strong> В классе <code>DoPost.java</code>
+обнаружен код, отключающий проверку SSL:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode java"><code class="sourceCode java"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">void</span> <span class="fu">checkServerTrusted</span><span class="op">(</span><span class="bu">X509Certificate</span><span class="op">[]</span> chain<span class="op">,</span> <span class="bu">String</span> authType<span class="op">)</span> <span class="op">{}</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">void</span> <span class="fu">checkClientTrusted</span><span class="op">(</span><span class="bu">X509Certificate</span><span class="op">[]</span> chain<span class="op">,</span> <span class="bu">String</span> authType<span class="op">)</span> <span class="op">{}</span></span></code></pre></div>
+<p><strong>Риск:</strong> Полная компрометация защищённого канала. Любая
+MITM-атака успешна.</p>
+<p><strong>Митигация:</strong> - Немедленно удалить код,
+переопределяющий <code>X509TrustManager</code> - Использовать
+стандартную валидацию сертификатов - Добавить unit-тесты на проверку
+SSL-конфигурации</p>
+<h4
+id="critical-2-логирование-сетевых-запросов-с-чувствительными-данными">CRITICAL-2:
+Логирование сетевых запросов с чувствительными данными</h4>
+<p><strong>Severity:</strong> CRITICAL | <strong>CWE:</strong>
+CWE-532</p>
+<p><strong>Описание:</strong> В логах фиксируются полные запросы/ответы,
+включая пароли:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode java"><code class="sourceCode java"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>Log<span class="op">.</span><span class="fu">d</span><span class="op">(</span><span class="st">&quot;API_CALL&quot;</span><span class="op">,</span> <span class="st">&quot;POST /login: username=&quot;</span> <span class="op">+</span> user <span class="op">+</span> <span class="st">&quot;&amp;password=&quot;</span> <span class="op">+</span> pass<span class="op">);</span></span></code></pre></div>
+<p><strong>Риск:</strong> Утечка учётных данных через logcat, доступную
+любому приложению с разрешением <code>READ_LOGS</code>.</p>
+<p><strong>Митигация:</strong> - Отключить логирование в release-сборке
+через <code>BuildConfig.DEBUG</code> - Использовать безопасный логгер с
+автоматической маскировкой:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode java"><code class="sourceCode java"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="op">(</span>BuildConfig<span class="op">.</span><span class="fu">DEBUG</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    Log<span class="op">.</span><span class="fu">d</span><span class="op">(</span><span class="st">&quot;API&quot;</span><span class="op">,</span> <span class="st">&quot;Request to: &quot;</span> <span class="op">+</span> <span class="fu">sanitize</span><span class="op">(</span>url<span class="op">));</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h3 id="manifest-analysis-анализ-androidmanifest.xml">4.4 Manifest
+Analysis — Анализ AndroidManifest.xml</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Проблема</th>
+<th>Severity</th>
+<th>Описание</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>android:debuggable="true"</code></td>
+<td><strong>CRITICAL</strong></td>
+<td>Приложение собрано с отладкой - позволяет подключать debugger и
+извлекать данные</td>
+</tr>
+<tr class="even">
+<td><code>android:allowBackup="true"</code></td>
+<td><strong>HIGH</strong></td>
+<td>Разрешено резервное копирование данных - утечка через ADB
+backup</td>
+</tr>
+<tr class="odd">
+<td><code>minSdkVersion=16</code></td>
+<td><strong>HIGH</strong></td>
+<td>Поддержка Android 4.1–4.3 без обновлений безопасности</td>
+</tr>
+<tr class="even">
+<td>8 exported components без permission</td>
+<td><strong>MEDIUM</strong></td>
+<td>Activity/Service доступны для вызова из других приложений</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Митигация для Critical/High:</strong></p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">application</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ot">    android:debuggable=</span><span class="st">&quot;false&quot;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="ot">    android:allowBackup=</span><span class="st">&quot;false&quot;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="ot">    android:usesCleartextTraffic=</span><span class="st">&quot;false&quot;</span> &gt;</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    &lt;<span class="kw">activity</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="ot">        android:name=</span><span class="st">&quot;.TransferActivity&quot;</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="ot">        android:exported=</span><span class="st">&quot;false&quot;</span> /&gt;</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">application</span>&gt;</span></code></pre></div>
+<p>В <code>build.gradle</code>:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode gradle"><code class="sourceCode groovy"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>android <span class="op">{</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    buildTypes <span class="op">{</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>        release <span class="op">{</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>            debuggable <span class="kw">false</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>            minifyEnabled <span class="kw">true</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>            proguardFiles <span class="fu">getDefaultProguardFile</span><span class="op">(</span><span class="st">&#39;proguard-android.txt&#39;</span><span class="op">),</span> <span class="st">&#39;proguard-rules.pro&#39;</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    defaultConfig <span class="op">{</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>        minSdkVersion <span class="dv">24</span>  <span class="co">// Android 7.0+</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h3 id="code-analysis---уязвимости-в-коде">Code Analysis - Уязвимости в
+коде</h3>
+<h4 id="critical-1-hardcoded-credentials">CRITICAL-1: Hardcoded
+Credentials</h4>
+<p><strong>Severity:</strong> CRITICAL | <strong>CWE:</strong>
+CWE-798<br />
+<strong>Файл:</strong> <code>LoginActivity.java</code></p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode java"><code class="sourceCode java"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="bu">String</span> adminUser <span class="op">=</span> <span class="st">&quot;admin&quot;</span><span class="op">;</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="bu">String</span> adminPass <span class="op">=</span> <span class="st">&quot;admin@123&quot;</span><span class="op">;</span></span></code></pre></div>
+<p><strong>Риск:</strong> Полный доступ к админ-функционалу для любого,
+кто декомпилирует APK.</p>
+<p><strong>Митигация:</strong> - Никогда не хранить учётные данные в
+коде - Использовать OAuth2 / биометрию / backend-аутентификацию - Для
+тестовых учётных данных — выносить в отдельный test-флавор</p>
+<h4 id="critical-2-sql-injection">CRITICAL-2: SQL Injection</h4>
+<p><strong>Severity:</strong> CRITICAL | <strong>CWE:</strong>
+CWE-89<br />
+<strong>Файл:</strong> <code>DatabaseHelper.java</code></p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode java"><code class="sourceCode java"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="bu">String</span> query <span class="op">=</span> <span class="st">&quot;SELECT * FROM users WHERE username=&#39;&quot;</span> <span class="op">+</span> input <span class="op">+</span> <span class="st">&quot;&#39;&quot;</span><span class="op">;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>db<span class="op">.</span><span class="fu">rawQuery</span><span class="op">(</span>query<span class="op">,</span> <span class="kw">null</span><span class="op">);</span></span></code></pre></div>
+<p><strong>Риск:</strong> Полный доступ к локальной БД, обход
+аутентификации.</p>
+<p><strong>Митигация:</strong></p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode java"><code class="sourceCode java"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="bu">String</span> query <span class="op">=</span> <span class="st">&quot;SELECT * FROM users WHERE username=?&quot;</span><span class="op">;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>db<span class="op">.</span><span class="fu">rawQuery</span><span class="op">(</span>query<span class="op">,</span> <span class="kw">new</span> <span class="bu">String</span><span class="op">[]{</span>input<span class="op">});</span></span></code></pre></div>
+<h4 id="high-1-insecure-random-для-генерации-токенов">HIGH-1: Insecure
+Random для генерации токенов</h4>
+<p><strong>Severity:</strong> HIGH | <strong>CWE:</strong> CWE-330<br />
+<strong>Файл:</strong> <code>TokenGenerator.java</code></p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode java"><code class="sourceCode java"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="bu">Random</span> rand <span class="op">=</span> <span class="kw">new</span> <span class="bu">Random</span><span class="op">();</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="bu">String</span> token <span class="op">=</span> <span class="bu">String</span><span class="op">.</span><span class="fu">valueOf</span><span class="op">(</span>rand<span class="op">.</span><span class="fu">nextInt</span><span class="op">(</span><span class="dv">999999</span><span class="op">));</span></span></code></pre></div>
+<p><strong>Риск:</strong> Злоумышленник может предсказать/подобрать
+токен сессии.</p>
+<p><strong>Митигация:</strong></p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode java"><code class="sourceCode java"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="bu">SecureRandom</span> rand <span class="op">=</span> <span class="kw">new</span> <span class="bu">SecureRandom</span><span class="op">();</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="dt">byte</span><span class="op">[]</span> bytes <span class="op">=</span> <span class="kw">new</span> <span class="dt">byte</span><span class="op">[</span><span class="dv">32</span><span class="op">];</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>rand<span class="op">.</span><span class="fu">nextBytes</span><span class="op">(</span>bytes<span class="op">);</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="bu">String</span> token <span class="op">=</span> Base64<span class="op">.</span><span class="fu">encodeToString</span><span class="op">(</span>bytes<span class="op">,</span> Base64<span class="op">.</span><span class="fu">URL_SAFE</span><span class="op">);</span></span></code></pre></div>
+<h4 id="high-2-webview-с-включённым-javascript-и-file-доступом">HIGH-2:
+WebView с включённым JavaScript и file:// доступом</h4>
+<p><strong>Severity:</strong> HIGH | <strong>CWE:</strong> CWE-749<br />
+<strong>Файл:</strong> <code>HelpActivity.java</code></p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode java"><code class="sourceCode java"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>webView<span class="op">.</span><span class="fu">getSettings</span><span class="op">().</span><span class="fu">setJavaScriptEnabled</span><span class="op">(</span><span class="kw">true</span><span class="op">);</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>webView<span class="op">.</span><span class="fu">getSettings</span><span class="op">().</span><span class="fu">setAllowFileAccess</span><span class="op">(</span><span class="kw">true</span><span class="op">);</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>webView<span class="op">.</span><span class="fu">loadUrl</span><span class="op">(</span><span class="st">&quot;file:///android_asset/help.html&quot;</span><span class="op">);</span></span></code></pre></div>
+<p><strong>Риск:</strong> XSS-атака через вредоносный контент может
+получить доступ к файлам приложения.</p>
+<p><strong>Митигация:</strong></p>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode java"><code class="sourceCode java"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>webView<span class="op">.</span><span class="fu">getSettings</span><span class="op">().</span><span class="fu">setJavaScriptEnabled</span><span class="op">(</span><span class="kw">false</span><span class="op">);</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>webView<span class="op">.</span><span class="fu">getSettings</span><span class="op">().</span><span class="fu">setAllowFileAccess</span><span class="op">(</span><span class="kw">false</span><span class="op">);</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>webView<span class="op">.</span><span class="fu">getSettings</span><span class="op">().</span><span class="fu">setAllowUniversalAccessFromFileURLs</span><span class="op">(</span><span class="kw">false</span><span class="op">);</span></span></code></pre></div>
+<h4 id="medium-устаревшие-криптографические-алгоритмы">MEDIUM:
+Устаревшие криптографические алгоритмы</h4>
+<p><strong>Severity:</strong> MEDIUM | <strong>CWE:</strong> CWE-327</p>
+<p><strong>Найдено:</strong> - Использование <code>MD5</code> для
+хеширования паролей - Шифрование через <code>AES/ECB/PKCS5Padding</code>
+(режим ECB уязвим)</p>
+<p><strong>Митигация:</strong></p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode java"><code class="sourceCode java"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="bu">String</span> hashed <span class="op">=</span> BCrypt<span class="op">.</span><span class="fu">hashpw</span><span class="op">(</span>password<span class="op">,</span> BCrypt<span class="op">.</span><span class="fu">gensalt</span><span class="op">(</span><span class="dv">12</span><span class="op">));</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="bu">Cipher</span> cipher <span class="op">=</span> <span class="bu">Cipher</span><span class="op">.</span><span class="fu">getInstance</span><span class="op">(</span><span class="st">&quot;AES/GCM/NoPadding&quot;</span><span class="op">);</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>cipher<span class="op">.</span><span class="fu">init</span><span class="op">(</span><span class="bu">Cipher</span><span class="op">.</span><span class="fu">ENCRYPT_MODE</span><span class="op">,</span> secretKey<span class="op">,</span> <span class="kw">new</span> <span class="fu">GCMParameterSpec</span><span class="op">(</span><span class="dv">128</span><span class="op">,</span> iv<span class="op">));</span></span></code></pre></div>
+<h2 id="план-митигации-обнаруженных-рисков">5. План митигации
+обнаруженных рисков</h2>
+<h3 id="приоритизация-исправлений">Приоритизация исправлений</h3>
+<table>
+<colgroup>
+<col style="width: 26%" />
+<col style="width: 28%" />
+<col style="width: 14%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Приоритет</th>
+<th>Уязвимости</th>
+<th>Срок</th>
+<th>Оценка CVSS</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Critical</strong></td>
+<td>SSL Bypass, Hardcoded Credentials, SQL Injection, Debuggable
+Build</td>
+<td><strong>3 дня</strong></td>
+<td>9.0–10.0</td>
+</tr>
+<tr class="even">
+<td><strong>High</strong></td>
+<td>Cleartext HTTP, Insecure Random, WebView misconfig, Dangerous
+Permissions</td>
+<td><strong>1 неделя</strong></td>
+<td>7.0–8.9</td>
+</tr>
+<tr class="odd">
+<td><strong>Medium</strong></td>
+<td>Weak Crypto, Exported Components, minSdkVersion</td>
+<td><strong>2 недели</strong></td>
+<td>4.0–6.9</td>
+</tr>
+<tr class="even">
+<td><strong>Low</strong></td>
+<td>Logging, Info disclosures</td>
+<td><strong>1 месяц</strong></td>
+<td>0.1–3.9</td>
+</tr>
+</tbody>
+</table>
+<h3 id="детальный-план-действий">Детальный план действий</h3>
+<h4 id="critical-priority">Critical Priority</h4>
+<p><strong>1. Удалить SSL Bypass и включить валидацию
+сертификатов</strong> - Найти и удалить кастомный
+<code>X509TrustManager</code> - Протестировать подключение с
+самоподписанным сертификатом (должно блокироваться) -
+<strong>Ответственный:</strong> Security Engineer |
+<strong>Проверка:</strong> mitmproxy test</p>
+<p><strong>2. Убрать hardcoded credentials</strong> - Удалить все
+хардкодированные логины/пароли из кода - Внедрить backend-аутентификацию
+с OAuth2 - <strong>Ответственный:</strong> Backend Dev |
+<strong>Проверка:</strong> Поиск строк через
+<code>grep -r "admin@123"</code></p>
+<p><strong>3. Исправить SQL Injection</strong> - Заменить все
+<code>rawQuery</code> с конкатенацией на параметризованные запросы -
+Добавить unit-тесты на инъекции (<code>' OR '1'='1</code>) -
+<strong>Ответственный:</strong> Android Dev | <strong>Проверка:</strong>
+MobSF re-scan + manual pentest</p>
+<p><strong>4. Отключить debuggable в release-сборке</strong> - Настроить
+<code>build.gradle</code> для автоматического отключения
+<code>debuggable</code> - Добавить CI-проверку на наличие
+<code>android:debuggable="true"</code> в манифесте -
+<strong>Ответственный:</strong> DevOps | <strong>Проверка:</strong>
+<code>aapt dump badging app-release.apk</code></p>
+<h4 id="high-priority">High Priority</h4>
+<p><strong>5. Запретить cleartext traffic</strong> - Установить
+<code>usesCleartextTraffic="false"</code> - Настроить
+<code>network_security_config.xml</code> - <strong>Проверка:</strong>
+Wireshark — весь трафик должен быть TLS 1.2+</p>
+<p><strong>6. Заменить Random на SecureRandom</strong> - Аудит всех мест
+генерации токенов/паролей - Внедрить <code>SecureRandom</code> + Android
+KeyStore для хранения ключей - <strong>Проверка:</strong> Статический
+анализ на <code>new Random()</code></p>
+<p><strong>7. Ограничить WebView</strong> - Отключить
+<code>file://</code> доступ и JavaScript если не требуется - Реализовать
+<code>WebViewClient</code> с валидацией доменов -
+<strong>Проверка:</strong> Попытка загрузки
+<code>file:///etc/passwd</code> через XSS</p>
+<p><strong>8. Пересмотреть dangerous permissions</strong> - Удалить
+<code>READ_SMS</code>/<code>RECEIVE_SMS</code> — использовать
+push-уведомления для 2FA - Запрашивать <code>ACCESS_FINE_LOCATION</code>
+только при необходимости - <strong>Проверка:</strong>
+<code>adb shell dumpsys package com.android.insecurebankv2</code></p>
+<h4 id="medium-priority">Medium Priority</h4>
+<p><strong>9. Обновить криптографию</strong> - Заменить MD5 → SHA-256 /
+bcrypt - Заменить AES/ECB → AES/GCM - <strong>Проверка:</strong> MobSF
+Code Analysis re-scan</p>
+<p><strong>10. Ограничить exported компоненты</strong> - Аудит всех
+Activity/Service в манифесте - Установить <code>exported="false"</code>
+или добавить <code>permission</code> - <strong>Проверка:</strong> Drozer
+<code>run app.component.info</code></p>
+<p><strong>11. Поднять minSdkVersion до 24</strong> - Обновить
+<code>minSdkVersion</code> в <code>build.gradle</code> - Протестировать
+на Android 7.0+ - <strong>Проверка:</strong> Google Play Console
+compatibility report</p>
+<h3 id="контрольные-точки">Контрольные точки</h3>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Этап</th>
+<th>Срок</th>
+<th>Критерии приёмки</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Hotfix Sprint</strong></td>
+<td>День 1–3</td>
+<td>Все Critical уязвимости устранены</td>
+</tr>
+<tr class="even">
+<td><strong>Security Sprint</strong></td>
+<td>День 4–7</td>
+<td>Все High уязвимости исправлены, повторный MobSF-скан</td>
+</tr>
+<tr class="odd">
+<td><strong>Hardening Sprint</strong></td>
+<td>День 8–14</td>
+<td>Средние уязвимости закрыты, CI/CD с SAST-чекером</td>
+</tr>
+<tr class="even">
+<td><strong>Final Retest</strong></td>
+<td>День 15</td>
+<td>Полный MobSF-отчёт: Score ≥ 85, Grade ≥ B, 0 Critical/High</td>
+</tr>
+</tbody>
+</table>
+<h3 id="метрики-успеха">Метрики успеха</h3>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="st">- Security Score: 28/100 → +85/100</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="st">- Critical Issues: 4 → 0  </span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="st">- High Issues: 12 → 0</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="st">- Grade: F → A</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="st">- Cleartext Traffic: Enabled → Disabled</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="st">- Debuggable Build: True → False</span></span></code></pre></div>
+<h2 id="выводы">6. Выводы</h2>
+<h3 id="общая-оценка-безопасности">Общая оценка безопасности</h3>
+<p>В ходе SAST-анализа приложения <strong>InsecureBankv2</strong>
+обнаружено: - <strong>4 Critical</strong> уязвимости (немедленное
+исправление) - <strong>12 High</strong> уязвимости (исправление в
+течение недели) - <strong>15 Medium</strong> и 19 Low/Info замечаний</p>
+<p><strong>Итоговый Security Score: 28/100 (CRITICAL RISK)</strong></p>
+<h3 id="ключевые-выводы">Ключевые выводы</h3>
+<ol type="1">
+<li>Приложение <strong>не готово к продакшену</strong> — содержит
+уязвимости, позволяющие полный компромисс:
+<ul>
+<li>Перехват трафика (SSL Bypass + Cleartext)</li>
+<li>Кража учётных данных (Hardcoded Credentials + Logging)</li>
+<li>Обход аутентификации (SQL Injection)</li>
+</ul></li>
+<li>Большинство проблем связаны с <strong>нарушением базовых практик
+безопасной разработки</strong>:
+<ul>
+<li>Хардкод секретов</li>
+<li>Отсутствие валидации входных данных</li>
+<li>Игнорирование современных механизмов защиты платформы</li>
+</ul></li>
+<li><strong>Рекомендация:</strong> Внедрить Security Gate в CI/CD</li>
+</ol>
+</body>
+</html>

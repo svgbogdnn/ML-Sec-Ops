@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code {
+      background: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote {
+      border-left: 4px solid #ddd;
+      margin: 1em 0;
+      padding-left: 20px;
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>Часть 1</h1>
+<h3>Проверка локальных образов</h3>
+<p>Смотрим какие образы уже есть командой <code>docker image ls</code> (image1.png)</p>
+<p>В выводе находим скачанный ранее образ ket9/otus-devsecops-owasp-rest с тегом latest</p>
+<h3>Пользователь на хосте</h3>
+<p>Далее смотрим юзера до запуска контейнера командой <code>whoami</code> - получил viacheslav (image2.png)</p>
+<h3>Пользователь внутри контейнера</h3>
+<p>Запускаем командную оболочку sh внутри образа:
+<code>docker run -it ket9/otus-devsecops-owasp-rest:latest sh</code></p>
+<p>Смотрим юзера командой <code>whoami</code> - получил root </p>
+<p>(image3.png)</p>
+<h1>Часть 2</h1>
+<p>Создадим dockerfile для сборки нового безопасного образа на базе предыдущего</p>
+<p>Далее билдим новый образ командой:
+<code>docker build -t owasp-rest-secure:latest .</code> (image4.png)</p>
+<p>Запускаем контейнер и сразу проваливаемся внутрь:
+<code>docker run -it owasp-rest-secure:latest sh</code></p>
+<p>Снова проверяем пользователя внутри:
+whoami</p>
+<p>Вывод: appuser</p>
+<p>(image5.png)</p>
+<h1>Часть 3</h1>
+<p>Запускаем сканер безопасности на наш новый образ</p>
+<p>docker run --rm <br>  -v /var/run/docker.sock:/var/run/docker.sock <br>  aquasec/trivy image owasp-rest-secure:latest</p>
+<h2>Общий результат сканирования</h2>
+<p>Всего найдено 72 уязвимости</p>
+<p>CRITICAL: 8</p>
+<p>HIGH: 48</p>
+<p>MEDIUM: 16</p>
+<p>LOW: 0</p>
+<h2>Примеры обнаруженных уязвимостей:</h2>
+<p>expat — CVE-2022-22822 (Уровень: CRITICAL).
+Уязвимость переполнения целого числа (Integer overflow) в библиотеке синтаксического анализа XML. Может привести к выполнению произвольного кода или отказу в обслуживании</p>
+<p>busybox — CVE-2021-42378 (Уровень: HIGH).
+Уязвимость использования памяти после освобождения (use-after-free) в апплете awk. Также ведет к риску отказа в обслуживании</p>
+<h2>Выводы по безопасности образа</h2>
+<p>В ходе сканирования Trivy выдал предупреждение о том, что базовая операционная система образа (Alpine 3.14.2) устарела и больше не поддерживается разработчиками (This OS version is no longer supported)</p>
+<p>Все найденные критические (CRITICAL) и высокие (HIGH) уязвимости относятся именно к системным утилитам и библиотекам старого дистрибутива, а не к коду самого приложения</p>
+<p>Меры предотвращения: изменить базовый образ в dockerfile на актуальную и поддерживаемую версию (например, alpine:3.19 или новее), после чего заново пересобрать контейнер</p>
+<p>(image6.png)</p>
+<p>(image7.png)</p>
+<p>(image8.png)</p>
+
+</body>
+</html>

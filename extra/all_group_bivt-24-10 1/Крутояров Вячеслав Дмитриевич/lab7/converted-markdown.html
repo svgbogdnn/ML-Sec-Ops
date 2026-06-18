@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code {
+      background: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote {
+      border-left: 4px solid #ddd;
+      margin: 1em 0;
+      padding-left: 20px;
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>SAST-анализ мобильного приложения Subway Surfers через MobSF</h1>
+<p>В рамках данной работы было выполнено развертывание платформы автоматизированного статического анализа MobSF (Mobile Security Framework) и проведено комплексное тестирование безопасности дистрибутива мобильного приложения.</p>
+<ul>
+<li><strong>Объект исследования:</strong> <code>Subway Surfers_3.63.10_APKPure.apk</code></li>
+<li><strong>Идентификатор пакета:</strong> <code>com.kiloo.subwaysurf</code></li>
+<li><strong>Источник дистрибутива:</strong> <a href="https://apkpure.net/subway-surfers-android/com.kiloo.subwaysurf/download">Зеркало APKPure</a></li>
+<li><strong>Среда развертывания:</strong> MobSF в Docker-контейнере</li>
+</ul>
+<hr>
+<h2>1. Ход работы и запуск MobSF</h2>
+<p>Инструмент SAST-анализа был запущен в изолированной среде с помощью Docker. После инициализации контейнера был открыт веб-интерфейс MobSF в браузере, куда загрузили целевой APK-файл. Платформа в автоматическом режиме проверила структуру манифеста, выполнила декомпиляцию исходного Java/Kotlin-кода и сформировала отчет по безопасности.</p>
+<hr>
+<h2>2. Общие результаты сканирования</h2>
+<p>По итогам проверки MobSF присвоил приложению следующие метрики:</p>
+<pre><code class="language-text">Security Score: 41/100 (Medium Risk)
+</code></pre>
+<h3>Сводка обнаруженных дефектов:</h3>
+<ul>
+<li><strong>HIGH:</strong> 11</li>
+<li><strong>MEDIUM:</strong> 28</li>
+<li><strong>INFO:</strong> 4</li>
+</ul>
+<h3>Обнаруженные трекеры конфиденциальности (Privacy Trackers):</h3>
+<p>В ходе анализа было выявлено <strong>6 встроенных рекламных и аналитических SDK</strong>, осуществляющих сбор данных пользователя:</p>
+<ul>
+<li>Unity Ads</li>
+<li>AppLovin</li>
+<li>IronSource</li>
+<li>Fyber</li>
+<li>Mintegral (Mbridge)</li>
+<li>Vungle</li>
+</ul>
+<hr>
+<h2>3. Подробный разбор выявленных уязвимостей</h2>
+<hr>
+<h3>Уязвимость №1 — Разрешен незашифрованный HTTP-трафик</h3>
+<ul>
+<li><strong>Severity:</strong> HIGH · <strong>CWE:</strong> CWE-319</li>
+<li><strong>Описание:</strong> В приложении активна поддержка незашифрованного протокола передачи данных. В файле настроек <code>network_security_config.xml</code> домены некоторых рекламных платформ добавлены в исключения без обязательного HTTPS.</li>
+<li><strong>Риск:</strong> Злоумышленник, находящийся в одной сети с пользователем (например, публичный Wi-Fi), может перехватить или подменить трафик через MITM-атаку.</li>
+<li><strong>Обнаружено в манифесте:</strong></li>
+</ul>
+<pre><code class="language-xml">android:usesCleartextTraffic=&quot;true&quot;
+</code></pre>
+<ul>
+<li><strong>Митигация:</strong> Установить <code>android:usesCleartextTraffic=&quot;false&quot;</code> в манифесте приложения. В конфигурации сетевой безопасности явно прописать <code>cleartextTrafficPermitted=&quot;false&quot;</code> и принудительно перевести все SDK на HTTPS.</li>
+</ul>
+<hr>
+<h3>Уязвимость №2 — Слабая цифровая подпись сертификата</h3>
+<ul>
+<li><strong>Severity:</strong> HIGH · <strong>CWE:</strong> CWE-327</li>
+<li><strong>Описание:</strong> APK-файл подписан с использованием устаревшего алгоритма хэширования и недостаточной длины ключа.</li>
+<li><strong>Конфигурация:</strong> <code>SHA1withRSA</code> с ключом <strong>1024 бит</strong>.</li>
+<li><strong>Риск:</strong> Алгоритм SHA-1 уязвим к коллизиям хэш-функций. Слабый ключ теоретически позволяет злоумышленникам подделать цифровую подпись оригинального разработчика и распространить вредоносное обновление.</li>
+<li><strong>Митигация:</strong> Перевыпустить сертификат подписи, используя современный стандарт <code>SHA256withRSA</code> и длину ключа не менее <strong>2048 бит</strong>. Включить схемы подписи v3/v4 при сборке проекта.</li>
+</ul>
+<hr>
+<h3>Уязвимость №3 — Некорректная настройка Android App Links</h3>
+<ul>
+<li><strong>Severity:</strong> HIGH · <strong>CWE:</strong> CWE-20</li>
+<li><strong>Описание:</strong> Файл верификации цифровых ресурсов не обнаружен для целевых доменов <code>SubwaySurfers.sng.link</code> и <code>subwaysurfers.sng.link</code>.</li>
+<li><strong>Риск:</strong> Вредоносное ПО, установленное на устройстве пользователя, может перехватывать системные deep-link URL, предназначенные для игры. Это открывает вектор для фишинговых атак и кражи токенов авторизации.</li>
+<li><strong>Митигация:</strong> Разместить валидный JSON-файл по адресу <code>https://SubwaySurfers.sng.link/.well-known/assetlinks.json</code>. Добавить атрибут <code>android:autoVerify=&quot;true&quot;</code> в соответствующий <code>&lt;intent-filter&gt;</code> внутри манифеста.</li>
+</ul>
+<hr>
+<h3>Уязвимость №4 — Поддержка устаревших версий ОС Android</h3>
+<ul>
+<li><strong>Severity:</strong> HIGH · <strong>CWE:</strong> CWE-1104</li>
+<li><strong>Описание:</strong> Приложение сохраняет обратную совместимость с устаревшими версиями операционной системы.</li>
+<li><strong>Конфигурация:</strong> <code>minSdkVersion=23</code> (Android 6.0 Marshmallow).</li>
+<li><strong>Риск:</strong> Android 6.0 давно не получает патчи безопасности от Google и содержит множество известных уязвимостей ядра, против которых механизмы защиты самого приложения неэффективны.</li>
+<li><strong>Митигация:</strong> По возможности повысить параметр <code>minSdkVersion</code> до уровня <strong>29</strong> (Android 10), чтобы исключить запуск на заведомо уязвимых устройствах.</li>
+</ul>
+<hr>
+<h3>Уязвимость №5 — Слабая криптография в сторонних SDK</h3>
+<ul>
+<li><strong>Severity:</strong> HIGH · <strong>CWE:</strong> CWE-327 / CWE-328</li>
+<li><strong>Описание:</strong> В декомпилированном коде рекламных модулей обнаружено использование симметричного алгоритма AES в режиме <strong>ECB</strong>, а также хэш-функций MD5 и SHA-1 в критических целях.</li>
+<li><strong>Локализация:</strong> Кодовая база модулей <code>com/ironsource/</code>, <code>com/fyber/</code>, <code>com/mbridge/</code>, <code>com/unity3d/</code>.</li>
+<li><strong>Риск:</strong> В режиме ECB одинаковые блоки открытого текста преобразуются в одинаковые блоки шифротекста, что позволяет восстановить структуру данных без знания ключа. MD5 и SHA-1 подвержены коллизиям.</li>
+<li><strong>Митигация:</strong> Заменить режим ECB на безопасный <code>AES/GCM</code> или <code>AES/CBC</code> с обязательным использованием уникального вектора инициализации (IV). Заменить MD5/SHA-1 на семейство алгоритмов <code>SHA-256</code>.</li>
+</ul>
+<hr>
+<h3>Уязвимость №6 — Избыточное количество экспортированных компонентов</h3>
+<ul>
+<li><strong>Severity:</strong> MEDIUM · <strong>CWE:</strong> CWE-926</li>
+<li><strong>Описание:</strong> В манифесте объявлены открытыми: 5 Activity, 3 Service, 6 Broadcast Receiver и 1 Content Provider. Они помечены флагом <code>android:exported=&quot;true&quot;</code>, но не ограничены разрешениями.</li>
+<li><strong>Риск:</strong> Любое стороннее приложение, установленное на устройстве, может отправить интент и несанкционированно вызвать данные компоненты.</li>
+<li><strong>Митигация:</strong> Для внутренних компонентов, не предназначенных для межпрограммного взаимодействия, жестко установить <code>android:exported=&quot;false&quot;</code>. Для остальных компонентов внедрить <code>android:permission</code> с уровнем проверки <code>signature</code>.</li>
+</ul>
+<hr>
+<h3>Уязвимость №7 — Небезопасная реализация системного WebView</h3>
+<ul>
+<li><strong>Severity:</strong> MEDIUM · <strong>CWE:</strong> CWE-749</li>
+<li><strong>Описание:</strong> Компоненты WebView в рекламных сетях (Unity Ads, AppLovin, IronSource) инициализируются с активным выполнением скриптов.</li>
+<li><strong>Риск:</strong> При компрометации рекламного контента существует риск XSS-атаки, что позволит злоумышленнику выполнить произвольный код в контексте легитимного приложения.</li>
+<li><strong>Митигация:</strong> Отключать метод <code>setJavaScriptEnabled(true)</code> там, где это не требуется. Выполнять строгую валидацию загружаемых URL по белому списку. Использовать аннотацию <code>@JavascriptInterface</code> только для проверенных методов.</li>
+</ul>
+<hr>
+<h3>Уязвимость №8 — Жестко зашитые API-ключи (Hardcoded Secrets)</h3>
+<ul>
+<li><strong>Severity:</strong> MEDIUM · <strong>CWE:</strong> CWE-312</li>
+<li><strong>Описание:</strong> В коде рекламных SDK присутствуют захардкоженные строковые константы, содержащие токены доступа и ключи авторизации платформ.</li>
+<li><strong>Риск:</strong> Декомпиляция приложения с помощью утилит <code>jadx</code> или <code>apktool</code> позволяет злоумышленнику легко извлечь приватные ключи API в открытом виде.</li>
+<li><strong>Митигация:</strong> Реализовать динамическое получение чувствительных данных с доверенного сервера или задействовать для их безопасного хранения <strong>Android Keystore System</strong>. Применить обфускацию кода (ProGuard/R8).</li>
+</ul>
+<hr>
+<h3>Уязвимость №9 — Логирование конфиденциальных данных в Production-сборке</h3>
+<ul>
+<li><strong>Severity:</strong> MEDIUM · <strong>CWE:</strong> CWE-532 · <strong>Стандарт:</strong> MSTG-STORAGE-3</li>
+<li><strong>Описание:</strong> Интегрированные SDK выводят отладочную информацию в системный журнал с помощью стандартного класса <code>android.util.Log</code>.</li>
+<li><strong>Локализация:</strong> Затронуты пакеты <code>com/mbridge/</code>, <code>com/vungle/</code>, <code>com/fyber/inneractive/sdk/logger/</code>.</li>
+<li><strong>Риск:</strong> Логи доступны для чтения сторонним приложениям на устройствах с Root-правами, а также через интерфейс ADB, что может привести к утечке токенов или ID пользователей.</li>
+<li><strong>Митигация:</strong> Настроить автоматическое удаление вызовов <code>Log.d</code> и <code>Log.v</code> на этапе сборки релизного APK с помощью правил оптимизатора ProGuard/R8.</li>
+</ul>
+<hr>
+<h2>4. Анализ исходного кода (Code Analysis)</h2>
+<p>Детальный аудит раздела <strong>Code Analysis</strong> показал, что подавляющее большинство критических уязвимостей кода (WebView, слабое шифрование, хардкод секретов, логирование) сосредоточено внутри <strong>сторонних рекламных SDK</strong>, а не в основном коде игры. Основная игровая логика Subway Surfers построена на движке Unity и скомпилирована в нативные библиотеки <code>.so</code>, что выводит её из-под прямого воздействия стандартных Java-парсеров. Основные риски безопасности приложения лежат на стыке конфигурации манифеста и сторонних зависимостей.</p>
+<hr>
+<h2>5. План митигации рисков</h2>
+<p>Ниже представлен пошаговый план устранения обнаруженных недостатков для команды разработки:</p>
+<ol>
+<li><strong>Безопасность сетевого контура:</strong></li>
+</ol>
+<ul>
+<li>Отключить cleartext traffic в <code>AndroidManifest.xml</code>.</li>
+<li>Настроить <code>network_security_config.xml</code>, переведя все рекламные SDK на обязательное использование протокола HTTPS.</li>
+</ul>
+<ol start="2">
+<li><strong>Валидация ссылок:</strong></li>
+</ol>
+<ul>
+<li>Разместить валидный конфигурационный файл <code>assetlinks.json</code> на доменах <code>sng.link</code> для подтверждения владения App Links.</li>
+</ul>
+<ol start="3">
+<li><strong>Обновление инфраструктуры сборки:</strong></li>
+</ol>
+<ul>
+<li>Повысить минимальную версию SDK (<code>minSdkVersion</code>) до API 29 (Android 10).</li>
+<li>Перевыпустить релизный сертификат подписи, перейдя на алгоритм <code>SHA256withRSA</code> (ключ от 2048 бит) с активацией схем v3/v4.</li>
+</ul>
+<ol start="4">
+<li><strong>Рефакторинг криптографии и хранения данных:</strong></li>
+</ol>
+<ul>
+<li>Заменить в коде режим шифрования AES/ECB на защищенный AES/GCM или AES/CBC.</li>
+<li>Исключить хэширование через MD5/SHA-1, перейдя на стандарты семейства SHA-256.</li>
+<li>Удалить жестко зашитые API-ключи из кода, спрятав их в Android Keystore.</li>
+</ul>
+<ol start="5">
+<li><strong>Очистка кода и Hardening:</strong></li>
+</ol>
+<ul>
+<li>Закрыть неиспользуемые экспортированные компоненты в манифесте (<code>android:exported=&quot;false&quot;</code>).</li>
+<li>Настроить конфигурацию ProGuard/R8 для автоматического вырезания методов отладочного логирования (<code>Log.d</code>, <code>Log.v</code>) перед релизом.</li>
+<li>Обновить все сторонние рекламные SDK до актуальных стабильных версий.</li>
+</ul>
+<ol start="6">
+<li><strong>Контроль:</strong></li>
+</ol>
+<ul>
+<li>Провести повторное сканирование собранного APK-файла в системе MobSF для проверки устранения дефектов.</li>
+</ul>
+<hr>
+<h2>6. Вывод</h2>
+<p>В ходе выполнения работы был развернут инструмент MobSF и успешно проведен статический анализ безопасности приложения Subway Surfers.</p>
+<p>Итоговая оценка <strong>41/100</strong> указывает на наличие системных недостатков. Анализ показал, что ключевые векторы угроз связаны со слабыми настройками сетевой безопасности, поддержкой устаревшего алгоритма подписи и уязвимостями внутри легаси-версий сторонних рекламных модулей. Реализация предложенного плана митигации позволит значительно повысить уровень защищенности мобильного приложения.</p>
+<blockquote>
+<p><strong>Примечание:</strong> Выгруженный из интерфейса MobSF подробный PDF-отчет со всеми техническими дампами прилагается к материалам данной работы.</p>
+</blockquote>
+
+</body>
+</html>

@@ -1,0 +1,243 @@
+<h1 id="-6-trufflehog">Лабораторная работа №6: Поиск секретов в репозитории с помощью truffleHog</h1>
+<hr>
+<h2 id="-">Введение</h2>
+<p>Для этой лабораторной работы я проанализировала репозиторий <a href="https://github.com/OtusTeam/DevSecOps_secret-finding.git">DevSecOps_secret-finding</a> на наличие случайно закоммиченных секретов: паролей, ключей, токенов и других чувствительных данных.</p>
+<p>Поскольку установка truffleHog через Docker была ограничена сетевыми проблемами (TLS handshake timeout при доступе к Docker Hub), я использовала альтернативный метод:</p>
+<ol>
+<li>Клонировала репозиторий локально: <code>git clone ...</code></li>
+<li>Проанализировала историю коммитов через <code>git log -p --all | grep -iE &quot;password|secret|token|key&quot;</code></li>
+<li>Искала паттерны, характерные для секретов, в диффах изменений</li>
+</ol>
+<hr>
+<h2 id="-">Найденные секреты</h2>
+<p>Сканер (вручную через grep) нашёл более 20 потенциальных срабатываний. Ниже — 5 разнотипных реальных секретов.</p>
+<hr>
+<h3 id="1-artifactory-pom-xml">1. Пароль от Artifactory в pom.xml</h3>
+<p><strong>Где лежит:</strong> <code>pom.xml</code>, коммит <code>14becbb2cd27bb0f14dfb216748db08ff4e819df</code></p>
+<pre><code class="lang-xml"><span class="hljs-tag">&lt;<span class="hljs-name">plugin</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.jfrog.buildinfo<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>artifactory-maven-plugin<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+    ...
+    <span class="hljs-tag">&lt;<span class="hljs-name">publisher</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">username</span>&gt;</span>deployer<span class="hljs-tag">&lt;/<span class="hljs-name">username</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">password</span>&gt;</span>Asdf1243?[2#323<span class="hljs-tag">&lt;/<span class="hljs-name">password</span>&gt;</span>
+        ...
+    <span class="hljs-tag">&lt;/<span class="hljs-name">publisher</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">plugin</span>&gt;</span>
+</code></pre>
+<p><strong>Почему это секрет:</strong><br>Это пароль от репозитория артефактов Artifactory в открытом виде. С этими учётными данными можно:</p>
+<ul>
+<li>Загружать вредоносные артефакты в репозиторий</li>
+<li>Скачивать приватные зависимости</li>
+<li>Использовать эти данные для атак на другие сервисы (при переиспользовании пароля)</li>
+</ul>
+<p><strong>Как хранить нормально:</strong></p>
+<ul>
+<li>Использовать переменные окружения в CI/CD: <code>${env.ARTIFACTORY_PASSWORD}</code></li>
+<li>Хранить в секрет-менеджере (Jenkins Credentials, HashiCorp Vault, AWS Secrets Manager)</li>
+<li>Использовать <code>settings.xml</code> с зашифрованным паролем (<code>mvn --encrypt-password</code>)</li>
+<li>Никогда не коммитить пароли в <code>pom.xml</code></li>
+</ul>
+<hr>
+<h3 id="2-github-token-api-key">2. GitHub Token / API Key</h3>
+<p><strong>Где лежит:</strong> в истории коммитов, файл конфигурации CI/CD</p>
+<pre><code class="lang-text"><span class="hljs-symbol">GITHUB_TOKEN:</span> cee3257f0e59d1d4975a35429cffc3d8b5fabe15ca2e9d47243cbc446d4894a5
+</code></pre>
+<p><strong>Почему это секрет:</strong><br>Строка длиной 64 символа в шестнадцатеричном формате — типичный формат GitHub Personal Access Token или API-ключа. Такой токен даёт доступ к:</p>
+<ul>
+<li>Чтению и записи в репозитории</li>
+<li>Управлению GitHub Actions workflows</li>
+<li>Доступу к приватным данным организации</li>
+</ul>
+<p><strong>Как хранить нормально:</strong></p>
+<ul>
+<li>Использовать <strong>GitHub Actions Secrets</strong> для хранения токенов в CI/CD</li>
+<li>Хранить в секрет-менеджере (Vault, AWS Secrets Manager)</li>
+<li>Использовать переменные окружения: <code>$GITHUB_TOKEN</code></li>
+<li>Устанавливать минимально необходимые права (scopes) для токена</li>
+<li>Регулярно ротировать токены и отзывать неиспользуемые</li>
+</ul>
+<hr>
+<h3 id="3-hardcoded-jwt-password-java-">3. Hardcoded JWT Password в Java-коде</h3>
+<p><strong>Где лежит:</strong> <code>src/main/java/.../HashingAssignment.java</code> (и аналогичные файлы)</p>
+<pre><code class="lang-java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">String</span> PASSWORD = <span class="hljs-string">"bm5nhSkxCXZkKRy4"</span>;
+<span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">String</span> JWT_PASSWORD = <span class="hljs-string">"bm5n3SkxCX4kKRy4"</span>;
+</code></pre>
+<p><strong>Почему это секрет:</strong><br>Пароли для подписи JWT-токенов захардкожены в исходном коде. Злоумышленник с доступом к коду может:</p>
+<ul>
+<li>Подделывать любые JWT-токены</li>
+<li>Получать доступ от имени любого пользователя</li>
+<li>Обходить аутентификацию и авторизацию</li>
+<li>Компрометировать всю систему аутентификации</li>
+</ul>
+<p><strong>Как хранить нормально:</strong></p>
+<ul>
+<li>Использовать переменные окружения: <code>System.getenv(&quot;JWT_SECRET&quot;)</code></li>
+<li>Хранить в секрет-менеджере (Vault, AWS Secrets Manager)</li>
+<li>Генерировать криптографически стойкие секреты при деплое</li>
+<li>Никогда не хранить секреты в исходном коде, даже в константах</li>
+</ul>
+<hr>
+<h3 id="4-rsa-private-key">4. RSA Private Key</h3>
+<p><strong>Где лежит:</strong> <code>webgoat-server/privatekey.key</code></p>
+<pre><code class="lang-text">-<span class="ruby">----<span class="hljs-keyword">BEGIN</span> PRIVATE KEY-----
+</span>MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCpuOH6AnMc/xdJ
+Fo/8z5j+MTLS1yVHANOgQgAxrIczt9uS9vi9UtE0377fL0TQs5Uo97rSuS6ZJ0ac
+...
+-<span class="ruby">----<span class="hljs-keyword">END</span> PRIVATE KEY-----</span>
+</code></pre>
+<p><strong>Почему это секрет:</strong><br>Это полноценный приватный RSA-ключ в формате PEM. С ним можно:</p>
+<ul>
+<li>Аутентифицироваться на серверах без пароля (SSH, TLS)</li>
+<li>Подписывать запросы и данные от имени владельца ключа</li>
+<li>Расшифровывать данные, зашифрованные соответствующим публичным ключом</li>
+<li>Выдавать себя за сервис или пользователя</li>
+</ul>
+<p><strong>Как хранить нормально:</strong></p>
+<ul>
+<li>Никогда не коммитить приватные ключи в репозиторий</li>
+<li>Использовать <code>ssh-agent</code> для временного хранения ключей в памяти</li>
+<li>Хранить ключи в защищённом хранилище с ограниченным доступом (Vault, AWS KMS)</li>
+<li>Использовать <code>passphrase</code> для дополнительной защиты ключа</li>
+<li>Регулярно ротировать ключи и отслеживать их использование</li>
+</ul>
+<hr>
+<h3 id="5-jwt-token-">5. JWT Token в тестовом коде</h3>
+<p><strong>Где лежит:</strong> тестовый Java-файл (например, <code>SessionManagementTest.java</code>)</p>
+<pre><code class="lang-java"><span class="hljs-attribute">var token</span> = <span class="hljs-string">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.NFvYpuwbF6YWbPyaNAGEPw9wbhiQSovvSrD89B8K7Ng"</span>;
+</code></pre>
+<p><strong>Почему это секрет:</strong><br>Полный подписанный JWT-токен, захардкоженный в коде. Хотя это может быть тестовый токен, в реальных проектах такие токены могут:</p>
+<ul>
+<li>Давать доступ к защищённым эндпоинтам без аутентификации</li>
+<li>Раскрывать структуру пейлоада и алгоритм подписи</li>
+<li>Быть использованы для атак, если секрет подписи слабый или известен</li>
+</ul>
+<p><strong>Как хранить нормально:</strong></p>
+<ul>
+<li>Генерировать токены динамически в тестах через аутентификацию</li>
+<li>Использовать mock-объекты вместо реальных токенов</li>
+<li>Не хранить токены в коде, даже тестовом</li>
+<li>Использовать environment-specific конфигурации для тестовых данных</li>
+</ul>
+<hr>
+<h2 id="-">Дополнительные вопросы</h2>
+<h3 id="-bfg-repo-cleaner-">Что такое BFG Repo-Cleaner и для чего он предназначен?</h3>
+<p><strong>BFG Repo-Cleaner</strong> — это утилита для быстрой очистки истории Git-репозитория от больших файлов и чувствительных данных (паролей, ключей, токенов, сертификатов).</p>
+<p><strong>Зачем он нужен:</strong><br>Если секрет уже попал в историю коммитов, просто удалить его из текущего файла недостаточно — он останется во всех предыдущих версиях. BFG переписывает историю репозитория, удаляя нежелательные данные из всех ревизий.</p>
+<p><strong>Отличия от <code>git filter-branch</code>:</strong></p>
+<ul>
+<li>Работает в 10–50 раз быстрее</li>
+<li>Проще в использовании (меньше команд, понятный синтаксис)</li>
+<li>Специализирован именно для удаления файлов и строк по паттернам</li>
+</ul>
+<p><strong>Пример использования:</strong></p>
+<pre><code class="lang-bash"><span class="hljs-comment"># Удалить файл с ключами из всей истории</span>
+<span class="hljs-string">bfg </span><span class="hljs-built_in">--delete-files</span> <span class="hljs-string">id_rsa
+</span>
+<span class="hljs-comment"># Удалить строки, содержащие определённый пароль</span>
+<span class="hljs-string">bfg </span><span class="hljs-built_in">--replace-text</span> <span class="hljs-string">passwords.</span><span class="hljs-string">txt
+</span>
+<span class="hljs-comment"># После очистки обязательно выполнить:</span>
+<span class="hljs-string">git </span><span class="hljs-string">reflog </span><span class="hljs-string">expire </span><span class="hljs-built_in">--expire=now</span> <span class="hljs-built_in">--all</span> &amp;&amp; <span class="hljs-string">git </span><span class="hljs-string">gc </span><span class="hljs-built_in">--prune=now</span> <span class="hljs-built_in">--aggressive</span>
+</code></pre>
+<p><strong>Важно:</strong> После очистки истории нужно:</p>
+<ol>
+<li>Перевыпустить все скомпрометированные ключи и пароли</li>
+<li>Предупредить всех разработчиков, у кого есть локальные копии репозитория</li>
+<li>Принудительно запушить изменения: <code>git push --force</code></li>
+</ol>
+<hr>
+<h3 id="-">Как можно автоматизировать процесс поиска секретов и насколько это правильный подход?</h3>
+<p><strong>Способы автоматизации:</strong></p>
+<ol>
+<li><p><strong>Pre-commit хуки</strong> — запуск сканера перед каждым коммитом:</p>
+<pre><code class="lang-yaml"># .<span class="hljs-keyword">pre</span>-commit-config.yaml
+repo<span class="hljs-variable">s:</span>
+  - repo: http<span class="hljs-variable">s:</span>//github.<span class="hljs-keyword">com</span>/dxa4481/truffleHog
+    re<span class="hljs-variable">v:</span> master
+    hook<span class="hljs-variable">s:</span>
+      - id: trufflehog
+        arg<span class="hljs-variable">s:</span> [<span class="hljs-string">'--regex'</span>, <span class="hljs-string">'--entropy=False'</span>]
+</code></pre>
+</li>
+<li><p><strong>CI/CD пайплайн</strong> — сканирование на каждом пуше/мердже:</p>
+<pre><code class="lang-yaml"><span class="hljs-comment"># .github/workflows/secrets-scan.yml</span>
+<span class="hljs-attr">name:</span> Secrets Scan
+<span class="hljs-attr">on:</span> [push, pull_request]
+<span class="hljs-attr">jobs:</span>
+<span class="hljs-attr">  scan:</span>
+<span class="hljs-attr">    runs-on:</span> ubuntu-latest
+<span class="hljs-attr">    steps:</span>
+<span class="hljs-attr">      - uses:</span> actions/checkout@v3
+<span class="hljs-attr">      - name:</span> Run truffleHog
+<span class="hljs-attr">        run:</span> <span class="hljs-string">|
+          pip install truffleHog
+          truffleHog . --regex --entropy=False</span>
+</code></pre>
+</li>
+<li><p><strong>Периодическое сканирование</strong> — cron-задача с <code>gitleaks</code> или <code>truffleHog</code> для мониторинга всех репозиториев организации.</p>
+</li>
+<li><p><strong>Git hook на сервере</strong> — проверка пушей на уровне Git-сервера (GitLab, Gitea).</p>
+</li>
+</ol>
+<p><strong>Правильный ли это подход?</strong>  <strong>Да, автоматизация — правильный и необходимый подход</strong>, потому что:</p>
+<table>
+<thead>
+<tr>
+<th>Преимущество</th>
+<th>Описание</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Исключает человеческий фактор</td>
+<td>Разработчики могут случайно закоммитить секрет, автоматизация ловит это до попадания в main</td>
+</tr>
+<tr>
+<td>Раннее обнаружение</td>
+<td>Блокировка проблемного кода на этапе коммита/пуша, а не после деплоя</td>
+</tr>
+<tr>
+<td>Масштабируемость</td>
+<td>Работает одинаково для 1 или 100 репозиториев</td>
+</tr>
+<tr>
+<td>Соответствие требованиям</td>
+<td>Помогает соблюдать security policies и стандарты (PCI DSS, SOC2)</td>
+</tr>
+</tbody>
+</table>
+<p> <strong>Но важно помнить о ограничениях:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Проблема</th>
+<th>Решение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ложные срабатывания</td>
+<td>Настройка правил, тюнинг паттернов, ручной аудит срабатываний</td>
+</tr>
+<tr>
+<td>Пропуски (false negatives)</td>
+<td>Комбинация нескольких сканеров, регулярное обновление правил</td>
+</tr>
+<tr>
+<td>Секреты в истории</td>
+<td>Использовать BFG Repo-Cleaner для ретроспективной очистки</td>
+</tr>
+<tr>
+<td>Обучение команды</td>
+<td>Автоматизация не заменяет awareness: разработчики должны понимать, что нельзя коммитить</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Вывод:</strong> Правильный подход — это <strong>комбинация</strong>:</p>
+<ul>
+<li>Автоматизация для быстрого поиска подозрительных мест</li>
+<li>Ручной аудит для фильтрации ложных срабатываний</li>
+<li>Обучение команды безопасным практикам</li>
+<li>Интеграция с secret-менеджерами для правильного хранения</li>
+</ul>

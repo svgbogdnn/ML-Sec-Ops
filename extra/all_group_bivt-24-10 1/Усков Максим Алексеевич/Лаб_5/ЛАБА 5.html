@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 26.2.3.2 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changed" content="00:00:00"/>
+	<style type="text/css">
+		@page { size: 8.27in 11.69in; margin: 0.79in }
+		p { margin-bottom: 0.1in; line-height: 115%; background: transparent }
+		h2 { margin-top: 0.14in; margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h2.western { font-weight: bold; font-size: 16pt; font-family: "Liberation Sans", sans-serif }
+		h2.cjk { font-weight: bold; font-size: 16pt; font-family: "AR PL SungtiL GB" }
+		h2.ctl { font-weight: bold; font-family: "Noto Sans Devanagari"; font-size: 16pt }
+		h1 { margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h1.western { font-weight: bold; font-size: 18pt; font-family: "Liberation Sans", sans-serif }
+		h1.cjk { font-weight: bold; font-size: 18pt; font-family: "AR PL SungtiL GB" }
+		h1.ctl { font-weight: bold; font-family: "Noto Sans Devanagari"; font-size: 18pt }
+		pre { font-size: 10pt; font-family: "Liberation Mono", monospace; background: transparent }
+		a:link { color: #000080; text-decoration: underline }
+	</style>
+</head>
+<body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><h2 class="western">
+Связанные заметки</h2>
+<ul>
+	<li><p><a href="https://en.wikipedia.org/wiki/%D0%9A%D0%B0%D1%80%D1%82%D0%B0%20%D0%98%D0%91">Карта
+	ИБ</a></p></li>
+	<li><p><a href="https://en.wikipedia.org/wiki/4.%20%D0%AF%D0%9F%D1%8B">4.
+	ЯПы</a></p></li>
+</ul>
+<h1 class="western">ЛАБА 5. Базовая настройка
+безопасности Docker-контейнера</h1>
+<h2 class="western">Цель</h2>
+<p>Закрепить на практике материал с
+лекции и научиться на базовом уровне
+обеспечивать безопасность Docker-контейнеров.</p>
+<p>В работе используется образ из Docker
+Hub:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">nginx:1.27-alpine</pre><p>
+Я выбрал его потому что это небольшой
+популярный образ на базе Alpine Linux, у него
+есть командная оболочка <font face="Liberation Mono, monospace">sh</font>,
+и на нем удобно показать запуск контейнера
+от обычного пользователя.</p>
+<hr/>
+
+<h1 class="western">Часть I</h1>
+<h2 class="western">Команды</h2>
+<p>Сначала скачиваю образ:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">docker pull nginx:1.27-alpine</pre><p>
+Смотрю список образов на машине:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">docker image ls</pre><p>
+До запуска контейнера проверяю
+пользователя на хосте:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">whoami</pre><p>
+В моем случае пользователь на хосте:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">qquerell</pre><p>
+Запускаю <font face="Liberation Mono, monospace">sh</font>
+внутри контейнера:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">docker run --rm -it nginx:1.27-alpine sh</pre><p>
+Внутри контейнера выполняю:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">whoami</pre><p>
+Ожидаемый результат:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">root</pre><h2 class="western">
+Вывод по части I</h2>
+<p>По умолчанию контейнер запускается
+от пользователя <font face="Liberation Mono, monospace">root</font>.
+Это небезопасно, потому что при
+эксплуатации уязвимости внутри приложения
+атакующий получает root-права внутри
+контейнера. Контейнерная изоляция
+снижает риск, но не делает такой запуск
+безопасным.</p>
+<hr/>
+
+<h1 class="western">Часть II</h1>
+<h2 class="western">Dockerfile</h2>
+<p>Файл лежит здесь:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">~/programming/misis/IS/lab5/Dockerfile</pre><p>
+Содержимое Dockerfile:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">FROM nginx:1.27-alpine<br/>
+<br/>
+RUN addgroup -S appgroup \<br/>
+    &amp;&amp; adduser -S -D -H -u 10001 -G appgroup appuser \<br/>
+    &amp;&amp; mkdir -p /var/cache/nginx /var/run /var/log/nginx /tmp \<br/>
+    &amp;&amp; chown -R appuser:appgroup /var/cache/nginx /var/run /var/log/nginx /tmp /usr/share/nginx/html \<br/>
+    &amp;&amp; sed -i 's/listen       80;/listen       8080;/' /etc/nginx/conf.d/default.conf \<br/>
+    &amp;&amp; sed -i 's/listen  \[::\]:80;/listen  [::]:8080;/' /etc/nginx/conf.d/default.conf \<br/>
+    &amp;&amp; sed -i '/^user /d' /etc/nginx/nginx.conf \<br/>
+    &amp;&amp; sed -i 's|pid        /var/run/nginx.pid;|pid        /tmp/nginx.pid;|' /etc/nginx/nginx.conf<br/>
+<br/>
+EXPOSE 8080<br/>
+<br/>
+USER appuser<br/>
+<br/>
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD wget -qO- http://127.0.0.1:8080/ &gt;/dev/null || exit 1<br/>
+<br/>
+CMD [&quot;nginx&quot;, &quot;-g&quot;, &quot;daemon off;&quot;]<br/>
+<br/>
+# Дополнительные настройки безопасности:<br/>
+# 1. В Dockerfile:<br/>
+#    - запуск процесса через USER appuser, а не от root;<br/>
+#    - фиксированный тег базового образа вместо latest;<br/>
+#    - минимальный alpine-образ;<br/>
+#    - отсутствие секретов, паролей и токенов в слоях образа;<br/>
+#    - EXPOSE только нужного порта 8080 вместо привилегированного 80.<br/>
+# 2. При запуске контейнера:<br/>
+#    docker run --rm -p 8080:8080 \<br/>
+#      --read-only \<br/>
+#      --tmpfs /tmp:rw,noexec,nosuid,size=64m \<br/>
+#      --tmpfs /var/cache/nginx:rw,noexec,nosuid,size=64m \<br/>
+#      --tmpfs /var/run:rw,noexec,nosuid,size=16m \<br/>
+#      --cap-drop=ALL \<br/>
+#      --security-opt no-new-privileges \<br/>
+#      --pids-limit=128 \<br/>
+#      --memory=256m \<br/>
+#      --cpus=0.5 \<br/>
+#      lab5-nginx-secure<br/>
+# 3. Если сеть контейнеру не нужна, можно добавить флаг --network=none.</pre><h2 class="western">
+Сборка образа</h2>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">cd ~/programming/misis/IS/lab5<br/>
+docker build -t lab5-nginx-secure .</pre><h2 class="western">
+Проверка пользователя внутри контейнера</h2>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">docker run --rm -it lab5-nginx-secure sh<br/>
+whoami</pre><p>
+Ожидаемый результат:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">appuser</pre><h2 class="western">
+Вывод по части II</h2>
+<p>В Dockerfile добавлен непривилегированный
+пользователь <font face="Liberation Mono, monospace">appuser</font>,
+и контейнер запускается через инструкцию:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">USER appuser</pre><p>
+Также nginx перенесен с порта <font face="Liberation Mono, monospace">80</font>
+на <font face="Liberation Mono, monospace">8080</font>, потому
+что порт <font face="Liberation Mono, monospace">80</font>
+является привилегированным. Для
+дополнительного усиления безопасности
+в комментариях к Dockerfile указаны флаги
+запуска: <font face="Liberation Mono, monospace">--read-only</font>,
+<font face="Liberation Mono, monospace">--cap-drop=ALL</font>,
+<font face="Liberation Mono, monospace">--security-opt
+no-new-privileges</font>, ограничения CPU/RAM/PID и <font face="Liberation Mono, monospace">tmpfs</font>
+для временных файлов.</p>
+<hr/>
+
+<h1 class="western">Часть III</h1>
+<p>Для сканирования использую Trivy.</p>
+<p>Так как локально Trivy не был установлен,
+я запустил его как Docker-контейнер:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">docker run --rm \<br/>
+  -v /var/run/docker.sock:/var/run/docker.sock \<br/>
+  aquasec/trivy:latest image lab5-nginx-secure</pre><h2 class="western">
+Анализ результата</h2>
+<p>Сканер проверяет пакеты внутри образа
+и показывает найденные CVE с уровнем
+опасности: <font face="Liberation Mono, monospace">LOW</font>,
+<font face="Liberation Mono, monospace">MEDIUM</font>, <font face="Liberation Mono, monospace">HIGH</font>,
+<font face="Liberation Mono, monospace">CRITICAL</font>.</p>
+<p>По результату сканирования образа
+<font face="Liberation Mono, monospace">lab5-nginx-secure</font>
+найдено:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">Total: 90<br/>
+UNKNOWN: 0<br/>
+LOW: 27<br/>
+MEDIUM: 39<br/>
+HIGH: 22<br/>
+CRITICAL: 2</pre><p>
+Главное в этом результате - наличие <font face="Liberation Mono, monospace">HIGH</font>
+и <font face="Liberation Mono, monospace">CRITICAL</font>
+уязвимостей. Такие уязвимости нужно
+разбирать в первую очередь: смотреть,
+для каких пакетов они найдены, есть ли
+исправленная версия в колонке <font face="Liberation Mono, monospace">FIXED
+VERSION</font>, и можно ли обновить базовый
+образ.</p>
+<h2 class="western">Вывод по части III</h2>
+<p>Образ <font face="Liberation Mono, monospace">lab5-nginx-secure</font>
+был проверен сканером Trivy. Сканер нашел
+90 уязвимостей: 27 <font face="Liberation Mono, monospace">LOW</font>,
+39 <font face="Liberation Mono, monospace">MEDIUM</font>, 22 <font face="Liberation Mono, monospace">HIGH</font>
+и 2 <font face="Liberation Mono, monospace">CRITICAL</font>.</p>
+<p>Наличие <font face="Liberation Mono, monospace">HIGH</font>
+и <font face="Liberation Mono, monospace">CRITICAL</font>
+уязвимостей говорит о том, что образ
+нельзя считать полностью безопасным.
+В первую очередь нужно обновить базовый
+образ <font face="Liberation Mono, monospace">nginx:1.27-alpine</font>
+до более новой версии, пересобрать
+контейнер и повторить сканирование.
+Также нужно смотреть колонку <font face="Liberation Mono, monospace">FIXED
+VERSION</font>: если исправленная версия пакета
+доступна, пакет или базовый образ нужно
+обновить.</p>
+<p>При этом запуск контейнера от
+непривилегированного пользователя
+<font face="Liberation Mono, monospace">appuser</font> снижает
+риск эксплуатации, но не устраняет
+уязвимости внутри системных пакетов
+образа.</p>
+<p><br/>
+<br/>
+
+</p>
+</body>
+</html>

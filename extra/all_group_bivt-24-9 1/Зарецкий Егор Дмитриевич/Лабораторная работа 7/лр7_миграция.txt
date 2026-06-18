@@ -1,0 +1,140 @@
+ПЛАН МИТИГАЦИИ РИСКОВ
+Приложение: Happ
+MobSF score: 52/100
+
+Приоритеты: P1 - срочно, P2 - в ближайшем релизе, P3 - когда будет время
+
+
+1. Опасные разрешения
+
+REQUEST_INSTALL_PACKAGES - приложение может ставить APK само
+Риск: подмена обновления на вредоносный файл
+Приоритет: P1
+Что делать: убрать разрешение, если sideload не нужен. Если нужен -
+проверять подпись и хеш APK перед установкой. Лучше обновляться через
+Google Play, а не ставить APK руками.
+
+CAMERA - доступ к камере
+Риск: низкий, скорее всего нужен для QR-кодов чтобы активировать подписки VPN
+Приоритет: P3
+Что делать: запрашивать только когда пользователь реально сканирует QR,
+не сохранять снимки на диск
+
+POST_NOTIFICATIONS - уведомления
+Риск: минимальный
+Приоритет: P3
+Что делать: запрашивать при первом включении уведомлений, не при старте.
+
+
+2. Сетевая безопасность
+
+usesCleartextTraffic=true - разрешен HTTP без шифрования
+Риск: перехват конфигов серверов и подписок в публичной сети
+Приоритет: P1
+Что делать: поставить usesCleartextTraffic=false, добавить
+network_security_config.xml с запретом cleartext для production.
+Все ссылки на подписки и API - только HTTPS
+
+Insecure SSL - доверие ко всем сертификатам (Conscrypt.java)
+Риск: MITM, для VPN-клиента это критично
+Приоритет: P1
+Что делать: убрать trust-all, оставить один подход - системный
+TrustManager плюс certificate pinning. Проверить через Burp или mitmproxy,
+что трафик не перехватывается
+
+Janus vulnerability - подпись v1
+Риск: подмена кода на старых Android 5-8
+Приоритет: P2
+Что делать: подписывать release только v2+v3, поднять minSdk до 26.
+
+
+3. Манифест
+
+minSdk=21 - можно поставить на Android 5.0 без патчей
+Приоритет: P2
+Что делать: поднять minSdk до 26
+
+allowBackup=true - данные можно снять через adb backup
+Риск: утечка конфигов прокси или VPN
+Приоритет: P1
+Что делать: allowBackup=false в release. Или исключить из бэкапа
+папки с конфигами серверов
+
+WidgetProvider открыт наружу (exported)
+Приоритет: P2
+Что делать: exported=false или защита через signature permission.
+
+BootUpReceiver, QSTileService и др. - exported
+Приоритет: P3
+Что делать: закрыть то, что не должно быть доступно другим приложениям.
+
+
+4. Код
+
+android_insecure_ssl - см. раздел 2, убрать trust-all.
+
+Hardcoded credentials в AuthData.java, MetaParams.java, XRayConfig.java
+Риск: при декompиляции достать пароли и ключи
+Приоритет: P1
+Что делать: хранить секреты в EncryptedSharedPreferences или Android
+Keystore, включить ProGuard/R8 для release
+
+Hardcoded API keys (Firebase, Sentry) - 46 secrets в отчете
+Приоритет: P2
+Что делать: ограничить ключи по package name в Google Cloud Console,
+поменять скомпрометированные, включить Firebase App Check
+
+Raw SQL в 11 файлах - риск SQL injection
+Приоритет: P1
+Что делать: перейти на parameterized queries или Room ORM, шифровать
+чувствительные поля в базе
+
+Небезопасный Random - 6 файлов
+Приоритет: P2
+Что делать: заменить на SecureRandom
+
+SHA-1 - 4 файла
+Приоритет: P2
+Что делать: перейти на SHA-256
+
+Запись на SD-карту и в temp-файлы
+Приоритет: P2
+Что делать: scoped storage, не писать секреты во внешнее хранилище
+
+IP-адреса в коде - 16 файлов
+Приоритет: P3
+Что делать: не хардкодить, а брать из конфига
+
+
+5. План по этапам
+
+Первый этап (срочно):
+usesCleartextTraffic=false и Network Security Config
+убрать trust-all SSL
+allowBackup=false
+parameterized SQL вместо raw queries
+EncryptedSharedPreferences для конфигов
+пересмотреть REQUEST_INSTALL_PACKAGES
+
+Второй этап:
+minSdk=26, подпись v2+v3
+SecureRandom, SHA-256
+ProGuard/R8
+ротация Firebase/Sentry ключей
+закрыть exported WidgetProvider
+повторный скан MobSF, цель - score от 75
+
+Третий этап:
+MobSF в CI/CD перед каждым релизом
+проверка TLS через Frida и mitmproxy
+penetration test конфигов proxy
+
+
+Когда можно считать, что все исправлено:
+
+MobSF score >= 75
+нет HIGH-находок в network, code и manifest
+HTTP отключен, trust-all SSL убран
+нет hardcoded secrets (кроме публичных Firebase keys с ограничениями)
+SQL параметризован
+allowBackup=false в release

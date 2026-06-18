@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 26.2.3.2 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changed" content="00:00:00"/>
+	<style type="text/css">
+		@page { size: 8.27in 11.69in; margin: 0.79in }
+		p { margin-bottom: 0.1in; line-height: 115%; background: transparent }
+		h1 { margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h1.western { font-weight: bold; font-size: 18pt; font-family: "Liberation Sans", sans-serif }
+		h1.cjk { font-weight: bold; font-size: 18pt; font-family: "AR PL SungtiL GB" }
+		h1.ctl { font-weight: bold; font-family: "Noto Sans Devanagari"; font-size: 18pt }
+		pre { font-size: 10pt; font-family: "Liberation Mono", monospace; background: transparent }
+		h2 { margin-top: 0.14in; margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h2.western { font-weight: bold; font-size: 16pt; font-family: "Liberation Sans", sans-serif }
+		h2.cjk { font-weight: bold; font-size: 16pt; font-family: "AR PL SungtiL GB" }
+		h2.ctl { font-weight: bold; font-family: "Noto Sans Devanagari"; font-size: 16pt }
+		td p { widows: 0; orphans: 0; background: transparent }
+		th p { widows: 0; text-align: center; orphans: 0; font-weight: bold; background: transparent }
+		h3 { margin-top: 0.1in; margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h3.western { font-weight: bold; font-size: 14pt; font-family: "Liberation Sans", sans-serif }
+		h3.cjk { font-weight: bold; font-size: 14pt; font-family: "AR PL SungtiL GB" }
+		h3.ctl { font-weight: bold; font-family: "Noto Sans Devanagari"; font-size: 14pt }
+	</style>
+</head>
+<body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><h1 class="western">
+SAST-анализ мобильного приложения Telegram
+через MobSF</h1>
+<p>В рамках данной работы выполнено
+развертывание инструмента статического
+анализа&nbsp;MobSF (Mobile Security Framework) и проведено
+тестирование безопасности&nbsp;мобильного
+приложения Telegram.</p>
+<ul>
+	<li><p><b>Объект исследования:</b>
+	<font face="Liberation Mono, monospace">Telegram_11.1.1_APKPure.apk</font></p></li>
+	<li><p><b>Идентификатор пакета:</b>
+	<font face="Liberation Mono, monospace">org.telegram.messenger</font></p></li>
+	<li><p><b>Версия приложения:</b> 11.1.1</p></li>
+	<li><p><b>Размер:</b> 127.31 МБ</p></li>
+	<li><p><b>MD5:</b> b61762a4dc54b893a0ec79ada417920e</p></li>
+	<li><p><b>SHA256:</b>
+	eba26231f8ddc306da94a169ed5cd67848f119d4cd6c7497945d3408a358d21d</p></li>
+	<li><p><b>Источник дистрибутива:</b> APKPure</p></li>
+	<li><p><b>Среда развертывания:</b> MobSF v4.5.0 в
+	Docker-контейнере (локально, macOS)</p></li>
+</ul>
+<hr/>
+
+<h2 class="western">1. Ход работы</h2>
+<p>Инструмент MobSF был запущен через Docker
+командой:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">docker run -it --rm -p 8000:8000 --memory=6g \<br/>
+  opensecurity/mobile-security-framework-mobsf:latest</pre><p>
+После запуска контейнера открыт
+веб-интерфейс по адресу
+http://localhost:8000.&nbsp;APK-файл загружен через
+кнопку Upload &amp; Analyze. MobSF автоматически&nbsp;распаковал
+архив, декомпилировал код с помощью
+JADX, выполнил анализ манифеста,&nbsp;кода,
+разрешений и нативных библиотек, после
+чего сформировал итоговый отчёт.</p>
+<hr/>
+
+<h2 class="western">2. Общие результаты сканирования</h2>
+<ul>
+	<li><p><b>Security Score:</b> 50/100</p></li>
+	<li><p><b>Trackers Detection:</b> 0/432 (трекеры не
+	обнаружены)</p></li>
+	<li><p><b>Target SDK:</b> 34, <b>Min SDK:</b> 23, <b>Max SDK:</b> —</p></li>
+	<li><p><b>Android Version Name:</b> 11.1.1</p></li>
+	<li><p><b>Подпись APK:</b> v1=True, v2=True, v3=True,
+	v4=False</p></li>
+</ul>
+<p>Распределение уязвимостей по разделам:</p>
+<table width="100%" cellpadding="4" cellspacing="0">
+	<col width="64*"/>
+	<col width="64*"/>
+	<col width="64*"/>
+	<col width="64*"/>
+	<thead>
+		<tr valign="top">
+			<th width="25%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Раздел</p>
+			</th>
+			<th width="25%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				HIGH</p>
+			</th>
+			<th width="25%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				WARNING</p>
+			</th>
+			<th width="25%" style="border: 1px solid #000000; padding: 0.04in"><p align="left">
+				INFO</p>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Certificate Analysis</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				0</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				2</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				1</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Manifest Analysis</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				2</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				36</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				0</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Code Analysis</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				2</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				8</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				3</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p><br/>
+<br/>
+
+</p>
+<p>Сертификат подписи: издатель CN=Nikolay
+Kudashov, O=VK, L=Saint-Petersburg,&nbsp;алгоритм RSA, размер
+ключа 1024 бит, hash SHA1.</p>
+<hr/>
+
+<h2 class="western">3. App Permissions — опасные разрешения
+(Dangerous)</h2>
+<table width="100%" cellpadding="4" cellspacing="0">
+	<col width="128*"/>
+	<col width="128*"/>
+	<thead>
+		<tr valign="top">
+			<th width="50%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Разрешение</p>
+			</th>
+			<th width="50%" style="border: 1px solid #000000; padding: 0.04in"><p align="left">
+				Описание</p>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				ACCESS_BACKGROUND_LOCATION</p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Доступ к геолокации в фоне</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				ACCESS_COARSE_LOCATION</p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Грубая геолокация (по сети)</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				ACCESS_FINE_LOCATION</p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Точная геолокация (GPS)</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				ACCESS_MEDIA_LOCATION</p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Доступ к геоданным в медиафайлах</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				AUTHENTICATE_ACCOUNTS</p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Выступать как аутентификатор аккаунтов</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				BLUETOOTH_CONNECT</p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Подключение к Bluetooth-устройствам</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				CALL_PHONE</p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Прямой вызов телефонных номеров</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p><br/>
+<br/>
+
+</p>
+<p>Всего обнаружено 71 разрешение, из них
+около 30 имеют статус <b>dangerous</b>.</p>
+<hr/>
+
+<h2 class="western">4. Certificate Analysis</h2>
+<table width="100%" cellpadding="4" cellspacing="0">
+	<col width="85*"/>
+	<col width="85*"/>
+	<col width="85*"/>
+	<thead>
+		<tr valign="top">
+			<th width="33%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Проблема</p>
+			</th>
+			<th width="33%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Severity</p>
+			</th>
+			<th width="33%" style="border: 1px solid #000000; padding: 0.04in"><p align="left">
+				Описание</p>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Application vulnerable to Janus Vulnerability</p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				WARNING</p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Приложение подписано схемой v1, что
+				делает его уязвимым к Janus на Android
+				5.0–8.0</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Certificate algorithm might be vulnerable to hash collision</p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				WARNING</p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Используется SHA1withRSA, известный
+				коллизиями. Манифест указывает
+				SHA256withRSA</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Signed Application</p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				INFO</p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Приложение подписано сертификатом
+				разработчика</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p><br/>
+<br/>
+
+</p>
+<hr/>
+
+<h2 class="western">5. Manifest Analysis (HIGH)</h2>
+<table width="100%" cellpadding="4" cellspacing="0">
+	<col width="64*"/>
+	<col width="64*"/>
+	<col width="64*"/>
+	<col width="64*"/>
+	<thead>
+		<tr valign="top">
+			<th width="25%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				№</p>
+			</th>
+			<th width="25%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Проблема</p>
+			</th>
+			<th width="25%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Severity</p>
+			</th>
+			<th width="25%" style="border: 1px solid #000000; padding: 0.04in"><p align="left">
+				Описание</p>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				1</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				App can be installed on a vulnerable unpatched Android version
+				(minSdk=23)</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				HIGH</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Приложение можно установить на Android
+				6.0–6.0.1, в которых множество неустранённых
+				уязвимостей</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				2</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Clear text traffic is enabled (usesCleartextTraffic=true)</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				HIGH</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Разрешён незашифрованный HTTP-трафик,
+				что позволяет перехватывать и
+				модифицировать данные</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p><br/>
+<br/>
+
+</p>
+<p>Кроме того, обнаружено 36 WARNING, среди
+которых:</p>
+<ul>
+	<li><p>Application Data can be Backed up (<font face="Liberation Mono, monospace">allowBackup=true</font>)</p></li>
+	<li><p>Незащищённые экспортируемые
+	компоненты: Service GcmPushListenerService,&nbsp;Service
+	GoogleVoiceClientService, Activity
+	GoogleVoiceClientActivity,&nbsp;Activity-Alias DefaultIcon,
+	Activity-Alias VintageIcon и др.</p></li>
+</ul>
+<hr/>
+
+<h2 class="western">6. Code Analysis (HIGH)</h2>
+<table width="100%" cellpadding="4" cellspacing="0">
+	<col width="64*"/>
+	<col width="64*"/>
+	<col width="64*"/>
+	<col width="64*"/>
+	<thead>
+		<tr valign="top">
+			<th width="25%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				№</p>
+			</th>
+			<th width="25%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Проблема</p>
+			</th>
+			<th width="25%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Severity</p>
+			</th>
+			<th width="25%" style="border: 1px solid #000000; padding: 0.04in"><p align="left">
+				CWE / Стандарт</p>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				1</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Remote WebView debugging is enabled</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				HIGH</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p>
+				CWE-919 (Weaknesses in Mobile Applications) / OWASP M1 /
+				MSTG-RESILIENCE-2. Файл:
+				<font face="Liberation Mono, monospace">org/telegram/messenger/SharedConfig.java</font></p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				2</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				The App uses encryption mode CBC with PKCS5/PKCS7 padding —
+				уязвим к padding oracle</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				HIGH</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p>
+				CWE-649 / OWASP M5 / MSTG-CRYPTO-3. Файл:
+				<font face="Liberation Mono, monospace">org/telegram/ui/bots/BotBiometry.java</font></p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p><br/>
+<br/>
+
+</p>
+<p>Также обнаружено 8 WARNING, среди которых:</p>
+<ul>
+	<li><p>Files may contain hardcoded sensitive information (CWE-312)</p></li>
+	<li><p>App uses insecure Random Number Generator (CWE-330)</p></li>
+	<li><p>SHA-1 is a weak hash known to have hash collisions (CWE-327)</p></li>
+	<li><p>App can read/write to External Storage (CWE-276)</p></li>
+	<li><p>Insecure WebView Implementation (CWE-749)</p></li>
+</ul>
+<hr/>
+
+<h2 class="western">7. Network Security</h2>
+<p>В разделе Network Security не зафиксировано
+отдельных правил с HIGH-уровнем —&nbsp;конфигурация
+network security не задана в манифесте. Однако
+основная проблема&nbsp;сетевой безопасности
+отражена в манифесте: разрешён
+cleartext-трафик&nbsp;(<font face="Liberation Mono, monospace">usesCleartextTraffic=true</font>),
+что соответствует HIGH-уровню риска.</p>
+<hr/>
+
+<h2 class="western">8. Подробный разбор ключевых
+уязвимостей</h2>
+<h3 class="western">Уязвимость №1 — Cleartext Traffic
+Enabled</h3>
+<ul>
+	<li><p><b>Severity:</b> HIGH</p></li>
+	<li><p><b>CWE:</b> CWE-319 (Cleartext Transmission of Sensitive
+	Information)</p></li>
+	<li><p><b>Описание:</b> В манифесте установлен
+	<font face="Liberation Mono, monospace">android:usesCleartextTraffic=&quot;true&quot;</font>.&nbsp;Это
+	позволяет приложению отправлять и
+	принимать данные по HTTP в открытом
+	виде.&nbsp;Сетевой атакующий (Wi-Fi, MITM) может
+	перехватывать и модифицировать трафик.</p></li>
+	<li><p><b>Митигация:</b> Установить
+	<font face="Liberation Mono, monospace">android:usesCleartextTraffic=&quot;false&quot;</font>
+	или внедрить&nbsp;Network Security Config с запретом
+	cleartext-трафика. Все запросы перевести
+	на HTTPS.</p></li>
+</ul>
+<h3 class="western">Уязвимость №2 — Установка
+на устаревший Android (minSdk=23)</h3>
+<ul>
+	<li><p><b>Severity:</b> HIGH</p></li>
+	<li><p><b>Описание:</b> Приложение можно
+	установить на Android 6.0, в котором
+	есть&nbsp;непатченные уязвимости. Google
+	рекомендует minSdk не ниже 29.</p></li>
+	<li><p><b>Митигация:</b> Поднять <font face="Liberation Mono, monospace">minSdkVersion</font>
+	до 29 и выше.</p></li>
+</ul>
+<h3 class="western">Уязвимость №3 — Remote WebView
+Debugging Enabled</h3>
+<ul>
+	<li><p><b>Severity:</b> HIGH</p></li>
+	<li><p><b>CWE:</b> CWE-919 (Weaknesses in Mobile Applications)</p></li>
+	<li><p><b>Файл:</b> <font face="Liberation Mono, monospace">org/telegram/messenger/SharedConfig.java</font></p></li>
+	<li><p><b>Описание:</b> Включена удалённая
+	отладка WebView (<font face="Liberation Mono, monospace">setWebContentsDebuggingEnabled(true)</font>).&nbsp;В
+	production-сборке это позволяет атакующему
+	через ADB подключиться к WebView&nbsp;и
+	просматривать/модифицировать контент.</p></li>
+	<li><p><b>Митигация:</b> Отключать отладку
+	WebView в release-сборках, например через&nbsp;<font face="Liberation Mono, monospace">if
+	(BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true);</font>.</p></li>
+</ul>
+<h3 class="western">Уязвимость №4 — Использование
+AES/CBC с PKCS5/PKCS7 (Padding Oracle)</h3>
+<ul>
+	<li><p><b>Severity:</b> HIGH</p></li>
+	<li><p><b>CWE:</b> CWE-649 (Reliance on Obfuscation or Encryption
+	without Integrity Checking)</p></li>
+	<li><p><b>Файл:</b> <font face="Liberation Mono, monospace">org/telegram/ui/bots/BotBiometry.java</font></p></li>
+	<li><p><b>Описание:</b> Используется режим
+	шифрования CBC с PKCS5/PKCS7 padding без&nbsp;контроля
+	целостности. Такая конфигурация уязвима
+	к padding oracle attacks.</p></li>
+	<li><p><b>Митигация:</b> Перейти на AES/GCM
+	(аутентифицированное шифрование),
+	либо&nbsp;добавлять HMAC поверх CBC для
+	контроля целостности.</p></li>
+</ul>
+<h3 class="western">Уязвимость №5 — Janus Vulnerability
+(подпись только v1)</h3>
+<ul>
+	<li><p><b>Severity:</b> WARNING (HIGH в зависимости от
+	целевой платформы)</p></li>
+	<li><p><b>Описание:</b> Подпись v1 без v2/v3 на
+	Android 5.0–7.0 позволяет внедрить&nbsp;вредоносный
+	код в DEX так, что подпись остаётся
+	валидной. В нашем случае&nbsp;подписи v2
+	и v3 присутствуют — риск частично снижен,
+	но устаревшая схема v1&nbsp;остаётся в
+	наборе.</p></li>
+	<li><p><b>Митигация:</b> Отключить подпись
+	v1, использовать только v2/v3/v4.</p></li>
+</ul>
+<h3 class="western">Уязвимость №6 — Избыточные
+опасные разрешения</h3>
+<ul>
+	<li><p><b>Severity:</b> HIGH (в совокупности)</p></li>
+	<li><p><b>CWE:</b> CWE-250 (Execution with Unnecessary Privileges)</p></li>
+	<li><p><b>Описание:</b> Приложение запрашивает
+	ACCESS_BACKGROUND_LOCATION,&nbsp;ACCESS_FINE_LOCATION, CALL_PHONE и
+	др. — широкий набор опасных разрешений.</p></li>
+	<li><p><b>Митигация:</b> Запрашивать разрешения
+	только в момент использования
+	соответствующей&nbsp;функции (runtime
+	permissions). Удалить разрешения, не используемые
+	в текущей версии.</p></li>
+</ul>
+<hr/>
+
+<h2 class="western">9. План митигации рисков</h2>
+<h3 class="western">1. Сетевая безопасность</h3>
+<ul>
+	<li><p>Установить <font face="Liberation Mono, monospace">android:usesCleartextTraffic=&quot;false&quot;</font>
+	в манифесте</p></li>
+	<li><p>Внедрить Network Security Configuration с запретом
+	cleartext-трафика</p></li>
+	<li><p>Включить Certificate Pinning для защиты от
+	MITM-атак</p></li>
+</ul>
+<h3 class="western">2. Криптография</h3>
+<ul>
+	<li><p>Заменить AES/CBC + PKCS5/PKCS7 на AES/GCM в
+	<font face="Liberation Mono, monospace">BotBiometry.java</font></p></li>
+	<li><p>Заменить SHA-1 на SHA-256 в <font face="Liberation Mono, monospace">Utilities.java</font>
+	и <font face="Liberation Mono, monospace">PassportActivity.java</font></p></li>
+	<li><p>Использовать криптографически
+	стойкий <font face="Liberation Mono, monospace">SecureRandom</font>
+	вместо обычного <font face="Liberation Mono, monospace">Random</font></p></li>
+</ul>
+<h3 class="western">3. Подпись приложения</h3>
+<ul>
+	<li><p>Перейти с RSA-1024 на RSA-2048 (или ECDSA)</p></li>
+	<li><p>Отключить подпись v1, оставить только
+	v2/v3/v4</p></li>
+	<li><p>Использовать только SHA256withRSA для
+	подписи</p></li>
+</ul>
+<h3 class="western">4. WebView</h3>
+<ul>
+	<li><p>Отключить <font face="Liberation Mono, monospace">setWebContentsDebuggingEnabled</font>
+	в release-сборках</p></li>
+	<li><p>Валидировать загружаемые URL по
+	белому списку</p></li>
+	<li><p>Ограничить использование JavaScript в
+	WebView</p></li>
+</ul>
+<h3 class="western">5. Манифест и компоненты</h3>
+<ul>
+	<li><p>Поднять <font face="Liberation Mono, monospace">minSdkVersion</font>
+	до 29</p></li>
+	<li><p>Установить <font face="Liberation Mono, monospace">android:allowBackup=&quot;false&quot;</font>
+	для защиты данных</p></li>
+	<li><p>Закрыть экспорт незащищённых
+	сервисов и активити (<font face="Liberation Mono, monospace">android:exported=&quot;false&quot;</font>)</p></li>
+</ul>
+<h3 class="western">6. Разрешения</h3>
+<ul>
+	<li><p>Провести аудит запрашиваемых
+	разрешений</p></li>
+	<li><p>Удалить неиспользуемые опасные
+	разрешения</p></li>
+	<li><p>Все опасные разрешения запрашивать
+	в runtime</p></li>
+</ul>
+<h3 class="western">7. Проверка результатов</h3>
+<ul>
+	<li><p>После внесения исправлений повторно
+	запустить сканирование в MobSF</p></li>
+	<li><p>Контролировать рост Security Score (цель:
+	75+/100)</p></li>
+</ul>
+<hr/>
+
+<h2 class="western">10. Вывод</h2>
+<p>В ходе работы был развёрнут инструмент
+MobSF в Docker-контейнере и проведён&nbsp;статический
+анализ мобильного приложения Telegram
+версии 11.1.1. По итогам&nbsp;сканирования
+итоговый Security Score составил 50/100, что
+указывает на наличие&nbsp;существенных
+проблем безопасности.</p>
+<p>Среди критических уязвимостей:
+разрешённый cleartext-трафик, включённая&nbsp;удалённая
+отладка WebView, использование уязвимого
+режима шифрования AES/CBC&nbsp;с PKCS-padding,
+возможность установки на устаревшие
+версии Android и большое&nbsp;количество
+избыточных опасных разрешений.</p>
+<p>Предложенный план митигации позволит
+устранить выявленные недостатки
+и&nbsp;повысить уровень защищённости
+приложения. После внесения
+исправлений&nbsp;рекомендуется провести
+повторное сканирование для контроля
+результата.</p>
+<p><br/>
+<br/>
+
+</p>
+</body>
+</html>

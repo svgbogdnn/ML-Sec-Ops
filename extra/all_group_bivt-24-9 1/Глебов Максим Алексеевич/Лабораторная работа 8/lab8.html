@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Лабораторная работа 8</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.55;
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 20px;
+      color: #222;
+      background: #fff;
+    }
+
+    h1, h2, h3 {
+      color: #222;
+      line-height: 1.25;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-top: 0;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 8px;
+    }
+
+    h2 {
+      font-size: 23px;
+      margin-top: 34px;
+      border-bottom: 1px solid #e5e5e5;
+      padding-bottom: 6px;
+    }
+
+    h3 {
+      font-size: 19px;
+      margin-top: 26px;
+    }
+
+    a {
+      color: #0645ad;
+      text-decoration: none;
+    }
+
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.95em;
+    }
+
+    pre {
+      background: #f4f4f4;
+      padding: 13px;
+      border-radius: 6px;
+      overflow-x: auto;
+      border: 1px solid #e0e0e0;
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      font-size: 14px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 16px 0;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #f2f2f2;
+    }
+
+    ul {
+      padding-left: 24px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Лабораторная работа 8</h1>
+  <p><strong>Тема:</strong> SAST-анализ мобильного приложения с помощью MobSF и план митигации рисков.</p>
+
+  <h2>Цель</h2>
+  <p>Развернуть инструмент SAST-анализа мобильных приложений (MobSF), просканировать мобильное приложение и составить план по митигации найденных рисков.</p>
+
+  <h2>Развёртывание MobSF</h2>
+  <p>Развернул MobSF в Docker:</p>
+  <pre><code>docker pull opensecurity/mobile-security-framework-mobsf:latest
+docker run -d --name mobsf -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
+docker logs mobsf | tail -20</code></pre>
+  <p>В логах получил версию и REST API Key:</p>
+  <pre><code>Mobile Security Framework v4.5.0
+Running on http://0.0.0.0:8000
+REST API Key: 79ddd0f8...
+Default Credentials: mobsf/mobsf</code></pre>
+  <p>Веб-интерфейс доступен на http://localhost:8000 (логин <code>mobsf/mobsf</code>). Сканирование запускал через REST API: загрузка APK (<code>/api/v1/upload</code>), скан (<code>/api/v1/scan</code>), выгрузка отчёта в PDF (<code>/api/v1/download_pdf</code>).</p>
+
+  <h2>Объект тестирования</h2>
+  <p>Для теста взял заведомо уязвимое приложение <strong>InsecureBankv2</strong> (учебное банковское приложение для отработки мобильной безопасности).</p>
+  <table>
+    <tbody>
+      <tr><td>Приложение</td><td>InsecureBankv2</td></tr>
+      <tr><td>Package</td><td><code>com.android.insecurebankv2</code></td></tr>
+      <tr><td>Версия</td><td>1.0</td></tr>
+      <tr><td>MD5</td><td><code>5ee4829065640f9c936ac861d1650ffc</code></td></tr>
+      <tr><td>SHA256</td><td><code>b18af2a0e44d7634bbcdf93664d9c78a2695e050393fcfbb5e8b91f902d194a4</code></td></tr>
+      <tr><td>min SDK / target SDK</td><td>15 / 22</td></tr>
+      <tr><td><strong>Security Score (MobSF)</strong></td><td><strong>28 / 100</strong></td></tr>
+      <tr><td>Итог сканирования</td><td>7 проблем High, 9 Warning</td></tr>
+    </tbody>
+  </table>
+  <p>Полный отчёт MobSF приложен: <code>MobSF_InsecureBankv2_report.pdf</code>.</p>
+
+  <h2>Основные проблемы по результатам сканирования</h2>
+
+  <h3>1. App permissions со статусом dangerous</h3>
+  <p>MobSF отметил 7 опасных (dangerous) разрешений:</p>
+  <table>
+    <thead>
+      <tr><th>Разрешение</th><th>Что даёт</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>WRITE_EXTERNAL_STORAGE</code></td><td>чтение/изменение/удаление файлов на внешнем хранилище</td></tr>
+      <tr><td><code>SEND_SMS</code></td><td>отправка SMS (может использоваться для платных действий)</td></tr>
+      <tr><td><code>USE_CREDENTIALS</code></td><td>использование учётных данных аккаунта</td></tr>
+      <tr><td><code>GET_ACCOUNTS</code></td><td>доступ к списку аккаунтов на устройстве</td></tr>
+      <tr><td><code>READ_PROFILE</code></td><td>чтение персонального профиля пользователя</td></tr>
+      <tr><td><code>READ_CONTACTS</code></td><td>чтение контактов</td></tr>
+      <tr><td><code>ACCESS_COARSE_LOCATION</code></td><td>определение местоположения по сети</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Риск:</strong> приложение запрашивает доступ к SMS, контактам, аккаунтам и хранилищу. Для банковского приложения такой набор избыточен и расширяет поверхность атаки.</p>
+
+  <h3>2. Network security (severity high и выше)</h3>
+  <p>В этом сканировании MobSF <strong>не выявил</strong> отдельных network security находок уровня high+ (раздел Network Security пуст). Причина: у приложения нет файла Network Security Config, а target SDK = 22, где cleartext-трафик (HTTP) разрешён по умолчанию. Это само по себе риск, поэтому в план митигации я включил добавление Network Security Config.</p>
+
+  <h3>3. Manifest analysis (severity high и выше)</h3>
+  <p>High-находки манифеста:</p>
+  <table>
+    <thead>
+      <tr><th>Находка</th><th>Описание</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>android:debuggable=true</code></td><td>включён debug, приложение легко подцепить отладчиком и снять дамп</td></tr>
+      <tr><td><code>minSdk=15</code></td><td>можно установить на Android 4.0.3-4.0.4 с непатченными уязвимостями</td></tr>
+      <tr><td>StrandHogg 2.0</td><td>активности <code>PostLogin</code>, <code>DoTransfer</code>, <code>ViewStatement</code>, <code>ChangePassword</code> уязвимы к перехвату задач</td></tr>
+    </tbody>
+  </table>
+  <p>Warning-находки манифеста (тоже важные):</p>
+  <ul>
+    <li><code>android:allowBackup=true</code> - данные приложения можно выгрузить через <code>adb backup</code>;</li>
+    <li>экспортированы без защиты: 4 активности (<code>PostLogin</code>, <code>DoTransfer</code>, <code>ViewStatement</code>, <code>ChangePassword</code>), Content Provider <code>TrackUserContentProvider</code>, Broadcast Receiver <code>MyBroadCastReceiver</code>. Их может вызвать любое другое приложение на устройстве.</li>
+  </ul>
+
+  <h3>4. Code analysis (severity high и выше)</h3>
+  <p>High-находки уровня приложения и кода:</p>
+  <table>
+    <thead>
+      <tr><th>Находка</th><th>Описание</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Janus (v1 signature)</td><td>приложение подписано только схемой v1, уязвимо к Janus на Android 5.0-8.0 (подмена кода без нарушения подписи)</td></tr>
+      <tr><td>Hardcoded secrets</td><td>MobSF нашёл захардкоженные строки, похожие на секреты (в т.ч. base64-зашифрованные значения и связку login/password)</td></tr>
+      <tr><td>Privacy trackers</td><td>в приложении 3 трекера: Google AdMob, Google Analytics, Google Tag Manager</td></tr>
+    </tbody>
+  </table>
+  <p>Пример найденных захардкоженных секретов:</p>
+  <pre><code>"loginscreen_username" : "Username:"
+"loginscreen_password" : "Password:"
+qfDkyRZiTZGguvBzojuWMEqfI8Qqw5CcMB2eo7wr2iH9X2v+qlFOYNd9v9ffS1x0
+EwZMQOzAsSbCW+73vnMc0IIAOIXmhdEPDWA4pBmTQFs=</code></pre>
+
+  <h2>План по митигации рисков</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Недостаток</th><th>Риск</th><th>Митигация</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>Опасные разрешения (SMS, контакты, аккаунты, хранилище)</td><td>избыточный доступ, расширение поверхности атаки</td><td>оставить только реально нужные разрешения; перейти на scoped storage; SMS/контакты убрать, если не используются</td></tr>
+      <tr><td>2</td><td>Нет Network Security Config, target SDK 22</td><td>разрешён cleartext HTTP, риск MITM</td><td>добавить <code>network_security_config.xml</code> с <code>cleartextTrafficPermitted=false</code>, включить TLS и certificate pinning, поднять target SDK</td></tr>
+      <tr><td>3</td><td><code>android:debuggable=true</code></td><td>лёгкая отладка и дамп памяти в проде</td><td>убрать debuggable, в релизной сборке должно быть <code>false</code></td></tr>
+      <tr><td>4</td><td><code>minSdk=15</code></td><td>установка на старые уязвимые версии Android</td><td>поднять <code>minSdkVersion</code> минимум до актуально поддерживаемой (например 24+)</td></tr>
+      <tr><td>5</td><td>StrandHogg 2.0 у активностей</td><td>перехват задач, фишинг поверх приложения</td><td>задать <code>taskAffinity=""</code> и <code>launchMode</code>, обновить target SDK, проверять состояние задач</td></tr>
+      <tr><td>6</td><td><code>android:allowBackup=true</code></td><td>выгрузка данных через adb backup</td><td>поставить <code>android:allowBackup="false"</code></td></tr>
+      <tr><td>7</td><td>Экспортированные компоненты без защиты</td><td>вызов активностей/провайдера/ресивера чужими приложениями</td><td><code>android:exported="false"</code> где не нужен внешний доступ; иначе защитить permission уровня <code>signature</code></td></tr>
+      <tr><td>8</td><td>Janus (только v1 подпись)</td><td>подмена кода без нарушения подписи</td><td>подписать схемами v2/v3 (APK Signature Scheme v2+)</td></tr>
+      <tr><td>9</td><td>Захардкоженные секреты</td><td>утечка ключей/учёток при реверсе APK</td><td>убрать секреты из кода, хранить в Android Keystore / на сервере, не в ресурсах</td></tr>
+      <tr><td>10</td><td>Слабое шифрование и хранение</td><td>секреты лежат как base64/слабый шифр</td><td>использовать стойкие алгоритмы (AES-GCM), ключи в Keystore, не хранить чувствительные данные локально</td></tr>
+      <tr><td>11</td><td>Privacy trackers</td><td>передача данных третьим сторонам</td><td>пересмотреть необходимость трекеров, уведомить пользователя, дать opt-out</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Итог</h2>
+  <p>Развернул MobSF v4.5.0 в Docker и провёл статический анализ приложения InsecureBankv2. Security Score - 28 из 100, найдено 7 проблем уровня High и 9 Warning.</p>
+  <p>Основные недостатки: опасные разрешения, включённый debug, низкий minSdk, уязвимость StrandHogg 2.0 у ключевых активностей, разрешённый backup, незащищённые экспортированные компоненты, подпись только v1 (Janus) и захардкоженные секреты.</p>
+  <p>По каждому недостатку составлен план митигации (таблица выше). Главные шаги: убрать debug и backup, поднять minSdk/targetSdk, закрыть экспортированные компоненты, перейти на подпись v2/v3, добавить Network Security Config и убрать секреты из кода в Android Keystore.</p>
+  <p>Полный отчёт MobSF приложен в файле <code>MobSF_InsecureBankv2_report.pdf</code>.</p>
+</body>
+</html>

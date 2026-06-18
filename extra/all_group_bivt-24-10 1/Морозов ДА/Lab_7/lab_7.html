@@ -1,0 +1,135 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><p>В этой работе я запускал MobSF через докер образ и прогонял через него APK <code>com.vkontakte.android_53441_rs.apk</code></p>
+<p>Приложение: VK 8.180<br>Package Name: <code>com.vkontakte.android</code></p>
+<p>Результат общего сканирования такой:</p>
+<p>Security Score: 49/100</p>
+<p>По scorecard MobSF показал:</p>
+<ul>
+<li>HIGH: 3</li>
+<li>MEDIUM: 100</li>
+<li>INFO: 2</li>
+</ul>
+<p>Также MobSF отметил, что в приложении найдено 13 privacy trackers.</p>
+<hr>
+<h1 id="high-severity">High severity</h1>
+<h2 id="dangerous-permissions">Dangerous permissions</h2>
+<p>MobSF отметил несколько разрешений со статусом dangerous:</p>
+<ol>
+<li><code>android.permission.RECORD_AUDIO</code></li>
+<li><code>android.permission.CAMERA</code></li>
+<li><code>android.permission.ACCESS_COARSE_LOCATION</code></li>
+<li><code>android.permission.ACCESS_FINE_LOCATION</code></li>
+<li><code>android.permission.READ_CONTACTS</code></li>
+<li><code>android.permission.WRITE_CONTACTS</code></li>
+<li><code>android.permission.READ_CALENDAR</code></li>
+<li><code>android.permission.WRITE_CALENDAR</code></li>
+<li><code>android.permission.READ_PHONE_STATE</code></li>
+<li><code>android.permission.CALL_PHONE</code></li>
+<li><code>android.permission.GET_ACCOUNTS</code></li>
+<li><code>android.permission.READ_EXTERNAL_STORAGE</code></li>
+<li><code>android.permission.WRITE_EXTERNAL_STORAGE</code></li>
+</ol>
+<p>Такие разрешения дают приложению доступ к чувствительным данным пользователя: камере, микрофону, геолокации, контактам, календарю, аккаунтам, звонкам и файлам.</p>
+<p>Для VK часть этих разрешений может быть ожидаемой, потому что приложение поддерживает звонки, фото, видео, сообщения и работу с контактами. Но всё равно каждое dangerous permission нужно отдельно обосновывать и запрашивать только тогда, когда оно реально нужно.</p>
+<p>То есть первый обязательный пункт задания выполняется: dangerous permissions у приложения есть.</p>
+<hr>
+<h2 id="network-security">Network Security</h2>
+<p>MobSF нашёл проблему уровня High:</p>
+<p><code>Domain config is insecurely configured to permit clear text traffic to these domains in scope.</code></p>
+<p>Cleartext traffic разрешён для:</p>
+<ul>
+<li><code>127.0.0.1</code></li>
+<li><code>localhost</code></li>
+<li><code>mobileid.megafon.ru</code></li>
+<li><code>idgw.mobileid.mts.ru</code></li>
+<li><code>he-mc.tele2.ru</code></li>
+<li><code>he-mc.t2.ru</code></li>
+<li><code>beeline.ru</code></li>
+</ul>
+<p>Это означает, что для части доменов приложение допускает незашифрованный HTTP-трафик. Такой трафик потенциально можно перехватить.</p>
+<p>Из всех находок это одна из самых важных, потому что сетевой трафик должен передаваться только по HTTPS.</p>
+<hr>
+<h2 id="manifest-analysis">Manifest Analysis</h2>
+<p>В разделе Manifest Analysis high findings нет.</p>
+<p>Но MobSF показал много warning, например:</p>
+<ol>
+<li><code>Application Data can be Backed up [android:allowBackup=true]</code></li>
+<li>Много Activity, Service и Broadcast Receiver с <code>android:exported=true</code></li>
+<li>Использование <code>taskAffinity</code></li>
+</ol>
+<hr>
+<h2 id="code-analysis">Code Analysis</h2>
+<p>В разделе Code Analysis для этого APK явные high findings не были подробно представлены.</p>
+<p>При этом MobSF показал признаки защитных механизмов:</p>
+<ul>
+<li>Anti-VM Code</li>
+<li>Anti-Debug Code</li>
+<li>Anti-Disassembly Code</li>
+</ul>
+<p>Также были проблемы с декомпиляцией через JADX.</p>
+<p>Это не обязательно уязвимость, но это значит, что автоматический анализ кода мог быть неполным. Поэтому код лучше дополнительно проверить вручную.</p>
+<hr>
+<h1 id="-">Дополнительно</h1>
+<h2 id="1-">1) Слабый алгоритм подписи сертификата</h2>
+<p>MobSF отметил:</p>
+<p><code>Certificate algorithm vulnerable to hash collision</code></p>
+<p>Причина в том, что приложение подписано с использованием <code>SHA1withRSA</code>.</p>
+<p>SHA-1 давно считается устаревшим алгоритмом, поэтому это нормальное high-срабатывание, на которое стоит обратить внимание.</p>
+<h2 id="2-privacy-trackers">2) Privacy trackers</h2>
+<p>MobSF отметил 13 privacy trackers.</p>
+<p>Сами по себе трекеры не всегда являются уязвимостью, но это риск для приватности, потому что приложение может собирать и передавать данные пользователя сторонним SDK.</p>
+<hr>
+<h1 id="-">План митигации</h1>
+<p>Теперь план митигации.</p>
+<h3 id="1-cleartext-traffic">1) Убрать cleartext traffic</h3>
+<p>Что делать:</p>
+<ul>
+<li>запретить cleartext traffic в production-сборке</li>
+<li>проверить <code>network_security_config</code></li>
+<li>оставить только HTTPS</li>
+<li>удалить тестовые HTTP-исключения, если они не нужны</li>
+</ul>
+<h3 id="2-dangerous-permissions">2) Пересмотреть dangerous permissions</h3>
+<p>Что делать:</p>
+<ul>
+<li>проверить, действительно ли нужны камера, микрофон, геолокация, контакты, календарь и звонки</li>
+<li>удалить лишние permissions из <code>AndroidManifest.xml</code></li>
+<li>запрашивать разрешения только в момент использования функции</li>
+<li>объяснять пользователю, зачем нужен доступ</li>
+</ul>
+<h3 id="3-manifest">3) Исправить настройки Manifest</h3>
+<p>Что делать:</p>
+<ul>
+<li>отключить <code>android:allowBackup</code>, если резервное копирование не требуется</li>
+<li>закрыть лишние exported-компоненты через <code>android:exported=false</code></li>
+<li>для реально внешних компонентов добавить permission-защиту</li>
+<li>проверить использование <code>taskAffinity</code></li>
+</ul>
+<h3 id="4-">4) Обновить схему подписи</h3>
+<p>Что делать:</p>
+<ul>
+<li>не использовать SHA-1</li>
+<li>перейти на более современный алгоритм, например <code>SHA256withRSA</code></li>
+<li>использовать ключ не менее 2048 бит</li>
+<li>проверить процесс релизной сборки</li>
+</ul>
+<h3 id="5-">5) Провести дополнительный анализ кода</h3>
+<p>Что делать:</p>
+<ul>
+<li>проверить код на hardcoded secrets</li>
+<li>проверить криптографию</li>
+<li>проверить WebView</li>
+<li>проверить логирование чувствительных данных</li>
+<li>при необходимости повторить анализ другим инструментом</li>
+</ul>
+<h3 id="6-sdk-">6) Проверить сторонние SDK и трекеры</h3>
+<p>Что делать:</p>
+<ul>
+<li>посмотреть, какие SDK реально нужны</li>
+<li>удалить неиспользуемые SDK</li>
+<li>обновить используемые зависимости</li>
+<li>проверить, какие данные собирают privacy trackers</li>
+</ul>
+</body></html>

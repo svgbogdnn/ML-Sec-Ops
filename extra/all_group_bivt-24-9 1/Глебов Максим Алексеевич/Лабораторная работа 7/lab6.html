@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Лабораторная работа 6</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.55;
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 20px;
+      color: #222;
+      background: #fff;
+    }
+
+    h1, h2, h3 {
+      color: #222;
+      line-height: 1.25;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-top: 0;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 8px;
+    }
+
+    h2 {
+      font-size: 23px;
+      margin-top: 34px;
+      border-bottom: 1px solid #e5e5e5;
+      padding-bottom: 6px;
+    }
+
+    h3 {
+      font-size: 19px;
+      margin-top: 26px;
+    }
+
+    a {
+      color: #0645ad;
+      text-decoration: none;
+    }
+
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.95em;
+    }
+
+    pre {
+      background: #f4f4f4;
+      padding: 13px;
+      border-radius: 6px;
+      overflow-x: auto;
+      border: 1px solid #e0e0e0;
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      font-size: 14px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 16px 0;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #f2f2f2;
+    }
+
+    ul {
+      padding-left: 24px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Лабораторная работа 6</h1>
+  <p><strong>Тема:</strong> поиск секретов в репозитории git с помощью truffleHog.</p>
+
+  <h2>Цель</h2>
+  <p>Проверить репозиторий на наличие секретов и прислать аналитику по найденным секретам.</p>
+  <p>Репозиторий:</p>
+  <pre><code>https://github.com/OtusTeam/DevSecOps_secret-finding.git</code></pre>
+
+  <h2>Как сканировал</h2>
+  <p>Запускал truffleHog в одноразовом Docker-контейнере с Python, как в методичке:</p>
+  <pre><code>docker run -it -p 8080:8080 python:buster /bin/bash
+pip install truffleHog
+trufflehog https://github.com/OtusTeam/DevSecOps_secret-finding.git | tee -a log.txt</code></pre>
+  <p>truffleHog проходит по всей истории коммитов всех веток и ищет секреты двумя способами: по регулярным выражениям и по энтропии Шеннона (длинные строки base64/hex с высокой энтропией).</p>
+  <p>В ветке <code>main</code> лежит только <code>README.md</code>. Настоящие секреты спрятаны в истории (около 2600 коммитов) и в ветке <code>develop</code>, поэтому нужен именно анализ истории git, а не текущих файлов.</p>
+  <p>Часть срабатываний оказалась ложной (например, checksum'ы зависимостей). Ниже 6 настоящих секретов разных типов.</p>
+
+  <h2>Часть 1. Найденные секреты</h2>
+
+  <h3>Секрет 1. AWS Access Key</h3>
+  <p><strong>Расположение:</strong><br>
+    <code>.travis.yml</code>, строки 24-25.
+  </p>
+  <pre><code>deploy:
+  provider: s3
+  access_key_id: AKIAJQLKPGHXRH2AH5QA
+  secret_access_key:
+    secure: 45+SwWlPFujD9FOOFLA9Lz0CaePVrn/SEsAhAn0Ve9sYpI0Vsij...
+  bucket: webgoat-war</code></pre>
+  <p><strong>Почему это секрет:</strong><br>
+    <code>AKIAJQLKPGHXRH2AH5QA</code> это AWS Access Key ID (виден по префиксу <code>AKIA</code> и длине 20 символов). Вместе с <code>secret_access_key</code> он даёт доступ к аккаунту AWS и бакету <code>webgoat-war</code>.
+  </p>
+  <p><strong>Как правильно хранить:</strong><br>
+    Не держать ключи в коде. Использовать секреты CI или временные роли (IAM Roles, OIDC). Утёкший ключ сразу отозвать.
+  </p>
+
+  <h3>Секрет 2. Приватный ключ</h3>
+  <p><strong>Расположение:</strong><br>
+    <code>webgoat-server/privatekey.key</code>, строка 1.
+  </p>
+  <pre><code>-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCpuOH6AnMc/xdJ
+...
+-----END PRIVATE KEY-----</code></pre>
+  <p><strong>Почему это секрет:</strong><br>
+    Это закрытый ключ, видно по заголовку <code>-----BEGIN PRIVATE KEY-----</code>. С ним можно расшифровывать трафик и выдавать себя за сервер.
+  </p>
+  <p><strong>Как правильно хранить:</strong><br>
+    Хранить в хранилище секретов (Vault, AWS KMS) или в keystore. В git добавить <code>*.key</code>, <code>*.pem</code> в <code>.gitignore</code>. Утёкший ключ перевыпустить.
+  </p>
+
+  <h3>Секрет 3. Пароль БД в строке подключения</h3>
+  <p><strong>Расположение:</strong><br>
+    <code>docker-compose-postgres.yml</code>, строки 10 и 19.
+  </p>
+  <pre><code>SPRING_DATASOURCE_URL: jdbc:postgresql://webgoat_db:5432/webgoat?user=webgoat&amp;password=webgoat
+...
+postgresql://webgoat:webgoat@webgoat_db:5432</code></pre>
+  <p><strong>Почему это секрет:</strong><br>
+    В строке подключения в открытом виде записаны логин и пароль к базе <code>webgoat:webgoat</code>. С ними можно подключиться к БД.
+  </p>
+  <p><strong>Как правильно хранить:</strong><br>
+    Логин и пароль выносить в переменные окружения или секреты (Docker secrets, Kubernetes Secrets). Пароль по умолчанию сменить.
+  </p>
+
+  <h3>Секрет 4. Учётные данные в URL</h3>
+  <p><strong>Расположение:</strong><br>
+    <code>webgoat.sh</code>, строка 49.
+  </p>
+  <pre><code>curl http://guest:guest@127.0.0.1:8080/WebGoat/attack</code></pre>
+  <p><strong>Почему это секрет:</strong><br>
+    Логин и пароль <code>guest:guest</code> записаны прямо в URL. Такие данные попадают в логи и историю команд.
+  </p>
+  <p><strong>Как правильно хранить:</strong><br>
+    Не передавать пароль в URL. Использовать заголовок <code>Authorization</code>, файл <code>~/.netrc</code> или переменные окружения.
+  </p>
+
+  <h3>Секрет 5. JWT-токен</h3>
+  <p><strong>Расположение:</strong><br>
+    <code>webgoat-lessons/jwt/.../lessonPlans/en/JWT_signing_solution.adoc</code>, строка 35.
+  </p>
+  <pre><code>access_token=eyJhbGciOiJIUzUxMiJ9.eyJpYXQiOjE2MDgxMjg1NjYsImFkbWluIjoiZmFsc2UiLCJ1c2VyIjoiVG9tIn0.rTSX6PSXqUoGUvQQDBiqX0re2BSt7s2-X6FPf34Qly9SMpqIUSP8jykedJbjOBNlM3_CTjgk1SvUv48Pz8zIzA</code></pre>
+  <p><strong>Почему это секрет:</strong><br>
+    Это подписанный JWT (алгоритм <code>HS512</code>). В payload лежит <code>{"iat":1608128566,"admin":"false","user":"Tom"}</code>. По токену можно авторизоваться от имени пользователя.
+  </p>
+  <p><strong>Как правильно хранить:</strong><br>
+    JWT нельзя класть в репозиторий, документацию и логи. Токены делать короткоживущими, ключ подписи хранить в секретах.
+  </p>
+
+  <h3>Секрет 6. Пароли пользователей в открытом виде</h3>
+  <p><strong>Расположение:</strong><br>
+    <code>webgoat-lessons/sql-injection/.../db/migration/V2019_09_26_6__user_system_data.sql</code>, строки 8-10.
+  </p>
+  <pre><code>INSERT INTO user_system_data VALUES (101,'jsnow','passwd1', '');
+INSERT INTO user_system_data VALUES (102,'jdoe','passwd2', '');
+INSERT INTO user_system_data VALUES (103,'jplane','passwd3', '');</code></pre>
+  <p><strong>Почему это секрет:</strong><br>
+    Пароли пользователей записаны в открытом виде (<code>passwd1</code>, <code>passwd2</code>, <code>passwd3</code>). Пароли в БД нельзя хранить в plaintext.
+  </p>
+  <p><strong>Как правильно хранить:</strong><br>
+    Хранить только хеш с солью (<code>bcrypt</code>, <code>argon2</code>, <code>scrypt</code>, <code>PBKDF2</code>). В тестовых данных не использовать настоящие пароли.
+  </p>
+
+  <h2>Часть 2. Дополнительно</h2>
+
+  <h3>BFG Repo-Cleaner</h3>
+  <p>BFG Repo-Cleaner это инструмент для быстрой очистки истории git от больших файлов и секретов. Он проще и быстрее, чем <code>git filter-branch</code>.</p>
+  <p>Зачем нужен: если секрет попал в git, удалить его из последнего коммита мало, он остаётся в истории. BFG переписывает всю историю и заменяет секреты:</p>
+  <pre><code>bfg --replace-text passwords.txt my-repo.git
+bfg --delete-files privatekey.key my-repo.git
+git reflog expire --expire=now --all &amp;&amp; git gc --prune=now --aggressive</code></pre>
+  <p>После этого меняются хеши коммитов, нужен <code>force push</code>, а всем участникам переклонировать репозиторий. Утёкший секрет всё равно нужно сменить.</p>
+
+  <h3>Можно ли автоматизировать поиск секретов</h3>
+  <p>Да, поиск секретов автоматизируют на нескольких этапах:</p>
+  <ul>
+    <li>pre-commit hook (<code>gitleaks</code>, <code>truffleHog</code>, <code>detect-secrets</code>), секрет не попадёт в репозиторий;</li>
+    <li>шаг сканирования в CI/CD, при находке сборка падает;</li>
+    <li>GitHub Secret Scanning и push protection на стороне платформы.</li>
+  </ul>
+  <p>Это правильный подход, но с оговорками:</p>
+  <ul>
+    <li>лучше ловить секрет до попадания в историю, после утечки чистить дорого;</li>
+    <li>сканеры дают ложные срабатывания, нужен allow-list и ручной разбор;</li>
+    <li>главное не хранить секреты в коде вообще, а сканирование это страховка.</li>
+  </ul>
+
+  <h2>Итог</h2>
+  <p>С помощью truffleHog по истории всех веток найдено 6 секретов разных типов: AWS Access Key, приватный ключ, пароль БД в строке подключения, учётные данные в URL, JWT-токен и пароли пользователей в plaintext. Часть срабатываний оказалась ложной.</p>
+  <p>Главный вывод: секреты нельзя хранить в коде и истории git. Их место в хранилищах секретов и переменных окружения. Утёкшие секреты нужно менять, историю чистить (BFG Repo-Cleaner), а поиск секретов встраивать в pre-commit и CI/CD.</p>
+</body>
+</html>

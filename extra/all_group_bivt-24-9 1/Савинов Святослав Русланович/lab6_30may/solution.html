@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторная работа №6</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; line-height: 1.6; color: #333; }
+        h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
+        h2 { margin-top: 24px; }
+        a { color: #0066cc; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; word-break: break-all; }
+        pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: none; padding: 0; }
+        strong { color: #111; }
+        img { max-width: 100%; border: 1px solid #ddd; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+<h1>ЛР 6. Поиск секретов в репозитории</h1>
+<p>Поднял одноразовый контейнер с питоном и поставил в него trufflehog как в методичке:</p>
+<pre><code class="language-bash">docker run -it -p 8080:8080 python:buster /bin/bash
+pip install truffleHog
+trufflehog https://github.com/OtusTeam/DevSecOps_secret-finding.git | tee -a log.txt
+</code></pre>
+<p>Репа это WebGoat с подкинутыми секретами. trufflehog идёт по всей истории коммитов каждой ветки, считает энтропию Шеннона для base64 и hex строк длиннее 20 символов плюс гоняет регекспы. видим огромный лог мусора, бОльшая часть это ложные срабатывания на чексуммах из package-lock и на минифицированном js. Выбрал 5 разнотипных секретов, файл лога забрал из контейнера через <code>python -m http.server 8080</code>.</p>
+<h2>1. Хардкод GITHUB_TOKEN в релизном workflow</h2>
+<p><code>.github/workflows/release.yml</code>, строка 75 (trufflehog помечает коммит 34f1faad от 2021-11-22):</p>
+<pre><code>env:
+  GITHUB_TOKEN: cee3257f0e59d1d4975a35429cffc3d8b5fabe15ca2e9d47243cbc446d4894a5
+</code></pre>
+<p>Персональный токен доступа к гитхабу, 64 hex символа, по энтропии trufflehog его видит сразу. Через такой токен можно пушить в репу, делать релизы, ходить в api от имени владельца, то есть фактически рулить пайплайном. Что забавно, в соседнем <code>welcome.yml</code> всё сделано правильно, там стоит <code>${{ secrets.GITHUB_TOKEN }}</code>, а тут вот челы и оставили свой токен прямо текстом.</p>
+<p>Хранить надо в Settings &gt; Secrets репозитория и подставлять через <code>${{ secrets.NAME }}</code>. Раз токен уже в публичной истории, его считаем утёкшим, отзываем и выпускаем новый.</p>
+<h2>2. Приватный RSA-ключ файлом</h2>
+<p><code>webgoat-server/privatekey.key</code>, целиком pem-блок (коммит 34f1faad, 2021-11-22):</p>
+<pre><code>-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCpuOH6AnMc/xdJ
+Fo/8z5j+MTLS1yVHANOgQgAxrIczt9uS9vi9UtE0377fL0TQs5Uo97rSuS6ZJ0ac
+...
+-----END PRIVATE KEY-----
+</code></pre>
+<p>Приватный ключ в формате PKCS8, лежит отдельным файлом. Палится регекспом на <code>BEGIN PRIVATE KEY</code>. У кого этот ключ, тот может расшифровывать трафик, подписывать данные от имени сервера, по сути притвориться этим сервисом. Приватник вообще не должен попадать в гит ни в каком виде.</p>
+<p>Такое кладут в Vault, HSM или секреты кубера, в репе максимум публичная часть. <code>*.key</code> и <code>*.pem</code> сразу в .gitignore. Этот ключ уже скомпрометирован, перевыпускать.</p>
+<h2>3. Подписанный JWT в тестах</h2>
+<p><code>webgoat-lessons/jwt/src/test/java/org/owasp/webgoat/jwt/JWTFinalEndpointTest.java</code>, строка 27 (коммит 82ad0a7c, 2019-09-18):</p>
+<pre><code class="language-java">private static final String TOKEN_JERRY = &quot;eyJraWQiOiJ3ZWJnb2F0X2tleSIsImFsZyI6IkhTNTEyIn0.eyJhdWQiOiJ3ZWJnb2F0Lm9yZyIsImVtYWlsIjoiamVycnlAd2ViZ29hdC5jb20iLCJ1c2VybmFtZSI6IkplcnJ5In0.xBc5FFwaOcuxjdr_VJ16n8Jb7vScuaZulNTl66F2MWF1aBe47QsUosvbjWGORNcMPiPNwnMu1Yb0WZVNrp2ZXA&quot;;
+</code></pre>
+<p>Готовый подписанный JWT, зашит константой в тест. Три base64 куска через точку, энтропия высокая, trufflehog ловит. Если токен ещё валиден на сервере, им можно ходить по api как пользователь Jerry. Плюс имея целиком хедер, пейлоад и подпись (тут HS512), можно офлайн брутить секрет подписи, а зная его, подписывать любые свои токены, в том числе с правами админа.</p>
+<p>Готовые токены в коде не держать. Для тестов генерировать на месте и подписывать заведомо тестовым ключом, а не боевым. Секрет подписи в секретах CI.</p>
+<h2>4. Захардкоженные пароли в исходнике</h2>
+<p><code>webgoat-lessons/challenge/src/main/java/org/owasp/webgoat/challenges/SolutionConstants.java</code>, строки 34-36 (коммит 82ad0a7c, 2019-09-18):</p>
+<pre><code class="language-java">String PASSWORD = &quot;!!webgoat_admin_1234!!&quot;;
+String PASSWORD_TOM = &quot;thisisasecretfortomonly&quot;;
+String ADMIN_PASSWORD_LINK = &quot;375afe1104f4a487a73823c50a9292a2&quot;;
+</code></pre>
+<p>Тут сразу пачка. <code>PASSWORD</code> это пароль админа прямо строкой, <code>PASSWORD_TOM</code> пароль юзера, а <code>ADMIN_PASSWORD_LINK</code> это 32 hex символа, по виду md5, рабочая ссылка для сброса пароля админа. Последнюю trufflehog цепляет по энтропии, первые две по регекспу на <code>PASSWORD</code>. Рядом даже коммент висит <code>//TODO should be random generated when starting the server</code>, то есть автор сам в курсе что так нельзя. понятненко</p>
+<p>Пароли и секреты в код не зашивать. Генерировать при старте либо брать из переменных окружения, а пароли пользователей хранить только хешем с солью (bcrypt или argon2).</p>
+<h2>5. Строка подключения к базе с паролем (нашлось в истории)</h2>
+<p><code>docker-compose-postgres.yml</code>. В текущем дереве файла уже нет, но trufflehog достаёт его из старого коммита cb227762 (2021-04-03):</p>
+<pre><code class="language-yaml">- spring.datasource.url=jdbc:postgresql://webgoat_db:5432/webgoat?user=webgoat&amp;password=webgoat
+- spring.datasource.password=webgoat
+</code></pre>
+<p>это уже интереснй. Кто-то закоммитил compose с логином и паролем от postgres прямо в строке подключения, потом файл удалили, но в истории коммитов креды остались и достаются за пару секунд. Пароль <code>webgoat</code> примитивный, но сам факт что строка подключения с паролем была в репе это уже утечка.</p>
+<p>Креды БД держать в переменных окружения или секретах CI и прокидывать в контейнер при деплое, в самом compose оставлять только <code>${POSTGRES_PASSWORD}</code>. И раз пароль уже светился в истории, его надо менять, а историю чистить.</p>
+<h2>Доп: BFG Repo-Cleaner</h2>
+<p>BFG это утилита для чистки истории гита от того, что туда попадать не должно было. По сути быстрая и удобная замена <code>git filter-branch</code>. Умеет вырезать файлы по маске (<code>*.key</code>) и менять текст во всех коммитах на <code>***REMOVED***</code>.</p>
+<p>Нужна как раз для случая как секрет №5: из последнего коммита секрет убрали, а в истории он остался и любой trufflehog его выкопает. BFG проходит по всем коммитам и затирает. Но даже после чистки секрет всё равно считается утёкшим, потому что репу могли уже склонировать, так что менять и отзывать его всё равно надо.</p>
+<pre><code class="language-bash">bfg --replace-text passwords.txt repo.git
+git reflog expire --expire=now --all &amp;&amp; git gc --prune=now --aggressive
+</code></pre>
+<h2>Доп: автоматизация поиска секретов</h2>
+<p>Да, и это нормальная практика, руками такое не масштабируется. Обычно ставят сразу в несколько мест: pre-commit хук на машине разработчика (git-secrets, gitleaks), чтобы плохой коммит вообще не ушёл, потом обязательный шаг в CI на каждый push или MR, плюс можно включить встроенный сканер гитхаба или гитлаба.</p>
+<p>Подход правильный, но не серебряная пуля. Сканеры ловят не всё, особенно произвольные пароли без явного формата, и дают кучу ложных срабатываний (у меня пол-лога это чексуммы). И главное, если секрет уже попал в репу, никакая автоматизация не отменяет того, что его надо отзывать. Так что автосканер это хорошо, но первично, чтобы секреты вообще не лежали в коде, а брались из нормального хранилища. почти все словили</p>
+</body>
+</html>

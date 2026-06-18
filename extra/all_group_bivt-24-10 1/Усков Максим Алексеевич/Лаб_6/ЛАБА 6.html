@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 26.2.3.2 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changed" content="00:00:00"/>
+	<style type="text/css">
+		@page { size: 8.27in 11.69in; margin: 0.79in }
+		p { margin-bottom: 0.1in; line-height: 115%; background: transparent }
+		h2 { margin-top: 0.14in; margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h2.western { font-weight: bold; font-size: 16pt; font-family: "Liberation Sans", sans-serif }
+		h2.cjk { font-weight: bold; font-size: 16pt; font-family: "AR PL SungtiL GB" }
+		h2.ctl { font-weight: bold; font-family: "Noto Sans Devanagari"; font-size: 16pt }
+		h1 { margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h1.western { font-weight: bold; font-size: 18pt; font-family: "Liberation Sans", sans-serif }
+		h1.cjk { font-weight: bold; font-size: 18pt; font-family: "AR PL SungtiL GB" }
+		h1.ctl { font-weight: bold; font-family: "Noto Sans Devanagari"; font-size: 18pt }
+		pre { font-size: 10pt; font-family: "Liberation Mono", monospace; background: transparent }
+		td p { widows: 0; orphans: 0; background: transparent }
+		th p { widows: 0; text-align: center; orphans: 0; font-weight: bold; background: transparent }
+		a:link { color: #000080; text-decoration: underline }
+	</style>
+</head>
+<body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><h2 class="western">
+Связанные заметки</h2>
+<ul>
+	<li><p><a href="https://en.wikipedia.org/wiki/%D0%9A%D0%B0%D1%80%D1%82%D0%B0%20%D0%98%D0%91">Карта
+	ИБ</a></p></li>
+	<li><p><a href="https://en.wikipedia.org/wiki/1.%20%D0%92%D0%BD%D0%B5%D0%B4%D1%80%D0%B5%D0%BD%D0%B8%D0%B5%20%D0%B8%20%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%B0%20%D0%B2%20DevSecOps">1.
+	Внедрение и работа в DevSecOps</a></p></li>
+</ul>
+<h1 class="western">ЛАБА 6. Поиск секретов в
+репозитории</h1>
+<h2 class="western">Цель</h2>
+<p>Проверить репозиторий на наличие
+секретов и разобрать найденные значения:
+где они находятся, почему это секрет и
+как их правильно хранить.</p>
+<p>Для проверки использовался репозиторий
+из методички:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">https://github.com/OtusTeam/DevSecOps_secret-finding.git</pre><p>
+Ветка:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">develop</pre><p>
+Ссылки на проверенные места:</p>
+<ul>
+	<li><p><a href="https://github.com/OtusTeam/DevSecOps_secret-finding/blob/develop/docker/">https://github.com/OtusTeam/DevSecOps_secret-finding/blob/develop/docker/</a>.env</p></li>
+	<li><p><a href="https://github.com/OtusTeam/DevSecOps_secret-finding/blob/develop/webgoat-server/privatekey.key">https://github.com/OtusTeam/DevSecOps_secret-finding/blob/develop/webgoat-server/privatekey.key</a></p></li>
+	<li><p><a href="https://github.com/OtusTeam/DevSecOps_secret-finding/blob/develop/">https://github.com/OtusTeam/DevSecOps_secret-finding/blob/develop/</a>.github/workflows/release.yml</p></li>
+</ul>
+<h2 class="western">Инструмент</h2>
+<p>В методичке предлагается использовать
+<font face="Liberation Mono, monospace">truffleHog</font>. Он ищет
+пароли, токены, ключи и другие чувствительные
+данные в git-репозиториях, в том числе по
+истории коммитов.</p>
+<p>Пример команд для запуска через
+одноразовый Docker-контейнер:</p>
+<pre style="margin-bottom: 0.2in; background: #e1e1e1">docker run --rm -it python:buster /bin/bash<br/>
+pip install truffleHog<br/>
+trufflehog https://github.com/OtusTeam/DevSecOps_secret-finding.git | tee -a log.txt</pre><p>
+Дополнительно я вручную проверил
+найденные места в репозитории, чтобы
+отсеять явные ложные срабатывания и
+описать только похожие на реальные
+секреты значения.</p>
+<hr/>
+
+<h1 class="western">Найденные секреты</h1>
+<table width="100%" cellpadding="4" cellspacing="0">
+	<col width="51*"/>
+	<col width="51*"/>
+	<col width="51*"/>
+	<col width="51*"/>
+	<col width="51*"/>
+	<thead>
+		<tr valign="top">
+			<th width="20%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				№</p>
+			</th>
+			<th width="20%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Расположение</p>
+			</th>
+			<th width="20%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Найденное значение / тип</p>
+			</th>
+			<th width="20%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Почему это секрет</p>
+			</th>
+			<th width="20%" style="border: 1px solid #000000; padding: 0.04in"><p align="left">
+				Как правильно хранить</p>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				1</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">docker/.env:2</font></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">APP_SECRET=666666666666666</font></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">APP_SECRET</font> обычно
+				используется приложением как ключ
+				для подписи cookies, JWT, CSRF-токенов или
+				других внутренних механизмов. Если
+				он лежит в репозитории, любой человек
+				с доступом к коду может использовать
+				его для подделки или анализа данных
+				приложения.</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p>
+				Хранить в secret storage: GitHub Actions Secrets, GitLab
+				CI Variables, HashiCorp Vault, AWS Secrets Manager, Kubernetes
+				Secret. В репозитории оставить только
+				<font face="Liberation Mono, monospace">.env.example</font> без
+				реального значения.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				2</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">docker/.env:3</font></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">USER=alex675</font></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Сам по себе логин не всегда является
+				секретом, но в этом файле он хранится
+				рядом с паролем и образует часть
+				учетных данных. В паре с паролем это
+				уже полноценные credentials для доступа к
+				сервису или приватному ресурсу.</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p>
+				Хранить вместе с паролем в secret storage
+				или передавать через переменные
+				окружения CI/CD. В коде использовать
+				нейтральное имя переменной вроде
+				<font face="Liberation Mono, monospace">SERVICE_USERNAME</font>.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				3</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">docker/.env:4</font></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">PASSWORD=#!qerge34t423sdfvdsfgeR</font></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				Это явно пароль: название переменной
+				<font face="Liberation Mono, monospace">PASSWORD</font>, высокая
+				энтропия и наличие спецсимволов.
+				Такой пароль нельзя коммитить, потому
+				что после попадания в git он остается
+				в истории.</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p>
+				Срочно заменить/отозвать пароль.
+				Хранить в менеджере секретов или в
+				защищенных переменных CI/CD. В репозитории
+				хранить только шаблон <font face="Liberation Mono, monospace">.env.example</font>
+				с <font face="Liberation Mono, monospace">PASSWORD=&lt;set-in-secret-storage&gt;</font>.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				4</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">webgoat-server/privatekey.key:1-28</font></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				Приватный RSA-ключ, файл начинается с
+				<font face="Liberation Mono, monospace">-----BEGIN PRIVATE
+				KEY-----</font></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Приватный ключ позволяет расшифровывать
+				данные или подписывать сообщения/сертификаты
+				от имени владельца ключа. Если ключ
+				попал в публичный репозиторий, его
+				нужно считать скомпрометированным.</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Немедленно отозвать связанный
+				сертификат/ключевую пару и выпустить
+				новую. Хранить ключ в Vault/KMS/Secret Manager
+				или в защищенном хранилище CI/CD. В
+				репозиторий можно класть только
+				публичный ключ или CSR, если это
+				действительно нужно.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				5</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">.github/workflows/release.yml:113</font></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">GITHUB_TOKEN=cee3257f0e59d1d4975a35429cffc3d8b5fabe15ca2e9d47243cbc446d4894a5</font></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				Значение похоже на токен доступа:
+				длинная hex-строка, явно присвоена
+				переменной <font face="Liberation Mono, monospace">GITHUB_TOKEN</font>
+				в release pipeline. Такой токен может давать
+				доступ к GitHub API, релизам, workflow или
+				публикации артефактов.</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p>
+				Отозвать токен и заменить на <font face="Liberation Mono, monospace">${{
+				secrets.GITHUB_TOKEN }}</font> или отдельный
+				fine-grained token в GitHub Actions Secrets. Права токена
+				должны быть минимальными и ограниченными
+				нужным workflow.</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p><br/>
+<br/>
+
+</p>
+<hr/>
+
+<h1 class="western">Вывод</h1>
+<p>В репозитории найдены разные типы
+чувствительных данных:</p>
+<ul>
+	<li><p>application secret;</p></li>
+	<li><p>логин как часть пары учетных данных;</p></li>
+	<li><p>пароль;</p></li>
+	<li><p>приватный криптографический ключ;</p></li>
+	<li><p>hardcoded GitHub token в CI/CD pipeline.</p></li>
+</ul>
+<p>Главная проблема в том, что секреты
+лежат прямо в git-репозитории. Даже если
+потом удалить строки из текущей версии
+файла, они могут остаться в истории
+коммитов и быть найденными инструментами
+вроде <font face="Liberation Mono, monospace">truffleHog</font>.</p>
+<p>Правильный подход:</p>
+<ul>
+	<li><p>реальные секреты не хранить в коде;</p></li>
+	<li><p>использовать <font face="Liberation Mono, monospace">.env.example</font>
+	вместо настоящего <font face="Liberation Mono, monospace">.env</font>;</p></li>
+	<li><p>передавать значения через переменные
+	окружения;</p></li>
+	<li><p>хранить секреты в GitHub Actions Secrets,
+	GitLab CI Variables, HashiCorp Vault, AWS Secrets Manager,
+	Kubernetes Secrets или аналогах;</p></li>
+	<li><p>после утечки не просто удалить
+	секрет из файла, а отозвать/ротировать
+	его;</p></li>
+	<li><p>при необходимости чистить историю
+	через BFG Repo-Cleaner или <font face="Liberation Mono, monospace">git
+	filter-repo</font>.</p></li>
+</ul>
+<hr/>
+
+<h1 class="western">Дополнительно</h1>
+<h2 class="western">Что такое BFG Repo-Cleaner</h2>
+<p>BFG Repo-Cleaner - это инструмент для быстрой
+очистки истории git-репозитория от
+случайно закоммиченных больших файлов,
+паролей, токенов и ключей. Он переписывает
+историю репозитория и удаляет секреты
+из старых коммитов.</p>
+<p>Но одного BFG недостаточно: если секрет
+уже был опубликован, его нужно считать
+скомпрометированным и обязательно
+ротировать.</p>
+<h2 class="western">Как автоматизировать поиск
+секретов</h2>
+<p>Поиск секретов можно автоматизировать
+несколькими способами:</p>
+<ul>
+	<li><p>запускать <font face="Liberation Mono, monospace">truffleHog</font>,
+	<font face="Liberation Mono, monospace">gitleaks</font> или
+	<font face="Liberation Mono, monospace">detect-secrets</font> в
+	CI/CD pipeline;</p></li>
+	<li><p>добавить pre-commit hook, который не даст
+	закоммитить секрет локально;</p></li>
+	<li><p>включить GitHub Secret Scanning и push protection;</p></li>
+	<li><p>сохранять baseline известных ложных
+	срабатываний, чтобы не ломать сборку
+	из-за мусорных находок.</p></li>
+</ul>
+<p>Это правильный подход, потому что
+секреты лучше блокировать до попадания
+в репозиторий. Но автоматизация не
+заменяет ручной анализ: у сканеров
+бывают false positive и false negative, поэтому
+найденные значения нужно проверять.</p>
+<p><br/>
+<br/>
+
+</p>
+</body>
+</html>

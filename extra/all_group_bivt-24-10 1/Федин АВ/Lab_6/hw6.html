@@ -1,0 +1,70 @@
+<h1 id="-1">Часть 1</h1>
+<p>Для этой лабы я прогнал trufflehog по истории <a href="https://github.com/OtusTeam/DevSecOps_secret-finding.git">репозитория</a></p>
+<p>Сканер нашел 25 срабатываний, но там много повторов одних и тех же вещей в старых коммитах.</p>
+<h3 id="1-">1) Приватный ключ</h3>
+<p><strong>Где лежит:</strong> <a href="https://github.com/OtusTeam/DevSecOps_secret-finding/blob/34f1faad298b13e515a62330f593dac142506789/webgoat-server/privatekey.key">https://github.com/OtusTeam/DevSecOps_secret-finding/blob/34f1faad298b13e515a62330f593dac142506789/webgoat-server/privatekey.key</a></p>
+<pre><code class="lang-text">-<span class="ruby">----<span class="hljs-keyword">BEGIN</span> PRIVATE KEY-----
+</span>MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSk...
+</code></pre>
+<p>Это полноценный приватный ключ в PEM-формате. Если этот ключ где-то реально использовался, то с ним можно подписывать данные, выдавать себя за сервис или расшифровывать то, что не надо.</p>
+<p><strong>Почему это секрет:</strong> это <em>приватный</em> ключ.</p>
+<p><strong>Как хранить нормально:</strong> в vault, secret storage</p>
+<h3 id="2-url">2) Логин и пароль в URL</h3>
+<p><strong>Где лежит:</strong> <a href="https://github.com/OtusTeam/DevSecOps_secret-finding/blob/68b80fa14f8c2ece71df20ac0a3e3e710bbcd368/webgoat-5.4/src/main/scripts/webgoat.sh">https://github.com/OtusTeam/DevSecOps_secret-finding/blob/68b80fa14f8c2ece71df20ac0a3e3e710bbcd368/webgoat-5.4/src/main/scripts/webgoat.sh</a></p>
+<pre><code class="lang-text"><span class="hljs-symbol">http:</span>//guest:guest<span class="hljs-subst">@127</span><span class="hljs-number">.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>/WebGoat/attack
+<span class="hljs-symbol">http:</span>//guest:guest<span class="hljs-subst">@127</span><span class="hljs-number">.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8080</span>/WebGoat/attack
+</code></pre>
+<p>То есть тут креды вшиты прямо в URL</p>
+<p><strong>Почему это секрет:</strong> потому что это готовые учётные данные</p>
+<p><strong>Как хранить нормально:</strong> логин и пароль передавать через переменные окружения, секреты или внешний конфиг.</p>
+<h3 id="3-jdbc-">3) JDBC-строка подключения с паролем</h3>
+<p><strong>Где лежит:</strong> <a href="https://github.com/OtusTeam/DevSecOps_secret-finding/blob/bc0d803123f5cd5e3f3e857398b8f2b0c4aad5b9/docker-compose-postgres.yml">https://github.com/OtusTeam/DevSecOps_secret-finding/blob/bc0d803123f5cd5e3f3e857398b8f2b0c4aad5b9/docker-compose-postgres.yml</a></p>
+<pre><code class="lang-text"><span class="hljs-string">jdbc:</span><span class="hljs-string">postgresql:</span><span class="hljs-comment">//webgoat_db:5432/webgoat?user=webgoat&amp;password=webgoat</span>
+</code></pre>
+<p>Здесь в строке подключения сразу лежат и логин, и пароль к базе.</p>
+<p><strong>Почему это секрет:</strong> потому что пароль к БД </p>
+<p><strong>Как хранить нормально:</strong> URL базы можно оставить в конфиге, а <code>user/password</code> выносить в переменные окружения или менеджер секретов</p>
+<h3 id="4-postgresql-connection-string">4) PostgreSQL логин и пароль внутри connection string</h3>
+<p><strong>Где лежит:</strong> <a href="https://github.com/OtusTeam/DevSecOps_secret-finding/blob/bc0d803123f5cd5e3f3e857398b8f2b0c4aad5b9/docker-compose-postgres.yml">https://github.com/OtusTeam/DevSecOps_secret-finding/blob/bc0d803123f5cd5e3f3e857398b8f2b0c4aad5b9/docker-compose-postgres.yml</a></p>
+<pre><code class="lang-text">postgresq<span class="hljs-variable">l:</span>//webgoa<span class="hljs-variable">t:webgoat</span>@webgoat_d<span class="hljs-variable">b:5432</span>
+</code></pre>
+<p>То есть проблема тут не только в JDBC как таковом, а ещё и в классическом формате <code>user:password@host</code>.</p>
+<p><strong>Почему это секрет:</strong> потому что это логин и пароль от PostgreSQL</p>
+<p><strong>Как хранить нормально:</strong> не собирать connection string целиком в репозитории. Адрес БД можно оставить, а креды подставлять отдельно через секреты окружения.</p>
+<h3 id="5-">5) Пароль в строке подключения</h3>
+<p><strong>Где лежит:</strong> <a href="https://github.com/OtusTeam/DevSecOps_secret-finding/blob/fd9b60f98e18bf419b23d269840d133a7ad0512a/%20webgoat/main/project/WebContent/WEB-INF/web.xml">https://github.com/OtusTeam/DevSecOps_secret-finding/blob/fd9b60f98e18bf419b23d269840d133a7ad0512a/%20webgoat/main/project/WebContent/WEB-INF/web.xml</a></p>
+<pre><code class="lang-text"><span class="hljs-string">jdbc:</span><span class="hljs-string">odbc:</span>;DRIVER=Microsoft Access Driver (*.mdb);DBQ=PATH/webgoat.mdb;PWD=webgoat<span class="hljs-string">"</span>
+</code></pre>
+<p>Тут пароль в connection string через PWD=</p>
+<p><strong>Почему это секрет:</strong> потому что это пароль</p>
+<p><strong>Как хранить нормально:</strong> не держать такие вещи в <code>web.xml</code> и вообще в репозитории. Внешняя конфигурация, переменные окружения и т.д.</p>
+<h2 id="bfg-repo-cleaner">BFG Repo-Cleaner</h2>
+<p>BFG Repo-Cleaner - это инструмент для быстрой чистки истории git-репозитория. Обычно его используют, когда нужно удалить из истории секреты, пароли, ключи, токены, большие лишние файлы или другой мусор, который уже успел попасть в коммиты.</p>
+<p>То есть если секрет уже утёк в git, просто удалить строку в текущем файле мало. Он всё равно останется в старых коммитах. Вот как раз для такой ситуации и нужен BFG Repo-Cleaner: он переписывает историю и убирает нежелательные данные из прошлых ревизий</p>
+<p>Но важно понимать, что после такой чистки обычно всё равно нужно:</p>
+<ul>
+<li>перевыпустить скомпрометированные ключи или пароли</li>
+<li>предупредить всех, у кого уже есть старые копии репозитория</li>
+</ul>
+<p>Иначе секрет формально удалён, но по факту уже успел утечь.</p>
+<h2 id="-">Как автоматизировать поиск секретов</h2>
+<p>Автоматизировать это можно довольно просто:</p>
+<ul>
+<li>запускать trufflehog, gitleaks или похожий сканер локально перед коммитом</li>
+<li>запускать такой же сканер в CI/CD на каждый push или pull request</li>
+<li>отдельно по расписанию прогонять сканирование всей истории репозитория, а не только новых изменений</li>
+<li>блокировать merge, если найдено что-то похожее на реальный секрет</li>
+</ul>
+<h2 id="-">Насколько это разумный подход</h2>
+<p>В целом подход правильный и полезный. Руками такие вещи искать долго и ненадёжно, а автоматический сканер хотя бы отлавливает очевидные утечки сразу, но полностью полагаться на автоматизацию тоже не стоит.</p>
+<p>Проблемы:</p>
+<ul>
+<li>бывают ложные срабатывания, например на хэши, тестовые строки или учебные токены</li>
+<li>бывают и пропуски, когда секрет замаскирован, разбит на части или лежит в нетипичном формате</li>
+</ul>
+<p>Так что правильный вариант это комбинация:</p>
+<ul>
+<li>автоматизация быстро ищет подозрительные места</li>
+<li>человек потом смотрит, что из этого реально секрет, а что просто шум</li>
+</ul>
+<p>Именно такой подход выглядит самым разумным: сканеры использовать обязательно, но не считать их абсолютной истиной.</p>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code {
+      background: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote {
+      border-left: 4px solid #ddd;
+      margin: 1em 0;
+      padding-left: 20px;
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<p>Для проверки репозитория использовался инструмент <strong>truffleHog</strong>, запущенный в Docker-контейнере на базе <code>python:buster</code>.</p>
+<pre><code class="language-bash">docker run -it -p 8080:8080 python:buster /bin/bash
+pip install truffleHog
+trufflehog https://github.com/OtusTeam/DevSecOps_secret-finding.git | tee -a log.txt
+</code></pre>
+<p>Для извлечения лога из контейнера использовался встроенный HTTP-сервер Python:</p>
+<pre><code class="language-bash">python -m http.server 8080
+</code></pre>
+<p>Большинство срабатываний оказались ложными — хэши зависимостей из <code>pom.xml</code>, минифицированный JS. Все реальные секреты сосредоточены в одном коммите <code>34f1faad</code> на ветке <code>develop</code>. Именно поэтому сканирование только текущего HEAD без истории коммитов пропустило бы все находки.</p>
+<hr>
+<h2>Найденные секреты</h2>
+<h3>1. GitHub Personal Access Token</h3>
+<p><strong>Файл/строка:</strong> <code>.github/workflows/release.yml</code>, переменная <code>GITHUB_TOKEN</code></p>
+<pre><code class="language-diff">- GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++ GITHUB_TOKEN: cee3257f0e59d1d4975a35429cffc3d8b5fabe15ca2e9d47243cbc446d4894a5
+</code></pre>
+<p><strong>Почему секрет:</strong> 64 hex-символа — формат GitHub PAT образца 2021 года. С таким токеном можно создавать релизы и пушить в репозиторий. Даже после замены на <code>${{ secrets.GITHUB_TOKEN }}</code> токен остаётся в истории git.</p>
+<p><strong>Правильное хранение:</strong> Хранить в GitHub Actions Secrets и подставлять через <code>${{ secrets.NAME }}</code>. Утёкший токен необходимо немедленно отозвать в настройках GitHub.</p>
+<hr>
+<h3>2. Приватный RSA-ключ (PKCS#8)</h3>
+<p><strong>Файл/строка:</strong> <code>webgoat-server/privatekey.key</code></p>
+<pre><code>-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCpuOH6AnMc/xdJ
+...
+-----END PRIVATE KEY-----
+</code></pre>
+<p><strong>Почему секрет:</strong> Рядом в том же коммите лежит <code>certificatesigningrequest.csr</code> — значит, пара генерировалась для TLS-сертификата. Любой, кто склонировал репозиторий, может расшифровать перехваченный трафик или выдать себя за сервер.</p>
+<p><strong>Правильное хранение:</strong> Приватные ключи не должны попадать в git. Добавить <code>*.key</code>, <code>*.pem</code> в глобальный <code>.gitignore</code>, хранить в HashiCorp Vault, Kubernetes Secrets или AWS/GCP Secret Manager. При утечке — отозвать сертификат и перевыпустить.</p>
+<hr>
+<h3>3. Файл <code>.env</code> с паролями</h3>
+<p><strong>Файл/строка:</strong> <code>docker/.env</code></p>
+<pre><code class="language-env">APP_SECRET=666666666666666
+USER=alex675
+PASSWORD=#!qerge34t423sdfvdsfgeR
+</code></pre>
+<p><strong>Почему секрет:</strong> Два независимых секрета. <code>APP_SECRET</code> — ключ подписи сессий/JWT: зная его, можно сгенерировать валидную cookie от имени любого пользователя; значение из пятнадцати шестёрок не имеет криптографической стойкости. <code>USER</code>/<code>PASSWORD</code> — учётные данные приватного репозитория пакетов, используемые в Dockerfile при установке зависимостей.</p>
+<p><strong>Правильное хранение:</strong> <code>APP_SECRET</code> генерируется через <code>openssl rand -hex 32</code> и передаётся через переменную окружения. Учётные данные переносятся в CI/CD Secrets. В репозитории остаётся только <code>.env.example</code> с именами переменных без значений, сам <code>.env</code> добавляется в <code>.gitignore</code>.</p>
+<hr>
+<h3>4. Строки подключения к PostgreSQL</h3>
+<p><strong>Файл/строки:</strong> <code>docker-compose-postgres.yml</code>, строки 10 и 19</p>
+<pre><code>jdbc:postgresql://webgoat_db:5432/webgoat?user=webgoat&amp;password=webgoat
+postgresql://webgoat:webgoat@webgoat_db:5432
+</code></pre>
+<p><strong>Почему секрет:</strong> truffleHog распознал их по детекторам <code>JDBC</code> и <code>Postgres</code>. Логин и пароль содержатся в открытом виде прямо в строке подключения. Значение <code>webgoat</code> в качестве пароля — типичный дефолтный credential, первым проверяемый при атаке.</p>
+<p><strong>Правильное хранение:</strong> Передавать через переменные окружения (<code>POSTGRES_USER</code>, <code>POSTGRES_PASSWORD</code>), реальные значения хранить в <code>.env</code> (не в git) или Secret Manager. Не использовать одинаковые значения для имени пользователя, пароля и имени базы данных.</p>
+<hr>
+<h3>5. JWT-токен в тестовом коде</h3>
+<p><strong>Файл/строка:</strong> <code>webgoat-lessons/jwt/src/test/java/org/owasp/webgoat/jwt/JWTFinalEndpointTest.java</code></p>
+<pre><code class="language-java">private static final String TOKEN_JERRY =
+    &quot;eyJraWQiOiJ3ZWJnb2F0X2tleSIsImFsZyI6IkhTNTEyIn0...VNrp2ZXA&quot;;
+</code></pre>
+<p><strong>Почему секрет:</strong> Подписанный JWT с алгоритмом HS512 и <code>kid: webgoat_key</code>. Если токен валиден, его достаточно скопировать и использовать в заголовке <code>Authorization: Bearer</code> для доступа к API от имени пользователя. Кроме того, готовый токен упрощает атаку по подбору секрета подписи.</p>
+<p><strong>Правильное хранение:</strong> В тестах JWT генерировать динамически в <code>@BeforeEach</code>, подписывая отдельным тестовым ключом. Секрет подписи хранить в CI/CD Secrets. Если токен уже попал в репозиторий — production-ключ подписи считать скомпрометированным и сменить.</p>
+<hr>
+<h2>Сводная таблица</h2>
+<table>
+<thead>
+<tr>
+<th align="center">№</th>
+<th>Файл</th>
+<th>Тип секрета</th>
+<th align="center">Риск</th>
+<th>Рекомендация</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td><code>.github/workflows/release.yml</code></td>
+<td>GitHub PAT</td>
+<td align="center">Критический</td>
+<td>Отозвать токен, хранить в Actions Secrets</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td><code>webgoat-server/privatekey.key</code></td>
+<td>Приватный RSA-ключ</td>
+<td align="center">Критический</td>
+<td>Отозвать сертификат, хранить в Vault/KMS</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td><code>docker/.env</code></td>
+<td>APP_SECRET + DB-пароль</td>
+<td align="center">Высокий</td>
+<td>Перегенерировать, хранить в Secret Manager</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td><code>docker-compose-postgres.yml</code></td>
+<td>PostgreSQL credentials</td>
+<td align="center">Высокий</td>
+<td>Вынести в переменные окружения</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td><code>JWTFinalEndpointTest.java</code></td>
+<td>JWT-токен</td>
+<td align="center">Средний</td>
+<td>Генерировать динамически, сменить signing key</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Дополнительные вопросы</h2>
+<h3>Что такое BFG Repo-Cleaner</h3>
+<p>BFG Repo-Cleaner — утилита для переписывания истории git-репозитория, более быстрая и удобная замена <code>git filter-branch</code>. Используется, когда секрет уже попал в историю коммитов и простое удаление из последнего коммита недостаточно. Умеет удалять файлы по имени из всей истории и заменять конкретные строки на маркер <code>***REMOVED***</code>.</p>
+<pre><code class="language-bash">bfg --delete-files privatekey.key
+bfg --replace-text secrets_to_remove.txt
+git reflog expire --expire=now --all &amp;&amp; git gc --prune=now --aggressive
+git push --force
+</code></pre>
+<p>Важно: BFG не трогает текущий HEAD — секрет нужно сначала убрать вручную. И даже после очистки истории токен/ключ необходимо считать скомпрометированным и отозвать — репозиторий могли уже склонировать.</p>
+<h3>Можно ли автоматизировать поиск секретов</h3>
+<p>Да, и это правильный подход. Автоматизацию строят в три слоя: pre-commit хук (gitleaks, detect-secrets) блокирует секрет до попадания в коммит; обязательный шаг в CI/CD пайплайне падает и блокирует мёрдж при обнаружении; встроенный сканер платформы (GitHub Secret Scanning, GitLab Secret Detection) ловит уже загруженные секреты.</p>
+<p>Минусы: много ложных срабатываний на хэшах зависимостей и тестовых данных, произвольные пароли без явных паттернов могут не детектироваться. Pre-commit можно обойти флагом <code>--no-verify</code>, поэтому серверная проверка обязательна. Главное — автоматизация фиксирует факт утечки, но ротацию ключей всё равно выполняет человек. Правильный подход сочетает сканирование с хранением секретов в специализированных хранилищах с самого начала.</p>
+<h2>Вывод</h2>
+<p>С помощью truffleHog удалось найти 5 разнотипных секретов. Все они попали в репозиторий через единственный коммит <code>34f1faad</code> на ветке <code>develop</code> и не видны в текущем состоянии ветки <code>main</code> — без анализа полной истории коммитов все утечки были бы пропущены. Это наглядно показывает ценность инструментов вроде truffleHog и необходимость встраивать проверку секретов в CI/CD как можно раньше, а не только сканировать постфактум.</p>
+
+</body>
+</html>

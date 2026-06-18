@@ -1,0 +1,173 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h1 id="-6">Лабораторная работа №6</h1>
+<p>Студент: Хамидуллин Тимур Русланович</p>
+<h2 id="-">Тема</h2>
+<p>Изучение существующих CI/CD с точки зрения доступных инструментов ИБ</p>
+<h2 id="-">Цель работы</h2>
+<p>Проверить репозиторий на наличие секретов с помощью инструмента TruffleHog и проанализировать найденные утечки.</p>
+<hr>
+<h2 id="-">Ход выполнения</h2>
+<p>Для выполнения работы использовался Docker-контейнер с образом <code>python:buster</code>.
+Внутри контейнера был установлен инструмент <code>truffleHog</code>, после чего выполнено сканирование репозитория:</p>
+<pre><code class="lang-bash">docker run -it <span class="hljs-string">python:</span>buster <span class="hljs-regexp">/bin/</span>bash
+pip install truffleHog
+
+trufflehog <span class="hljs-string">https:</span><span class="hljs-comment">//github.com/OtusTeam/DevSecOps_secret-finding.git | tee log.txt</span>
+</code></pre>
+<p>После завершения анализа был получен лог со всеми найденными совпадениями.
+Большая часть результатов оказалась ложными срабатываниями — например, hash-суммы зависимостей или минифицированный JavaScript-код. Из общего списка были выбраны наиболее показательные примеры реальных секретов.</p>
+<hr>
+<h1 id="-">Найденные секреты</h1>
+<h2 id="1-github-token-ci-cd-pipeline">1. GitHub Token в CI/CD pipeline</h2>
+<h3 id="-">Расположение</h3>
+<p>Файл: <code>.github/workflows/release.yml</code></p>
+<h3 id="-">Пример найденного значения</h3>
+<pre><code class="lang-yaml"><span class="hljs-symbol">GITHUB_TOKEN:</span> cee3257f0e59d1d4975a35429cffc3d8b5fabe15ca2e9d47243cbc446d4894a5
+</code></pre>
+<h3 id="-">Почему это является секретом</h3>
+<p>Данный токен используется для авторизации в GitHub API. Через него можно выполнять действия от имени репозитория: создавать релизы, загружать артефакты, делать push и запускать workflow.</p>
+<p>Даже если токен позже был удалён из актуальной версии файла, он остаётся доступным в истории Git.</p>
+<h3 id="-">Как хранить правильно</h3>
+<p>Подобные значения должны храниться:</p>
+<ul>
+<li>в GitHub Secrets;</li>
+<li>в HashiCorp Vault;</li>
+<li>в переменных окружения CI/CD.</li>
+</ul>
+<p>После утечки токен необходимо немедленно отозвать и выпустить новый.</p>
+<hr>
+<h2 id="2-rsa-">2. Приватный RSA-ключ</h2>
+<h3 id="-">Расположение</h3>
+<p>Файл: <code>webgoat-server/privatekey.key</code></p>
+<h3 id="-">Пример содержимого</h3>
+<pre><code class="lang-text">-<span class="ruby">----<span class="hljs-keyword">BEGIN</span> PRIVATE KEY-----
+</span>MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSk...
+-<span class="ruby">----<span class="hljs-keyword">END</span> PRIVATE KEY-----</span>
+</code></pre>
+<h3 id="-">Почему это является секретом</h3>
+<p>Приватный ключ используется для шифрования и подписи данных. Если злоумышленник получит доступ к такому ключу, он сможет:</p>
+<ul>
+<li>расшифровывать трафик;</li>
+<li>подделывать подписи;</li>
+<li>выдавать себя за сервер.</li>
+</ul>
+<h3 id="-">Как хранить правильно</h3>
+<p>Приватные ключи нельзя хранить в Git-репозитории. Для хранения используются:</p>
+<ul>
+<li>Vault;</li>
+<li>Kubernetes Secrets;</li>
+<li>защищённые HSM/KeyStore.</li>
+</ul>
+<p>При обнаружении утечки ключ должен считаться скомпрометированным и быть перевыпущен.</p>
+<hr>
+<h2 id="3-travis-ci">3. Секреты Travis CI</h2>
+<h3 id="-">Расположение</h3>
+<p>Файл: <code>.travis.yml</code></p>
+<h3 id="-">Пример</h3>
+<pre><code class="lang-yaml"><span class="hljs-symbol">deploy:</span>
+<span class="hljs-symbol">  provider:</span> releases
+<span class="hljs-symbol">  token:</span>
+<span class="hljs-symbol">    secure:</span> pJOLBnl6427PcVg/tVy/qB18JC7b8cKp...
+</code></pre>
+<h3 id="-">Почему это является секретом</h3>
+<p>Параметр <code>secure:</code> содержит зашифрованные данные Travis CI. Обычно там находятся:</p>
+<ul>
+<li>токены GitHub;</li>
+<li>Docker Hub credentials;</li>
+<li>webhook-ключи;</li>
+<li>API-ключи.</li>
+</ul>
+<p>Хотя значения зашифрованы, сам факт наличия подобных секретов в репозитории создаёт риск компрометации.</p>
+<h3 id="-">Как хранить правильно</h3>
+<p>Секреты должны храниться внутри самого CI/CD-сервиса и не попадать в Git-историю.
+Также рекомендуется регулярно ротировать все используемые ключи.</p>
+<hr>
+<h2 id="4-">4. Пароль, записанный прямо в коде</h2>
+<h3 id="-">Расположение</h3>
+<p>Файл:
+<code>webgoat-lessons/password-reset/src/main/java/org/owasp/webgoat/password_reset/ResetLinkAssignment.java</code></p>
+<h3 id="-">Пример</h3>
+<pre><code class="lang-java"><span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-built_in">String</span> PASSWORD_TOM_9 =
+<span class="hljs-string">"somethingVeryRandomWhichNoOneWillEverTypeInAsPasswordForTom"</span>;
+</code></pre>
+<h3 id="-">Почему это является секретом</h3>
+<p>Пароль пользователя хранится в открытом виде прямо в исходном коде приложения. Любой разработчик или человек с доступом к репозиторию сможет увидеть его.</p>
+<p>В реальном проекте это считается критической ошибкой безопасности.</p>
+<h3 id="-">Как хранить правильно</h3>
+<p>Пароли нельзя хранить:</p>
+<ul>
+<li>в коде;</li>
+<li>в конфигурационных файлах;</li>
+<li>в Git.</li>
+</ul>
+<p>Для пользователей необходимо хранить только hash пароля с солью (<code>bcrypt</code>, <code>argon2</code>).
+Для тестовых значений — использовать переменные окружения.</p>
+<hr>
+<h2 id="5-jwt-">5. JWT-токен в тестах</h2>
+<h3 id="-">Расположение</h3>
+<p>Файл:
+<code>webgoat-lessons/jwt/src/test/java/org/owasp/webgoat/jwt/JWTFinalEndpointTest.java</code></p>
+<h3 id="-">Пример</h3>
+<pre><code class="lang-java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">String</span> TOKEN_JERRY =
+<span class="hljs-string">"eyJraWQiOiJ3ZWJnb2F0X2tleSIsImFsZyI6IkhTNTEyIn0..."</span>;
+</code></pre>
+<h3 id="-">Почему это является секретом</h3>
+<p>JWT-токен уже содержит подписанные данные пользователя. Если сервер принимает данный токен, злоумышленник сможет использовать его для авторизации.</p>
+<p>Кроме того, наличие готового токена помогает анализировать схему подписи и потенциально подбирать секретный ключ.</p>
+<h3 id="-">Как хранить правильно</h3>
+<p>JWT не должен храниться в репозитории в готовом виде. Для тестирования токены необходимо:</p>
+<ul>
+<li>генерировать динамически;</li>
+<li>подписывать отдельным тестовым ключом;</li>
+<li>хранить секрет подписи в Secret-хранилище.</li>
+</ul>
+<hr>
+<h1 id="-">Дополнительные вопросы</h1>
+<h2 id="-bfg-repo-cleaner">Что такое BFG Repo-Cleaner</h2>
+<p>BFG Repo-Cleaner — это инструмент для очистки истории Git-репозитория.</p>
+<p>С его помощью можно:</p>
+<ul>
+<li>удалить секреты из старых коммитов;</li>
+<li>убрать большие файлы;</li>
+<li>заменить конфиденциальные строки на безопасные значения.</li>
+</ul>
+<p>Инструмент работает значительно быстрее, чем <code>git filter-branch</code>.</p>
+<p>Однако даже после очистки репозитория секрет считается скомпрометированным, так как кто-то мог успеть клонировать историю до удаления.</p>
+<hr>
+<h2 id="-">Можно ли автоматизировать поиск секретов</h2>
+<p>Да, автоматизация поиска секретов считается хорошей практикой.</p>
+<p>Обычно используются:</p>
+<ul>
+<li>pre-commit hooks;</li>
+<li>встроенные проверки CI/CD;</li>
+<li>Secret Scanning в GitHub/GitLab;</li>
+<li>инструменты типа TruffleHog, Gitleaks, detect-secrets.</li>
+</ul>
+<p>Преимущества:</p>
+<ul>
+<li>снижение человеческого фактора;</li>
+<li>быстрое обнаружение утечек;</li>
+<li>контроль всех коммитов и merge request.</li>
+</ul>
+<p>Недостатки:</p>
+<ul>
+<li>ложные срабатывания;</li>
+<li>не все секреты обнаруживаются автоматически;</li>
+<li>требуется регулярная настройка правил.</li>
+</ul>
+<p>Наиболее правильный подход — совмещать автоматическое сканирование и использование централизованных Secret-хранилищ.</p>
+<hr>
+<h1 id="-">Вывод</h1>
+<p>В ходе лабораторной работы был выполнен анализ репозитория с помощью TruffleHog.Удалось обнаружить несколько типов секретов:</p>
+<ul>
+<li>токены доступа;</li>
+<li>приватные ключи;</li>
+<li>JWT;</li>
+<li>пароли в коде;</li>
+<li>CI/CD credentials.</li>
+</ul>
+<p>Работа показала, что даже удалённые из текущей версии проекта данные продолжают храниться в истории Git и могут быть извлечены специализированными инструментами.</p>
+<p>Поэтому контроль секретов необходимо внедрять на ранних этапах разработки и интегрировать проверки непосредственно в CI/CD pipeline.</p>
+</body></html>

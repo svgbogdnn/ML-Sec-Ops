@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>solution</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 0 20px;
+      color: #222;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 16px 0;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 20px 0;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      vertical-align: top;
+    }
+    th {
+      background: #f4f4f4;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #ddd;
+      margin: 24px 0;
+    }
+  </style>
+</head>
+<body>
+<p>Выполнил команды:</p>
+<pre><code>docker pull opensecurity/mobile-security-framework-mobsf:latest
+docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
+</code></pre>
+<p>и перешел по пути <code>http://localhost:8000</code></p>
+<p><img src="photo1.png" alt="lol" /></p>
+<p>Скачал apk для анализа (ShareIt) по ссылке https://apkcombo.com/shareit/com.lenovo.anyshare.gps/download/apk</p>
+<p>т.к. при попытке скачать тикток и запустить анализ в MobSF, у меня вылетало по памяти:</p>
+<p><img src="tiktok.png" alt="lol" /></p>
+<p>Затем загрузил APK ShareIt в MobSF</p>
+<p>После чего дождался окончания статического анализа  и открыл страницу Static Analysis Report</p>
+<p><img src="photo4.png" alt="lol" /></p>
+<h2>Раздел Permissions:</h2>
+<p>Статус dangerous:</p>
+<p><strong>Разрешение:</strong> <code>android.permission.ACCESS_COARSE_LOCATION</code>
+<strong>Риск:</strong> приложение может получать приблизительное местоположение пользователя. Это может привести к нарушению приватности, если геолокация собирается без явной необходимости или без понятного объяснения пользователю.
+<strong>Митигация:</strong> запрашивать разрешение только при наличии функции, которой действительно нужна геолокация; объяснять пользователю цель запроса; использовать разрешение только во время работы соответствующей функции; удалить разрешение из <code>AndroidManifest.xml</code>, если оно не требуется.</p>
+<p><strong>Разрешение:</strong> <code>android.permission.ACCESS_FINE_LOCATION</code>
+<strong>Риск:</strong> приложение может получать точное местоположение пользователя. Это создаёт повышенный риск утечки чувствительных данных о перемещениях пользователя.
+<strong>Митигация:</strong> запрашивать разрешение только при необходимости; по возможности заменить точную геолокацию на приблизительную; использовать runtime permission только в момент использования функции; явно объяснять пользователю цель сбора геолокации; удалить разрешение, если точное местоположение не требуется.</p>
+<p><strong>Разрешение:</strong> <code>android.permission.BLUETOOTH_CONNECT</code>
+<strong>Риск:</strong> приложение может подключаться к Bluetooth-устройствам пользователя. Это может привести к несанкционированному взаимодействию с устройствами или раскрытию информации о подключённых устройствах.
+<strong>Митигация:</strong> запрашивать разрешение только при наличии функции обмена данными через Bluetooth; ограничить использование разрешения конкретными сценариями; информировать пользователя о причине запроса; удалить разрешение, если приложение не использует подключение к Bluetooth-устройствам.</p>
+<p><strong>Разрешение:</strong> <code>android.permission.BLUETOOTH_SCAN</code>
+<strong>Риск:</strong> приложение может сканировать Bluetooth-устройства поблизости. Такие данные могут использоваться для косвенного определения местоположения пользователя или сбора информации об окружающих устройствах.
+<strong>Митигация:</strong> выполнять сканирование только по явному действию пользователя; ограничить время и частоту сканирования; не сохранять лишние данные о найденных устройствах; объяснять пользователю цель запроса; удалить разрешение, если сканирование Bluetooth не требуется.</p>
+<p><strong>Разрешение:</strong> <code>android.permission.CAMERA</code>
+<strong>Риск:</strong> приложение может получать доступ к камере устройства. При неправильной реализации это может привести к несанкционированной съёмке фото или видео, а также к нарушению приватности пользователя.
+<strong>Митигация:</strong> запрашивать доступ к камере только в момент использования соответствующей функции; явно объяснять пользователю назначение доступа; не использовать камеру в фоновом режиме; ограничить доступ только необходимыми сценариями; удалить разрешение из приложения, если камера не используется.</p>
+<h2>Network Security</h2>
+<p><img src="netsec.png" alt="lol" /></p>
+<h3>1. Base config permits clear text traffic to all domains</h3>
+<p><strong>Раздел MobSF:</strong> Network Security
+<strong>Scope:</strong> <code>*</code>
+<strong>Severity:</strong> High
+<strong>Описание из отчёта:</strong> Base config is insecurely configured to permit clear text traffic to all domains.</p>
+<p><strong>Обнаруженный недостаток:</strong>
+В базовой сетевой конфигурации приложения разрешена передача данных в открытом виде по HTTP для всех доменов. Это означает, что приложение потенциально может отправлять или получать данные без использования защищённого HTTPS-соединения.</p>
+<p><strong>Риск:</strong>
+Передача данных в открытом виде может привести к перехвату трафика злоумышленником, особенно при использовании публичных Wi-Fi-сетей. В результате могут быть раскрыты пользовательские данные, токены сессий, параметры запросов или иная чувствительная информация. Также существует риск модификации сетевого трафика при атаке Man-in-the-Middle.</p>
+<p><strong>План митигации:</strong>
+Необходимо запретить cleartext traffic в production-сборке приложения. Для этого следует настроить <code>networkSecurityConfig</code> и установить запрет на передачу данных по HTTP. Все обращения к backend-сервисам должны выполняться только по HTTPS. Также необходимо проверить код приложения и сторонние SDK на наличие HTTP-адресов и заменить их на HTTPS.</p>
+<p><strong>Приоритет исправления:</strong> High / Critical</p>
+<hr />
+<h3>2. Domain config permits clear text traffic to 127.0.0.1</h3>
+<p><strong>Раздел MobSF:</strong> Network Security
+<strong>Scope:</strong> <code>127.0.0.1</code>
+<strong>Severity:</strong> High
+<strong>Описание из отчёта:</strong> Domain config is insecurely configured to permit clear text traffic to these domains in scope.</p>
+<p><strong>Обнаруженный недостаток:</strong>
+В сетевой конфигурации приложения для домена <code>127.0.0.1</code> разрешён cleartext traffic, то есть передача данных без шифрования. Несмотря на то что <code>127.0.0.1</code> является локальным адресом, такая настройка всё равно считается небезопасной, если она попадает в production-сборку.</p>
+<p><strong>Риск:</strong>
+Разрешение cleartext traffic может указывать на наличие отладочной или тестовой конфигурации в релизной версии приложения. Это повышает риск небезопасного сетевого взаимодействия, неправильной маршрутизации запросов или использования локальных сервисов без шифрования. Также такая настройка может быть использована злоумышленником при эксплуатации уязвимостей, связанных с локальными интерфейсами или WebView.</p>
+<p><strong>План митигации:</strong>
+Необходимо проверить, зачем в конфигурации указан адрес <code>127.0.0.1</code>. Если он использовался только для разработки или тестирования, его следует удалить из production-конфигурации. Если локальное взаимодействие действительно требуется, нужно ограничить его область применения и убедиться, что оно не используется для передачи чувствительных данных. Также рекомендуется запретить cleartext traffic по умолчанию и явно разрешать только необходимые безопасные исключения.</p>
+<p><strong>Приоритет исправления:</strong> High</p>
+<h2>Manifest Analysis</h2>
+<p><img src="manifest.png" alt="lol" /></p>
+<h2>Code Analysis</h2>
+<h3>1. The file or SharedPreference is World Writable</h3>
+<p><strong>Раздел MobSF:</strong> Code Analysis
+<strong>Severity:</strong> High
+<strong>Issue:</strong> The file or SharedPreference is World Writable. Any App can write to the file.
+<strong>Стандарты:</strong> CWE-276: Incorrect Default Permissions; OWASP Top 10 M2: Insecure Data Storage; OWASP MASVS: MSTG-STORAGE-2</p>
+<p><strong>Обнаруженный недостаток:</strong>
+В приложении обнаружено использование файла или <code>SharedPreferences</code> с правами записи для других приложений. Это означает, что стороннее приложение на устройстве потенциально может изменить содержимое такого файла.</p>
+<p><strong>Риск:</strong>
+Если в файле или <code>SharedPreferences</code> хранятся настройки, токены, идентификаторы пользователя, флаги авторизации или другие важные параметры, злоумышленник может изменить эти данные. Это может привести к обходу логики приложения, подмене настроек, нарушению целостности данных или компрометации пользовательской сессии.</p>
+<p><strong>План митигации:</strong>
+Необходимо запретить режимы доступа, позволяющие другим приложениям читать или изменять файлы приложения. Для <code>SharedPreferences</code> следует использовать приватный режим <code>MODE_PRIVATE</code>. Также нужно проверить места хранения чувствительных данных и перенести их в более защищённое хранилище, например Android Keystore или EncryptedSharedPreferences. Если файл не должен изменяться другими приложениями, необходимо ограничить права доступа только текущим приложением.</p>
+<p><strong>Приоритет исправления:</strong> High</p>
+<hr />
+<h3>2. Insecure WebView Implementation</h3>
+<p><strong>Раздел MobSF:</strong> Code Analysis
+<strong>Severity:</strong> High
+<strong>Issue:</strong> Insecure WebView Implementation. WebView ignores SSL Certificate errors and accepts any SSL Certificate. This application is vulnerable to MITM attacks.
+<strong>Файлы:</strong>
+<code>com/my/target/x6.java</code>
+<code>com/yandex/mobile/ads/impl/q2.java</code>
+<code>com/yandex/mobile/ads/impl/v90.java</code>
+<strong>Стандарты:</strong> CWE-295: Improper Certificate Validation; OWASP Top 10 M3: Insecure Communication; OWASP MASVS: MSTG-NETWORK-3</p>
+<p><strong>Обнаруженный недостаток:</strong>
+В приложении обнаружена небезопасная реализация WebView, при которой WebView игнорирует ошибки SSL-сертификатов и принимает любой сертификат. Это означает, что приложение может доверять недействительным, самоподписанным или подменённым сертификатам.</p>
+<p><strong>Риск:</strong>
+Такая реализация делает приложение уязвимым к атаке Man-in-the-Middle. Злоумышленник может перехватить сетевой трафик, подменить содержимое страницы, получить чувствительные данные пользователя или внедрить вредоносный JavaScript-код в WebView.</p>
+<p><strong>План митигации:</strong>
+Необходимо удалить обработку, которая игнорирует ошибки SSL-сертификатов, например вызовы <code>handler.proceed()</code> внутри <code>onReceivedSslError</code>. При ошибке сертификата приложение должно прерывать соединение с помощью <code>handler.cancel()</code>. Также следует использовать только HTTPS-соединения с корректными сертификатами, проверить настройки сторонних SDK и рекламных библиотек, а для критичных соединений рассмотреть использование certificate pinning.</p>
+<p><strong>Приоритет исправления:</strong> Critical</p>
+<hr />
+<h3>3. The App uses CBC encryption mode with PKCS5/PKCS7 padding</h3>
+<p><strong>Раздел MobSF:</strong> Code Analysis
+<strong>Severity:</strong> High
+<strong>Issue:</strong> The App uses the encryption mode CBC with PKCS5/PKCS7 padding. This configuration is vulnerable to padding oracle attacks.
+<strong>Стандарты:</strong> CWE-649: Reliance on Obfuscation or Encryption of Security-Relevant Inputs without Integrity Checking; OWASP Top 10 M5: Insufficient Cryptography; OWASP MASVS: MSTG-CRYPTO-3</p>
+<p><strong>Обнаруженный недостаток:</strong>
+В приложении используется режим шифрования CBC с padding PKCS5/PKCS7. Такая криптографическая схема может быть небезопасной, если данные не защищены дополнительной проверкой целостности.</p>
+<p><strong>Риск:</strong>
+Использование CBC без корректной проверки целостности может привести к padding oracle attacks. В результате злоумышленник при определённых условиях может получить возможность расшифровывать или модифицировать зашифрованные данные. Это особенно критично, если таким способом защищаются токены, персональные данные, ключи или другая чувствительная информация.</p>
+<p><strong>План митигации:</strong>
+Необходимо заменить небезопасную криптографическую схему на современный аутентифицированный режим шифрования, например AES-GCM. Если CBC всё же используется, необходимо обеспечить строгую проверку целостности данных с помощью HMAC по схеме encrypt-then-MAC. Также следует проверить, не используются ли статические IV, захардкоженные ключи или повторное использование ключей.</p>
+<p><strong>Приоритет исправления:</strong> High</p>
+<hr />
+<h3>4. Remote WebView debugging is enabled</h3>
+<p><strong>Раздел MobSF:</strong> Code Analysis
+<strong>Severity:</strong> High
+<strong>Issue:</strong> Remote WebView debugging is enabled.
+<strong>Стандарты:</strong> CWE-919: Weaknesses in Mobile Applications; OWASP Top 10 M1: Improper Platform Usage; OWASP MASVS: MSTG-RESILIENCE-2</p>
+<p><strong>Обнаруженный недостаток:</strong>
+В приложении включена удалённая отладка WebView. Такая настройка может быть полезна при разработке, но не должна присутствовать в production-сборке.</p>
+<p><strong>Риск:</strong>
+Если WebView debugging включён в релизной версии, злоумышленник при наличии доступа к устройству или отладочной среде может анализировать содержимое WebView, просматривать DOM, JavaScript, сетевые запросы и потенциально получать чувствительные данные. Это повышает риск исследования внутренней логики приложения и эксплуатации других уязвимостей.</p>
+<p><strong>План митигации:</strong>
+Необходимо отключить WebView debugging в production-сборке. Вызов <code>WebView.setWebContentsDebuggingEnabled(true)</code> должен использоваться только в debug-сборках. Следует добавить проверку типа сборки, например через <code>BuildConfig.DEBUG</code>, и убедиться, что в release-сборке значение всегда равно <code>false</code>.</p>
+<p><strong>Приоритет исправления:</strong> High</p>
+<hr />
+<h3>5. Debug configuration enabled</h3>
+<p><strong>Раздел MobSF:</strong> Code Analysis
+<strong>Severity:</strong> High
+<strong>Issue:</strong> Debug configuration enabled. Production builds must not be debuggable.
+<strong>Файл:</strong> <code>com/bumptech/glide/integration/webp/BuildConfig.java</code>
+<strong>Стандарты:</strong> CWE-919: Weaknesses in Mobile Applications; OWASP Top 10 M1: Improper Platform Usage; OWASP MASVS: MSTG-RESILIENCE-2</p>
+<p><strong>Обнаруженный недостаток:</strong>
+В коде приложения обнаружена включённая debug-конфигурация. Production-сборки мобильного приложения не должны быть отладочными.</p>
+<p><strong>Риск:</strong>
+Включённая отладочная конфигурация может упростить анализ приложения злоумышленником, облегчить reverse engineering, получение логов, исследование внутренней логики и поиск дополнительных уязвимостей. Если отладочный режим включён в релизной сборке, это снижает защищённость приложения.</p>
+<p><strong>План митигации:</strong>
+Необходимо убедиться, что production-сборка собирается с отключённым debug-режимом. В <code>AndroidManifest.xml</code> параметр <code>android:debuggable</code> должен быть установлен в <code>false</code> или отсутствовать для release-сборки. Также нужно проверить настройки Gradle, build variants и сторонние библиотеки, чтобы debug-конфигурация не попадала в финальный APK.</p>
+<p><strong>Приоритет исправления:</strong> High</p>
+<h1>План митигации рисков</h1>
+<table>
+<thead>
+<tr>
+<th>№</th>
+<th>Раздел MobSF</th>
+<th>Обнаруженная проблема</th>
+<th>Severity / статус</th>
+<th>Риск</th>
+<th>План митигации</th>
+<th>Приоритет</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>App Permissions</td>
+<td><code>android.permission.ACCESS_COARSE_LOCATION</code></td>
+<td>dangerous</td>
+<td>Приложение может получать приблизительное местоположение пользователя, что создаёт риск нарушения приватности.</td>
+<td>Проверить необходимость разрешения. Если не используется — удалить из <code>AndroidManifest.xml</code>. Если требуется — запрашивать только в момент использования функции.</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>2</td>
+<td>App Permissions</td>
+<td><code>android.permission.ACCESS_FINE_LOCATION</code></td>
+<td>dangerous</td>
+<td>Приложение может получать точное местоположение пользователя, что может привести к раскрытию данных о перемещениях.</td>
+<td>По возможности заменить на <code>ACCESS_COARSE_LOCATION</code>. Запрашивать только при необходимости и не собирать геолокацию в фоне без причины.</td>
+<td>High</td>
+</tr>
+<tr>
+<td>3</td>
+<td>App Permissions</td>
+<td><code>android.permission.BLUETOOTH_CONNECT</code></td>
+<td>dangerous</td>
+<td>Приложение может подключаться к Bluetooth-устройствам пользователя.</td>
+<td>Использовать только для функций обмена данными через Bluetooth. Если функция не нужна — удалить разрешение.</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>4</td>
+<td>App Permissions</td>
+<td><code>android.permission.BLUETOOTH_SCAN</code></td>
+<td>dangerous</td>
+<td>Приложение может сканировать Bluetooth-устройства рядом с пользователем, что может раскрывать информацию об окружении.</td>
+<td>Ограничить сканирование по времени и запускать только по действию пользователя. Не хранить лишние данные о найденных устройствах.</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>5</td>
+<td>App Permissions</td>
+<td><code>android.permission.CAMERA</code></td>
+<td>dangerous</td>
+<td>Приложение может получать доступ к камере устройства, что создаёт риск нарушения приватности.</td>
+<td>Запрашивать доступ только при использовании функции камеры. Исключить использование камеры в фоне.</td>
+<td>High</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Network Security</td>
+<td>Base config permits clear text traffic to all domains</td>
+<td>High</td>
+<td>Данные могут передаваться по HTTP без шифрования, что создаёт риск перехвата и MITM-атак.</td>
+<td>Запретить cleartext traffic в production. Использовать только HTTPS. Проверить код и SDK на наличие HTTP-ссылок.</td>
+<td>Critical</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Network Security</td>
+<td>Domain config permits clear text traffic to <code>127.0.0.1</code></td>
+<td>High</td>
+<td>В production-сборку могла попасть тестовая или отладочная сетевая конфигурация.</td>
+<td>Проверить необходимость <code>127.0.0.1</code>. Если это тестовая настройка — удалить. Запретить cleartext traffic по умолчанию.</td>
+<td>High</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Code Analysis</td>
+<td>File or <code>SharedPreferences</code> is World Writable</td>
+<td>High</td>
+<td>Другое приложение может изменить файл или настройки приложения, что может привести к подмене данных.</td>
+<td>Использовать <code>MODE_PRIVATE</code>. Чувствительные данные хранить через <code>EncryptedSharedPreferences</code> или Android Keystore.</td>
+<td>High</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Code Analysis</td>
+<td>Insecure WebView Implementation: WebView accepts any SSL certificate</td>
+<td>High</td>
+<td>Приложение уязвимо к MITM-атакам из-за игнорирования ошибок SSL-сертификатов.</td>
+<td>Удалить <code>handler.proceed()</code> при SSL-ошибках. Использовать <code>handler.cancel()</code>. Обновить небезопасные SDK.</td>
+<td>Critical</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Code Analysis</td>
+<td>CBC encryption with PKCS5/PKCS7 padding</td>
+<td>High</td>
+<td>Возможны padding oracle attacks при неправильной реализации шифрования.</td>
+<td>Заменить на AES-GCM. Если CBC остаётся — добавить контроль целостности через HMAC.</td>
+<td>High</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Code Analysis</td>
+<td>Remote WebView debugging is enabled</td>
+<td>High</td>
+<td>Злоумышленник может анализировать WebView, DOM, JavaScript и сетевые запросы приложения.</td>
+<td>Отключить <code>WebView.setWebContentsDebuggingEnabled(true)</code> в release-сборке. Включать только при <code>BuildConfig.DEBUG</code>.</td>
+<td>High</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Code Analysis</td>
+<td>Debug configuration enabled</td>
+<td>High</td>
+<td>Отладочные настройки в production упрощают reverse engineering и анализ приложения.</td>
+<td>Убедиться, что <code>android:debuggable=false</code> в release-сборке. Проверить Gradle build variants и настройки сборки.</td>
+<td>High</td>
+</tr>
+</tbody>
+</table>
+<h2>Вывод</h2>
+<p>По результатам SAST-анализа MobSF в приложении обнаружены риски, связанные с опасными разрешениями, небезопасной сетевой конфигурацией, передачей данных без шифрования, небезопасной реализацией WebView, отладочными настройками и небезопасным хранением данных.</p>
+<p>Основные меры митигации: запретить cleartext traffic, использовать HTTPS, исправить обработку SSL-ошибок в WebView, отключить debug-настройки в production, ограничить dangerous permissions и использовать безопасное хранение данных.</p>
+
+</body>
+</html>

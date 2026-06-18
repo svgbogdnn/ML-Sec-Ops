@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code {
+      background: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote {
+      border-left: 4px solid #ddd;
+      margin: 1em 0;
+      padding-left: 20px;
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h1>ЛР 6. Поиск секретов в репозитории</h1>
+<p><strong>Репозиторий:</strong> <code>https://github.com/OtusTeam/DevSecOps_secret-finding.git</code><br><strong>Инструмент:</strong> <code>trufflehog</code></p>
+<hr>
+<h2>1. GitHub token</h2>
+<p><strong>Расположение:</strong> <code>.github/workflows/release.yml</code>, строка 72</p>
+<p>GITHUB_TOKEN: cee3257f0e59d1d4975a35429cffc3d8b5fabe15ca2e9d47243cbc446d4894a5</p>
+<p><strong>Почему это секрет:</strong><br>Это токен GitHub. С его помощью можно выполнять действия в GitHub Actions и работать с репозиторием или артефактами сборки.</p>
+<p><strong>Как правильно хранить:</strong><br>Хранить в GitHub Actions Secrets и использовать так: GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}</p>
+<hr>
+<h2>2. Приватный ключ</h2>
+<p><strong>Расположение:</strong> <code>webgoat-server/privatekey.key</code>, строка 1</p>
+<p>-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASC...
+-----END PRIVATE KEY-----</p>
+<p><strong>Почему это секрет:</strong><br>Это приватный криптографический ключ. Его нельзя хранить в репозитории, потому что с его помощью можно подписывать данные, расшифровывать информацию и тд.</p>
+<p><strong>Как правильно хранить:</strong><br>В Secret Manager</p>
+<hr>
+<h2>3. CSR-файл</h2>
+<p><strong>Расположение:</strong> <code>webgoat-server/certificatesigningrequest.csr</code>, строка 1</p>
+<p>-----BEGIN CERTIFICATE REQUEST-----
+MIIC4zCCAcsCAQAwdDELMAkGA1UEBhMCNDQ...
+-----END CERTIFICATE REQUEST-----</p>
+<p><strong>Почему это секрет / чувствительные данные:</strong><br>CSR содержит данные для выпуска сертификата: публичный ключ и информацию о субъекте. Сам по себе CSR не является приватным ключом, но вместе с найденным приватным ключом относится к чувствительным криптографическим данным.</p>
+<p><strong>Как правильно хранить:</strong><br>Не хранить в публичном Git-репозитории. Генерировать при выпуске сертификата или хранить во внутреннем защищённом хранилище.</p>
+<hr>
+<h2>4. Пароль к PostgreSQL в connection string</h2>
+<p><strong>Расположение:</strong> <code>docker-compose-postgres.yml</code></p>
+<p>jdbc:postgresql://webgoat_db:5432/webgoat?user=webgoat&amp;password=webgoat</p>
+<p><strong>Почему это секрет:</strong><br>В строке подключения прямо указаны логин и пароль от базы данных PostgreSQL.</p>
+<p><strong>Как правильно хранить:</strong><br>Адрес базы можно оставить в конфиге, а логин и пароль нужно передавать через переменные окружения или Secret Manager.</p>
+<hr>
+<h2>5. Захардкоженные пароли и JWT secret</h2>
+<p><strong>Расположение:</strong> <code>webgoat-lessons/challenge/src/main/java/org/owasp/webgoat/plugin/SolutionConstants.java</code></p>
+<p>String PASSWORD_TOM = &quot;thisisasecretfortomonly&quot;;
+String PASSWORD_LARRY = &quot;larryknows&quot;;
+String JWT_PASSWORD = &quot;victory&quot;;
+String ADMIN_PASSWORD_LINK = &quot;375afe1104f4a487a73823c50a9292a2&quot;;</p>
+<p><strong>Почему это секрет:</strong><br>В коде хранятся пароли пользователей и секрет для JWT. Если злоумышленник узнает JWT secret, он может попытаться подделать токен.</p>
+<p><strong>Как правильно хранить:</strong><br>Пароли пользователей хранить только в виде хэшей, а JWT secret — в переменных окружения или Secret Manager.</p>
+<hr>
+<h2>BFG Repo-Cleaner</h2>
+<p>BFG Repo-Cleaner — это инструмент для очистки истории Git. Он нужен, если секрет уже был закоммичен. Простого удаления строки из текущей версии файла недостаточно, потому что секрет остаётся в старых коммитах.</p>
+<hr>
+<p>В ходе работы были найдены 5 типов секретов:</p>
+<ol>
+<li>GitHub token.</li>
+<li>Приватный ключ.</li>
+<li>CSR-файл.</li>
+<li>Пароль к PostgreSQL в строке подключения.</li>
+<li>Захардкоженные пароли и JWT secret.</li>
+</ol>
+<p>Для устранения проблем нужно удалить секреты из репозитория, перевыпустить скомпрометированные значения, очистить историю Git и хранить секреты только в защищённых хранилищах: GitHub Secrets, GitLab CI/CD Variables, Vault, Kubernetes Secrets или аналогичных решениях.</p>
+
+</body>
+</html>

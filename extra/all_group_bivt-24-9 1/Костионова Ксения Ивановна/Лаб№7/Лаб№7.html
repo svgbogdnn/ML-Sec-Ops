@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<h2>Ход выполнения</h2>
+<p>MobSF я развернула через Docker:</p>
+<pre><code class="language-powershell">docker run -d --name mobsf-lab7 -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
+</code></pre>
+<p>После старта контейнер слушает на <code>localhost:8000</code>. Для входа в mobsf использовала логин и пароль из логов: <code>mobsf</code> и <code>mobsf</code>.</p>
+<p><strong>В качестве приложения для скана я взяла Todoist для Android</strong> версии 11474 (~57 МБ). Это популярное приложение для управления задачами с синхронизацией, уведомлениями и интеграциями. </p>
+<p>Дальше через localhost:8000 загрузила APK в MobSF и запустила скан.</p>
+<h2>Информация о приложении</h2>
+<table>
+<thead>
+<tr>
+<th align="left">Поле</th>
+<th align="left">Значение</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Название</strong></td>
+<td align="left">Todoist</td>
+</tr>
+<tr>
+<td align="left"><strong>Пакет</strong></td>
+<td align="left">com.todoist</td>
+</tr>
+<tr>
+<td align="left"><strong>Версия</strong></td>
+<td align="left">v11474</td>
+</tr>
+<tr>
+<td align="left"><strong>Размер</strong></td>
+<td align="left">56.4 МБ</td>
+</tr>
+<tr>
+<td align="left"><strong>Target SDK</strong></td>
+<td align="left">33</td>
+</tr>
+<tr>
+<td align="left"><strong>Min SDK</strong></td>
+<td align="left">24</td>
+</tr>
+<tr>
+<td align="left"><strong>Security Score</strong></td>
+<td align="left">50/100 (MEDIUM RISK)</td>
+</tr>
+<tr>
+<td align="left"><strong>Grade</strong></td>
+<td align="left">B</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Основные находки</h2>
+<h3>Опасные разрешения (статус dangerous)</h3>
+<p>MobSF нашёл 6 разрешений со статусом dangerous. Самые важные из них:</p>
+<table>
+<thead>
+<tr>
+<th align="left">Разрешение</th>
+<th align="left">Риск</th>
+<th align="left">Почему это проблема</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>ACCESS_FINE_LOCATION</code></td>
+<td align="left">High</td>
+<td align="left">Точное местоположение через GPS - риск утечки геоданных</td>
+</tr>
+<tr>
+<td align="left"><code>ACCESS_COARSE_LOCATION</code></td>
+<td align="left">Medium</td>
+<td align="left">Приблизительное местоположение через сеть</td>
+</tr>
+<tr>
+<td align="left"><code>ACCESS_BACKGROUND_LOCATION</code></td>
+<td align="left">High</td>
+<td align="left">Доступ к локации в фоне - пользователь может не знать</td>
+</tr>
+<tr>
+<td align="left"><code>RECORD_AUDIO</code></td>
+<td align="left">Medium</td>
+<td align="left">Запись звука с микрофона - риск перехвата приватных разговоров</td>
+</tr>
+<tr>
+<td align="left"><code>POST_NOTIFICATIONS</code></td>
+<td align="left">Medium</td>
+<td align="left">Показ уведомлений - может использоваться для фишинга</td>
+</tr>
+<tr>
+<td align="left"><code>READ_CONTACTS</code></td>
+<td align="left">High</td>
+<td align="left">Доступ ко всем контактам - утечка личных данных</td>
+</tr>
+</tbody></table>
+<p>Для приложения-планировщика часть разрешений логична (интернет, уведомления), но <code>READ_CONTACTS</code> и <code>ACCESS_BACKGROUND_LOCATION</code> выглядят избыточными. Лучше запрашивать такие пермишены только при реальной необходимости, а не при установке.</p>
+<h3>Network Security (High: 1)</h3>
+<ul>
+<li><code>127.0.0.1 permits cleartext</code></li>
+<li>Локалхост разрешает незашифрованный трафик - риск для отладочных сценариев</li>
+</ul>
+<p>Хотя это касается только localhost, в отладочных сборках такой конфиг может попасть в продакшен. Лучше явно запрещать cleartext на уровне всего приложения.</p>
+<h3>Manifest Analysis (High: 1, Warning: 37)</h3>
+<p>High находка:</p>
+<ul>
+<li><code>App can be installed on a vulnerable unpatched Android version [minSdk=24]</code></li>
+<li>Приложение можно установить на старый Android 7.0 с непропатченными уязвимостями</li>
+</ul>
+<p>Warning находки:</p>
+<ul>
+<li>26 экспортированных активити без защиты <code>permission</code></li>
+<li>3 экспортированных сервиса доступны другим приложениям</li>
+<li>Несколько активити с <code>TaskAffinity</code> - риск перехвата интентов</li>
+<li>Экспортированные компоненты: <code>MainActivity</code>, <code>RouterActivity</code>, <code>OAuthActivity</code>, виджеты</li>
+</ul>
+<p>Проблема с экспортированными компонентами - типичная ошибка. Для приложения с задачами это может привести к утечке данных через чужие приложения.</p>
+<h3>Code Analysis (High: 1, Warning: 10)</h3>
+<p>High находка:</p>
+<ul>
+<li><code>The file or SharedPreference is World Writable</code></li>
+<li><code>SettingsFragmentDelegate.java</code>, <code>yd/E.java</code></li>
+</ul>
+<p>Любое приложение может записать данные в этот файл - критично для хранения токенов и настроек.</p>
+<p>Warning находки:</p>
+<table>
+<thead>
+<tr>
+<th align="left">№</th>
+<th align="left">Проблема</th>
+<th align="left">Severity</th>
+<th align="left">Описание</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">2</td>
+<td align="left"><code>App copies data to clipboard</code></td>
+<td align="left">Info</td>
+<td align="left">Чувствительные данные не должны копироваться в буфер обмена</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left"><code>App logs information</code></td>
+<td align="left">Info</td>
+<td align="left">Чувствительная информация не должна логироваться</td>
+</tr>
+<tr>
+<td align="left">4</td>
+<td align="left"><code>App uses SQLite Database and execute raw SQL query</code></td>
+<td align="left">Warning</td>
+<td align="left">Риск SQL-инъекции</td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td align="left"><code>SHA-1 is a weak hash</code></td>
+<td align="left">Warning</td>
+<td align="left">Известны коллизии</td>
+</tr>
+<tr>
+<td align="left">6</td>
+<td align="left"><code>The App uses an insecure Random Number Generator</code></td>
+<td align="left">Warning</td>
+<td align="left">Небезопасная генерация токенов/ключей</td>
+</tr>
+<tr>
+<td align="left">7</td>
+<td align="left"><code>MD5 is a weak hash</code></td>
+<td align="left">Warning</td>
+<td align="left">Известны коллизии</td>
+</tr>
+<tr>
+<td align="left">8</td>
+<td align="left"><code>App can read/write to External Storage</code></td>
+<td align="left">Warning</td>
+<td align="left">Любое приложение может читать данные</td>
+</tr>
+<tr>
+<td align="left">9</td>
+<td align="left"><code>Files may contain hardcoded sensitive information</code></td>
+<td align="left">Warning</td>
+<td align="left">Найдены потенциальные ключи и пароли в коде</td>
+</tr>
+<tr>
+<td align="left">10</td>
+<td align="left"><code>IP Address disclosure</code></td>
+<td align="left">Warning</td>
+<td align="left">Раскрытие IP-адресов</td>
+</tr>
+<tr>
+<td align="left">11</td>
+<td align="left"><code>App creates temp file</code></td>
+<td align="left">Warning</td>
+<td align="left">Чувствительные данные не должны писаться во временные файлы</td>
+</tr>
+<tr>
+<td align="left">12</td>
+<td align="left"><code>Insecure WebView Implementation</code></td>
+<td align="left">Warning</td>
+<td align="left">Выполнение пользовательского кода в WebView - критическая дыра</td>
+</tr>
+</tbody></table>
+<p>Самая опасная находка - <code>World Writable SharedPreference</code>. Это значит, что любое приложение с разрешением на чтение внешнего хранилища может получить доступ к данным Todoist. В 2024 году это уже не должно встречаться.</p>
+<h3>Hardcoded Secrets (Possible)</h3>
+<p>MobSF нашёл несколько строк, которые могут быть секретами:</p>
+<pre><code>&quot;google_api_key&quot;:&quot;AIzaSyCKvlAvtCaEuj0WuF1gxesJv_j6hHuoEHo&quot;
+&quot;facebook_client_token&quot;:&quot;c5a29925ae6d41fe68136a6edfc5749f&quot;
+&quot;firebase_database_url&quot;:&quot;https://td-project-01.firebaseio.com&quot;
+</code></pre>
+<hr>
+<h2>План по митигации</h2>
+<ol>
+<li><p>Исправить World Writable в SharedPreferences:
+Найти место где создаётся world writable файл или SharedPreference и убрать этот режим. По умолчанию для SharedPreference надо использовать <code>MODE_PRIVATE</code>. Если данные нужно расшарить с другим приложением, использовать Content Provider с правами доступа.</p>
+</li>
+<li><p>Ограничить экспорт компонентов:
+Пройти по всем активити, сервисам, броадкаст ресиверам и контент провайдерам. Если они не должны быть доступны другим приложениям, явно проставить <code>exported=&quot;false&quot;</code>. Если экспорт нужен, защитить его через <code>android:permission</code> с собственным разрешением signature уровня.</p>
+</li>
+<li><p>Запрос разрешений в рантайме + минимизация:
+<code>READ_CONTACTS</code> и <code>ACCESS_BACKGROUND_LOCATION</code> для планировщика выглядят лишними и их надо постараться убрать. Если разрешение реально нужно, запрашивать его только в момент использования соответствующей функции, а не сразу при старте приложения.</p>
+</li>
+<li><p>Заменить небезопасные генераторы и хеши:
+Заменить <code>Random</code> на <code>SecureRandom</code> во всех местах где случайные числа используются для криптографии, токенов, ключей. Заменить MD5 и SHA-1 на современные хеши, как минимум SHA-256.</p>
+</li>
+<li><p>Очистить логи от чувствительных данных:
+Найти все места где логируются токены, пароли или персональные данные. Убрать логирование или использовать безопасный логгер без PII в продакшен сборке.</p>
+</li>
+<li><p>Настроить Network Security Config:
+Убрать разрешение cleartext для <code>127.0.0.1</code> из network security config. Если открытый HTTP действительно нужен для каких-то локальных кейсов, перечислить домены явно с <code>cleartextTrafficPermitted=&quot;true&quot;</code>, а не на уровне всего приложения.</p>
+</li>
+<li><p>Поднять minSdkVersion:
+Поднять min sdk хотя бы до 29 (Android 10). На таких устройствах уже работают современные механизмы безопасности типа improved permissions и более жёсткая работа с TLS.</p>
+</li>
+</ol>
+
+</body>
+</html>

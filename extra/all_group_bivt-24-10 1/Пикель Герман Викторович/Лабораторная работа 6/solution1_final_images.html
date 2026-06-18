@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solution</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 40px auto; padding: 0 20px; color: #111; }
+    h1, h2, h3 { margin-top: 28px; }
+    code { background: #f2f2f2; padding: 2px 5px; border-radius: 4px; }
+    figure { margin: 18px 0; }
+    img { display: block; max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 6px; }
+  </style>
+</head>
+<body>
+<ol>
+<li>docker run -it -p 8080:8080 python:buster /bin/bash</li>
+<li>pip install truffleHog</li>
+<li>После запуска докер контейнера и установки truffleHog я запустил сканирование нужного репозитория и весь вывод сохранил в файл log.txt:</li>
+<p>trufflehog https://github.com/OtusTeam/DevSecOps_secret-finding.git | tee -a log.txt</p>
+</ol>
+<p>Сканирование завершилось</p>
+<figure><img src="photo1.png" alt="" loading="lazy"></figure>
+<ol>
+<li>Просмотрим файл log.txt с помощью команды <code>cat log.txt | more</code></li>
+</ol>
+<ol>
+<li>НАЙДЕННЫЕ СЕКРЕТЫ</li>
+</ol>
+<figure><img src="photo2.png" alt="" loading="lazy"></figure>
+<p>Он является секретом потому что это индивидуальный токен.<br>
+Находится данный секрет в release.yml, а должен, как я считаю, находится в .env, либо в любом другом файле, находщимя в .gitignore</p>
+<ul>
+<li>Запрос на подпись сертификата CSR со статическим challenge-паролем.</li>
+</ul>
+<figure><img src="photo3.png" alt="" loading="lazy"></figure>
+<p>Находится по пути webgoat-server/certificatesigningrequest.csr;<br>
+Внутри запроса на подпись этого сертификата захардкожен пароль проверки, это плохо для безопасности. ПОэтому это секрет. Он должен храниться в файле .csr, который должен быть в .gitingore</p>
+<ul>
+<li>RSA private key</li>
+</ul>
+<figure><img src="photo4.png" alt="" loading="lazy"></figure>
+<p>Находится по пути  webgoat-server/privatekey.key<br>
+Ключ является важным для шифрования передаваемых данных, его нельзя хранить в открытом виде, поэтому это секрет. Файл с ключом должен быть прописан в .gitignore. </p>
+<ul>
+<li>Хэш пароля пользователя</li>
+</ul>
+<figure><img src="photo5.png" alt="" loading="lazy"></figure>
+<p>webgoat-lessons/missing-function-ac/src/test/java/org/owasp/webgoat/missing_ac/MissingFunctionACUsersTest.java</p>
+<p>Хэш пароля пользователя - это точно секрет. По нему можно получить доступ к аккаунту пользователя. Также там находится соль. Это небезопасно. хэши и соли не должны быть захардкожены, при тестировании их нужно динамически генерировать, чтобы не было утечки в коде. а сами параметры для хеширования нужно хранить в файлах конфигурации иил переменных окружения, которые не должны публиковаться в опенсурс.</p>
+<ul>
+<li>JWT Token</li>
+</ul>
+<figure><img src="photo6.png" alt="" loading="lazy"></figure>
+<p>Находистя по пути webgoat-lessons/jwt/src/main/resources/lessonPlans/en/JWT_libraries_assignment.adoc</p>
+<p>Это очевидный секрет, он должен храниться строго в переменных окружения на серваке приложения. Утечка такого токена может привести к компрометации сессий пользователя и под аккаунтом пользователя может спокойно зайти злоумышленник, что не есть хорошо.</p>
+<p>Дополнительно:</p>
+<p>BFG Repo-Cleaner — инструмент для очистки истории Git-репозитория от чувствительных данных, больших файлов и нежелательных артефактов. Он используется, когда секрет уже попал в историю коммитов. В отличие от простого удаления файла в новом коммите, BFG переписывает историю репозитория и удаляет секрет из старых коммитов.</p>
+<p>Однако после удаления секрета из истории всё равно нужно считать его скомпрометированным: отозвать старый ключ, сменить пароль или перевыпустить токен.</p>
+<p>Поиск секретов можно автоматизировать в CI/CD pipeline: запускать truffleHog или аналогичные инструменты при pull request, перед merge в основную ветку и периодически по расписанию. Также можно использовать pre-commit hooks, чтобы проверять код ещё до отправки в репозиторий.</p>
+<p>Это правильный подход, потому что он снижает вероятность попадания секретов в репозиторий. Но полностью полагаться только на автоматическое сканирование нельзя: возможны ложные срабатывания и пропуски. Поэтому дополнительно нужны code review, обучение разработчиков, использование secret storage и ротация ключей.</p>
+</body>
+</html>

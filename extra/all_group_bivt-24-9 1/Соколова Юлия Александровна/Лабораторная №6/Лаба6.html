@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ЛР №6 — Поиск секретов в Git-репозитории</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --bg: #0f1117;
+      --surface: #171b26;
+      --surface2: #1e2436;
+      --border: #2a3050;
+      --text: #d4d9f0;
+      --text-muted: #7a82a8;
+      --critical: #ff4d4d;
+      --critical-bg: rgba(255,77,77,0.08);
+      --high: #ff9640;
+      --high-bg: rgba(255,150,64,0.08);
+      --accent: #5b8af5;
+      --accent-soft: rgba(91,138,245,0.12);
+      --green: #3ecf8e;
+      --code-bg: #0d1117;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Manrope', sans-serif;
+      font-size: 15px;
+      line-height: 1.75;
+      padding: 0 0 80px;
+    }
+
+    /* ─── Header ─── */
+    header {
+      background: linear-gradient(135deg, #12172a 0%, #1a2040 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 48px 64px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(91,138,245,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .header-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    header .subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .meta-row {
+      display: flex;
+      gap: 32px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .meta-item .key {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+    .meta-item .val {
+      font-size: 13px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--green);
+    }
+
+    /* ─── Main layout ─── */
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 32px 0;
+    }
+
+    /* ─── Secret card ─── */
+    .secret-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 40px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 20px 28px 18px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-header .number {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .card-header h2 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .badge {
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 20px;
+      margin-top: 2px;
+    }
+    .badge.critical {
+      background: var(--critical-bg);
+      color: var(--critical);
+      border: 1px solid rgba(255,77,77,0.25);
+    }
+    .badge.high {
+      background: var(--high-bg);
+      color: var(--high);
+      border: 1px solid rgba(255,150,64,0.25);
+    }
+
+    /* ─── Table ─── */
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    .info-table td {
+      padding: 10px 28px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .info-table td:first-child {
+      color: var(--text-muted);
+      font-weight: 600;
+      white-space: nowrap;
+      width: 180px;
+    }
+    .info-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* ─── Sections inside card ─── */
+    .card-body {
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .section-block {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 18px 20px;
+    }
+
+    .section-block p, .section-block li {
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text);
+    }
+    .section-block ul {
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .section-block ul li::marker {
+      color: var(--accent);
+    }
+
+    /* ─── Code ─── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 7px;
+      color: #e2c97e;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      margin: 12px 0 0;
+      overflow-x: auto;
+    }
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: #a8d8a8;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    /* ─── Recommendation highlight ─── */
+    .rec-block {
+      background: rgba(62,207,142,0.06);
+      border-left: 3px solid var(--green);
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+    }
+    .rec-block p, .rec-block li {
+      color: #b8e8d4;
+    }
+    .rec-block ul {
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .rec-block ul li::marker {
+      color: var(--green);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-label">DevSecOps · Лабораторная работа №6</div>
+  <h1>Поиск секретов в Git-репозитории</h1>
+  <p class="subtitle">Анализ истории коммитов с помощью truffleHog</p>
+  <div class="meta-row">
+    <div class="meta-item">
+      <span class="key">Инструмент</span>
+      <span class="val">truffleHog</span>
+    </div>
+    <div class="meta-item">
+      <span class="key">Репозиторий</span>
+      <span class="val">OtusTeam/DevSecOps_secret-finding</span>
+    </div>
+    <div class="meta-item">
+      <span class="key">Найдено секретов</span>
+      <span class="val">5 (2 критических, 3 высоких)</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══════════ SECRET 1 ══════════ -->
+  <div class="secret-card">
+    <div class="card-header">
+      <div>
+        <div class="number">Секрет #1</div>
+        <h2>Захардкоженный пароль приложения</h2>
+      </div>
+      <span class="badge critical">Критический</span>
+    </div>
+
+    <table class="info-table">
+      <tr><td>Hash коммита</td><td><code>e8d086ac9b62efebc9937c5b41659b454f2973c3</code></td></tr>
+      <tr><td>Дата / сообщение</td><td><code>2019-09-20</code> / "All successful"</td></tr>
+      <tr><td>Файл</td><td><code>webgoat-lessons/challenge/src/main/java/org/owasp/webgoat/plugin/SolutionConstants.java</code></td></tr>
+      <tr><td>Строка / контекст</td><td>Строки 12–14, интерфейс <code>SolutionConstants</code></td></tr>
+      <tr><td>Найденное значение</td><td>
+        <code>String PASSWORD = "!!webgoat_admin_1234!!";</code><br>
+        <code>String PASSWORD_TOM = "thisisasecretfortomonly";</code>
+      </td></tr>
+    </table>
+
+    <div class="card-body">
+      <div>
+        <div class="section-title">Почему это секрет</div>
+        <div class="section-block">
+          <p>Два пароля — администратора и пользователя Tom — прописаны как Java-константы прямо в исходном коде. Файл попал в публичный репозиторий и навсегда останется в истории Git: даже если убрать его из последнего коммита, <code>git log</code> всё равно покажет исходное содержимое.</p>
+          <p style="margin-top: 10px;">Что особенно красноречиво — разработчики сами оставили комментарий:</p>
+          <pre><code>//TODO should be random generated when starting the server</code></pre>
+          <p style="margin-top: 10px;">Проблему понимали. Просто откладывали. А «потом» так и не наступило.</p>
+        </div>
+      </div>
+      <div>
+        <div class="section-title">Правильный способ хранения</div>
+        <div class="rec-block">
+          <ul>
+            <li>Генерировать при старте через <code>SecureRandom</code> — никаких констант в коде</li>
+            <li>Передавать через переменные окружения: <code>System.getenv("APP_PASSWORD")</code></li>
+            <li>Хранить в специализированных хранилищах: HashiCorp Vault, AWS Secrets Manager</li>
+            <li>Любой конфиг с реальными значениями — в <code>.gitignore</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SECRET 2 ══════════ -->
+  <div class="secret-card">
+    <div class="card-header">
+      <div>
+        <div class="number">Секрет #2</div>
+        <h2>JWT-токен со слабым HMAC-ключом</h2>
+      </div>
+      <span class="badge high">Высокий</span>
+    </div>
+
+    <table class="info-table">
+      <tr><td>Hash коммита</td><td><code>e8d086ac9b62efebc9937c5b41659b454f2973c3</code></td></tr>
+      <tr><td>Дата / сообщение</td><td><code>2019-09-20</code> / "All successful"</td></tr>
+      <tr><td>Файл</td><td><code>webgoat-lessons/jwt/src/main/resources/lessonPlans/en/JWT_weak_keys</code></td></tr>
+      <tr><td>Строка / контекст</td><td>Добавлен блок с реальным токеном в diff</td></tr>
+      <tr><td>Найденное значение</td><td><code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</code></td></tr>
+    </table>
+
+    <div class="card-body">
+      <div>
+        <div class="section-title">Почему это секрет</div>
+        <div class="section-block">
+          <p>В учебном файле опубликован настоящий подписанный JWT-токен для пользователя Tom. Payload содержит <code>username: Tom</code> и <code>Role: Manager / Project Administrator</code>.</p>
+          <p style="margin-top: 10px;">Ключ подписи настолько слабый, что взламывается офлайн-атакой по словарю буквально за несколько минут — инструменты <code>hashcat</code> или <code>jwt_tool</code> с этим справляются без труда. Получив ключ, злоумышленник генерирует токен с любой ролью, хоть <code>Admin</code>.</p>
+        </div>
+      </div>
+      <div>
+        <div class="section-title">Правильный способ хранения</div>
+        <div class="rec-block">
+          <ul>
+            <li>В документации и учебных материалах — только фиктивные, заведомо невалидные токены</li>
+            <li>Рядом с примером обязательная пометка: <code>EXAMPLE / PLACEHOLDER / DO NOT USE</code></li>
+            <li>Для реальных систем: ключи подписи ≥ 256 бит, хранятся в секрет-хранилище, ротируются</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SECRET 3 ══════════ -->
+  <div class="secret-card">
+    <div class="card-header">
+      <div>
+        <div class="number">Секрет #3</div>
+        <h2>API-ключи CI/CD сервиса в .travis.yml</h2>
+      </div>
+      <span class="badge critical">Критический</span>
+    </div>
+
+    <table class="info-table">
+      <tr><td>Hash коммита</td><td><code>5dd6b3190592fca16b6d2ea5a5c7f5485be04ebf</code></td></tr>
+      <tr><td>Дата / сообщение</td><td><code>2019-11-17</code> / "Adjust lesson template (#704)"</td></tr>
+      <tr><td>Файл</td><td><code>.travis.yml</code></td></tr>
+      <tr><td>Строка / контекст</td><td>Блоки <code>deploy.api_key.secure</code> и <code>env.global</code></td></tr>
+      <tr><td>Найденное значение</td><td>Travis CI API key, Docker Hub логин/пароль, Slack webhook token</td></tr>
+    </table>
+
+    <div class="card-body">
+      <div>
+        <div class="section-title">Почему это секрет</div>
+        <div class="section-block">
+          <p>В файле <code>.travis.yml</code> зашифровано сразу три вида чувствительных данных: GitHub Release API key, логин и пароль Docker Hub, токен Slack для уведомлений.</p>
+          <p style="margin-top: 10px;">Да, они зашифрованы ключом Travis CI. Но вся безопасность держится на одном RSA-ключе Travis — если он утечёт, все три секрета раскрываются одновременно. Хранить зашифрованные секреты в репозитории — это ложное ощущение защищённости.</p>
+        </div>
+      </div>
+      <div>
+        <div class="section-title">Правильный способ хранения</div>
+        <div class="rec-block">
+          <ul>
+            <li>Travis CI: переменные окружения через UI — <strong>Settings → Environment Variables</strong></li>
+            <li>GitHub Actions: OIDC-интеграция без долгоживущих токенов</li>
+            <li>Docker Hub: токены с ограниченным scope вместо пароля основного аккаунта</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SECRET 4 ══════════ -->
+  <div class="secret-card">
+    <div class="card-header">
+      <div>
+        <div class="number">Секрет #4</div>
+        <h2>Статический CSRF-токен</h2>
+      </div>
+      <span class="badge high">Высокий</span>
+    </div>
+
+    <table class="info-table">
+      <tr><td>Hash коммита</td><td><code>1a83e2825e2b1e040e2a2042677f03727f654150</code></td></tr>
+      <tr><td>Дата / сообщение</td><td><code>2019-11-03</code> / "Code style (#696)"</td></tr>
+      <tr><td>Файл</td><td><code>webgoat-lessons/csrf/src/main/java/org/owasp/webgoat/csrf/ForgedReviews.java</code></td></tr>
+      <tr><td>Строка / контекст</td><td>Строка ~52</td></tr>
+      <tr><td>Найденное значение</td><td><code>private static final String weakAntiCSRF = "2aa14227b9a13d0bede0388a7fba9aa9";</code></td></tr>
+    </table>
+
+    <div class="card-body">
+      <div>
+        <div class="section-title">Почему это секрет</div>
+        <div class="section-block">
+          <p>MD5-строка используется как Anti-CSRF токен — механизм защиты от подделки запросов. Но она статическая и одинаковая для всех пользователей и сессий. Смысл CSRF-токена именно в уникальности — здесь этого нет.</p>
+          <p style="margin-top: 10px;">Злоумышленнику достаточно один раз увидеть значение — в коде, логах, перехваченном запросе — и дальше он может подделывать запросы от имени любого пользователя. Значение уже публично в репозитории, так что оно давно известно.</p>
+        </div>
+      </div>
+      <div>
+        <div class="section-title">Правильный способ хранения</div>
+        <div class="rec-block">
+          <ul>
+            <li>Уникальный токен для каждой сессии пользователя — никаких статических значений</li>
+            <li>Генерация через криптографически стойкий <code>SecureRandom</code></li>
+            <li>Проверка на серверной стороне при каждом изменяющем запросе</li>
+            <li>Проще всего — встроенная Spring Security CSRF protection из коробки</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SECRET 5 ══════════ -->
+  <div class="secret-card">
+    <div class="card-header">
+      <div>
+        <div class="number">Секрет #5</div>
+        <h2>Захардкоженный пароль в модуле сброса пароля</h2>
+      </div>
+      <span class="badge high">Высокий</span>
+    </div>
+
+    <table class="info-table">
+      <tr><td>Hash коммита</td><td><code>1a83e2825e2b1e040e2a2042677f03727f654150</code></td></tr>
+      <tr><td>Дата / сообщение</td><td><code>2019-11-03</code> / "Code style (#696)"</td></tr>
+      <tr><td>Файл</td><td><code>webgoat-lessons/password-reset/src/main/java/org/owasp/webgoat/password_reset/ResetLinkAssignment.java</code></td></tr>
+      <tr><td>Строка / контекст</td><td>Строка ~47</td></tr>
+      <tr><td>Найденное значение</td><td><code>static final String PASSWORD_TOM_9 = "somethingVeryRandomWhichNoOneWillEverTypeInAsPasswordForTom";</code></td></tr>
+    </table>
+
+    <div class="card-body">
+      <div>
+        <div class="section-title">Почему это секрет</div>
+        <div class="section-block">
+          <p>Пароль пользователя Tom закодирован прямо в Java-классе, реализующем логику сброса пароля. Парадокс: модуль, призванный помочь восстановить доступ — сам является местом хранения учётных данных.</p>
+          <p style="margin-top: 10px;">Дополнительно в том же файле раскрывается email:</p>
+          <pre><code>TOM_EMAIL = "tom@webgoat-cloud.org"</code></pre>
+          <p style="margin-top: 10px;">Email и пароль доступны вместе — этого достаточно для прямого входа в аккаунт.</p>
+        </div>
+      </div>
+      <div>
+        <div class="section-title">Правильный способ хранения</div>
+        <div class="rec-block">
+          <p style="margin-bottom: 10px;">Модуль сброса пароля вообще не должен знать текущий пароль. Правильная схема:</p>
+          <ul>
+            <li>Генерировать одноразовый токен (<code>UUID</code> или <code>SecureRandom</code>)</li>
+            <li>Хранить в БД только его хеш (<code>bcrypt</code>, <code>Argon2</code>)</li>
+            <li>Выставлять TTL (например, 15 минут) и флаг «уже использован»</li>
+            <li>После перехода по ссылке — предлагать ввести новый пароль; старый не нужен</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</body>
+</html>

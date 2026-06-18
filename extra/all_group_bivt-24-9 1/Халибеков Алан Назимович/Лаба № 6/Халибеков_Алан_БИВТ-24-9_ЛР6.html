@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>лабораторная работа №6</title>
+<style>body{color:#111;font-family:Arial,sans-serif;line-height:1.5;max-width:900px;margin:32px auto;padding:0 18px}h1,h2,h3{line-height:1.25}code{background:#f4f4f4;padding:2px 4px;border-radius:3px}pre{background:#f4f4f4;padding:12px;overflow:auto;border-radius:4px}pre code{background:transparent;padding:0}li{margin:4px 0}</style>
+</head>
+<body>
+<h1>лабораторная работа №6</h1>
+<p>студент: Халибеков Алан, БИВТ-24-9</p>
+<h2>ход выполнения</h2>
+<p>по заданию нужно было проверить git репозиторий на случайно оставленные секреты. для этого я использовал truffleHog, потому что он смотрит не только текущие файлы, но и историю комитов.</p>
+<p>запускал все в контейнере с python:</p>
+<pre><code class="language-bash">docker run -d --name trufflehog-lab6 python:buster sleep 3600
+docker exec trufflehog-lab6 pip install truffleHog</code></pre>
+<p>после установки запустил проверку репозитория из задания и сохранил лог:</p>
+<pre><code class="language-bash">docker exec trufflehog-lab6 bash -c "trufflehog https://github.com/OtusTeam/DevSecOps_secret-finding.git | tee /log.txt"
+docker cp trufflehog-lab6:/log.txt ./log.txt</code></pre>
+<p>вывод получился довольно большой, так как инструмент проходил по истории комитов. часть результатов была похожа на ложные срабатывания, например минифицированные js файлы и хеши из lock-файлов. из найденного я выбрал 5 разных типов секретов.</p>
+<h2>найденные секреты</h2>
+<h3>1. токен github в workflow</h3>
+<p>расположение: <code>.github/workflows/release.yml:12</code></p>
+<pre><code class="language-yaml">GITHUB_TOKEN: cee3257f0e59d1d4975a35429cffc3d8b5fabe15ca2e9d47243cbc446d4894a5</code></pre>
+<p>это похоже на токен доступа к github. признак не только в названии переменной, но и в самом значении: длинная случайная строка с высокой энтропией. если такой токен имеет права на репозиторий, через него можно делать релизы, пушить изменения или выполнять другие действия от имени владельца токена.</p>
+<p>правильно хранить такое значение в секретах ci/cd, например в github actions secrets, и обращаться к нему как к <code>${{ secrets.GITHUB_TOKEN }}</code> или <code>${{ secrets.RELEASE_TOKEN }}</code>. если токен уже оказался в истории git, его надо отозвать и создать новый.</p>
+<h3>2. приватный ключ</h3>
+<p>расположение: <code>webgoat-server/privatekey.key:1</code></p>
+<pre><code class="language-text">-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCpuOH6AnMc/xdJ
+...
+-----END PRIVATE KEY-----</code></pre>
+<p>это приватный ключ в формате pem. такие ключи используются для расшифровки, подписи или настройки tls. если приватный ключ попадает в репозиторий, его может скачать любой, у кого есть доступ к истории проекта. дальше возможна подмена сервера или расшифровка трафика, если ключ реально использовался в окружении.</p>
+<p>приватные ключи нельзя хранить в коде. нормальный вариант - vault, secret manager, kubernetes secrets или защищенное хранилище на стороне ci/cd. после утечки ключ надо заменить, а связанный сертификат перевыпустить.</p>
+<h3>3. зашифрованные секреты travis ci</h3>
+<p>расположение: <code>.travis.yml:48</code>, <code>.travis.yml:64-66</code></p>
+<pre><code class="language-yaml">deploy:
+  - provider: releases
+    api_key:
+      secure: pJOLBnl6427PcVg/tVy/qB18JC7b8cKpffau+IP0pjdSt7KUfBdBY3QuJ7mrM65zRoVILz...
+env:
+  global:
+    - secure: XgPc0UKRTUI70I4YWNQpThPPWeQIxkmzh1GNoR/SSDC2GPIBq3EfkkbSQewqil8stTy...
+    - secure: aly5TKBUK9sIiqtMbytNNPZHQhC0a7Yond5tEtuJ8fO+j/KZB4Uro3I6BhzYjGWFb5K...</code></pre>
+<p>это не открытый пароль, но все равно секреты для ci. travis хранит их в зашифрованном виде и расшифровывает при сборке. по смыслу там могут быть токены для релизов, доступ к docker hub или webhook для уведомлений.</p>
+<p>лучше держать такие значения в настройках секретов самого ci/cd, а в репозитории оставлять только ссылки на переменные. если проект переезжает с travis на github actions или другой ci, старые токены надо отключить, потому что они уже не нужны и только увеличивают риск.</p>
+<h3>4. пароль прямо в java-коде</h3>
+<p>расположение: <code>webgoat-lessons/password-reset/src/main/java/org/owasp/webgoat/password_reset/ResetLinkAssignment.java:54</code></p>
+<pre><code class="language-java">static final String PASSWORD_TOM_9 = "somethingVeryRandomWhichNoOneWillEverTypeInAsPasswordForTom";
+static final String TOM_EMAIL = "tom@webgoat-cloud.org";</code></pre>
+<p>здесь пароль пользователя записан как константа. даже если это учебный проект, по сути это готовый секрет в исходниках. любой человек с доступом к репозиторию увидит пароль без подбора и без доступа к базе.</p>
+<p>пароли нельзя хранить в коде. для тестов можно использовать переменные окружения или тестовые секреты, которые создаются при запуске. реальные пользовательские пароли должны храниться только в виде хеша с солью, например bcrypt или argon2.</p>
+<h3>5. jwt токен в тестах</h3>
+<p>расположение: <code>webgoat-lessons/jwt/src/test/java/org/owasp/webgoat/jwt/JWTFinalEndpointTest.java:27</code></p>
+<pre><code class="language-java">private static final String TOKEN_JERRY = "eyJraWQiOiJ3ZWJnb2F0X2tleSIsImFsZyI6IkhTNTEyIn0.eyJhdWQiOiJ3ZWJnb2F0Lm9yZyIsImVtYWlsIjoiamVycnlAd2ViZ29hdC5jb20iLCJ1c2VybmFtZSI6IkplcnJ5In0.xBc5FFwaOcuxjdr_VJ16n8Jb7vScuaZulNTl66F2MWF1aBe47QsUosvbjWGORNcMPiPNwnMu1Yb0WZVNrp2ZXA";</code></pre>
+<p>это готовый jwt токен. он содержит данные пользователя и подпись. если такой токен валиден в приложении, его можно просто скопировать и использовать для запроса от имени этого пользователя. также наличие готового токена иногда помогает подобрать или проверить секрет подписи.</p>
+<p>в тестах лучше генерировать jwt во время выполнения теста и подписывать его отдельным тестовым ключом. сам ключ подписи должен храниться как секрет окружения, а не в репозитории.</p>
+<h2>дополнительные вопросы</h2>
+<h3>что такое BFG Repo-Cleaner</h3>
+<p>BFG Repo-Cleaner - это утилита для чистки истории git. ее используют, когда в репозиторий уже попал секрет или слишком большой файл. инструмент может пройти по истории комитов и заменить найденные значения на заглушку, например <code>***REMOVED***</code>.</p>
+<p>важный момент: чистка истории не делает утекший секрет снова безопасным. если кто-то уже успел склонировать репозиторий, старое значение могло остаться у него локально. поэтому после BFG все равно нужно отзывать токены, менять пароли и перевыпускать ключи.</p>
+<h3>как автоматизировать поиск секретов</h3>
+<p>поиск секретов можно и нужно автоматизировать. я бы сделал это в нескольких местах:</p>
+<ul><li>pre-commit hook у разработчика, чтобы случайный секрет не попал даже в комит;</li><li>проверка pull request в ci/cd;</li><li>регулярный scan репозитория вместе с историей;</li><li>встроенные инструменты github или gitlab для secret scanning.</li></ul>
+<p>это правильный подход, потому что человек может не заметить строку с токеном, а автоматическая проверка сработает каждый раз. но полностью полагаться только на сканер нельзя. у него бывают ложные срабатывания и пропуски, особенно если секрет похож на обычную строку. поэтому главное правило остается таким: секреты надо изначально хранить вне кода.</p>
+<h2>вывод</h2>
+<p>в результате проверки были найдены разные типы секретов: токен github, приватный ключ, секреты travis ci, пароль в коде и jwt токен. общая проблема у них одна: секреты попали в репозиторий или в историю комитов. чтобы такого не было, поиск секретов нужно добавлять в ci/cd, а сами значения хранить в отдельных защищенных хранилищах.</p>
+</body>
+</html>

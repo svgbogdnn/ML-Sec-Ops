@@ -1,0 +1,58 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h1 id="-7-sast-mobsf-">Лабораторная работа №7: SAST-анализ мобильного приложения (MobSF)</h1>
+<h2 id="-">Выполнение</h2>
+<p>Запустил MobSF в Docker:
+docker run -d -p 8000:8000 --name mobsf opensecurity/mobile-security-framework-mobsf:v3.1.1</p>
+<p>Для анализа взял приложение Simple Notes (com.simplemobiletools.notes). APK скачан с apkmirror.com, загружен в MobSF. Полный PDF-отчёт сохранён и приложен.</p>
+<h2 id="-">Обнаруженные проблемы и план митигации</h2>
+<h3 id="1-app-permissions-dangerous-">1. App Permissions (dangerous)</h3>
+<p>Найдены опасные разрешения: INTERNET, WRITE_EXTERNAL_STORAGE, com.android.vending.BILLING, BIND_APPHUB_SERVICE.</p>
+<p>Риск: передача данных без ведома пользователя, доступ к файлам, сбор информации рекламными SDK.</p>
+<p>План митигации:</p>
+<ul>
+<li>Оставить только нужные для заметок разрешения.</li>
+<li>Запрашивать доступ к файлам во время выполнения с объяснением.</li>
+<li>Удалить биллинг и рекламные сервисы, если не используются.</li>
+</ul>
+<h3 id="2-network-security-high-">2. Network Security (high и выше)</h3>
+<p>В разделе Network Security уязвимостей нет, но в коде есть http-ссылки.</p>
+<p>План митигации:</p>
+<ul>
+<li>Заменить http на https.</li>
+<li>Настроить Network Security Config с запретом открытого трафика.</li>
+<li>Явно указать доверенные сертификаты.</li>
+</ul>
+<h3 id="3-manifest-analysis-high-">3. Manifest Analysis (high и выше)</h3>
+<p>Множество экспортируемых компонентов не защищены (20 Activity-Alias, MainActivity, сервисы и приёмники). allowBackup=true.</p>
+<p>Риск: любое приложение может вызвать эти компоненты, резервное копирование раскроет заметки.</p>
+<p>План митигации:</p>
+<ul>
+<li>Установить exported=false для непубличных компонентов.</li>
+<li>Для публичных (Widget) добавить permission с level=signature.</li>
+<li>Установить allowBackup=false.</li>
+</ul>
+<h3 id="4-code-analysis-high-">4. Code Analysis (high и выше)</h3>
+<p>Критические находки (все high):</p>
+<ul>
+<li>Небезопасный Random (SecureRandom не используется).</li>
+<li>Жёстко закодированные ключи в коде AppLovin, Yandex Metrica.</li>
+<li>Небезопасный WebView (игнорирует ошибки SSL) — MITM-уязвимость.</li>
+<li>Слабые хеши SHA-1, MD5.</li>
+<li>Чтение/запись во внешнее хранилище.</li>
+<li>Включена удалённая отладка WebView.</li>
+</ul>
+<p>План митигации:</p>
+<ul>
+<li>Заменить Random на SecureRandom.</li>
+<li>Убрать ключи из кода, хранить в Android Keystore.</li>
+<li>В WebView проверять SSL-сертификаты.</li>
+<li>SHA-1/MD5 заменить на SHA-256, пароли — bcrypt.</li>
+<li>Использовать getExternalFilesDir вместо открытой SD-карты.</li>
+<li>Отключить удалённую отладку WebView: setWebContentsDebuggingEnabled(false).</li>
+<li>Применить ProGuard/R8.</li>
+</ul>
+<h2 id="-">Выводы</h2>
+<p>MobSF выявил проблемы даже в простом приложении: опасные разрешения, уязвимости в сторонних SDK, небезопасный WebView, слабую криптографию. План митигации устраняет эти риски. Инструмент можно внедрить в CI/CD.</p>
+</body></html>

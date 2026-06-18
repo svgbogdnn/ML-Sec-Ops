@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAST Отчёт — Subway Surf</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Manrope:wght@400;600;800&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #151820;
+    --border: #1e2330;
+    --red: #e05c3a;
+    --orange: #d4943a;
+    --blue: #3a7fd4;
+    --green: #3ae0a0;
+    --text: #c8cdd8;
+    --text-dim: #5a6278;
+    --heading: #eef0f5;
+    --code-bg: #0a0c10;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Manrope', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 48px 24px;
+  }
+
+  .container { max-width: 900px; margin: 0 auto; }
+
+  header {
+    border-left: 3px solid var(--red);
+    padding-left: 20px;
+    margin-bottom: 40px;
+  }
+
+  header h1 { font-size: 26px; font-weight: 800; color: var(--heading); margin-bottom: 6px; }
+  .meta { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim); line-height: 2; }
+
+  .score-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+
+  .score-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 20px;
+    text-align: center;
+    flex: 1;
+    min-width: 100px;
+  }
+
+  .score-box .num { font-size: 28px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .score-box .label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  .score-box.red .num { color: var(--red); }
+  .score-box.orange .num { color: var(--orange); }
+  .score-box.blue .num { color: var(--blue); }
+  .score-box.green .num { color: var(--green); }
+  .score-box.main { border-color: var(--orange); }
+  .score-box.main .num { color: var(--orange); font-size: 32px; }
+
+  h2 {
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    margin: 36px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cards { display: flex; flex-direction: column; gap: 16px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    color: #fff;
+  }
+
+  .badge.high { background: var(--red); }
+  .badge.medium { background: var(--orange); }
+  .badge.info { background: var(--blue); }
+
+  .card-title { font-size: 14px; font-weight: 700; color: var(--heading); }
+
+  .card-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .block { display: flex; flex-direction: column; gap: 4px; }
+  .block-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+  }
+
+  .block-text { font-size: 13px; line-height: 1.7; color: var(--text); }
+
+  .fix-block {
+    background: rgba(58, 224, 160, 0.06);
+    border: 1px solid rgba(58, 224, 160, 0.15);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .fix-block .block-label { color: var(--green); }
+  .fix-block .block-text { color: #8ab8a0; font-size: 13px; }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #a8d4b0;
+  }
+
+  .cwe {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>SAST Отчёт — Subway Surf (3.63.10)</h1>
+    <div class="meta">
+      Пакет: com.kiloo.subwaysurf &nbsp;·&nbsp; Инструмент: MobSF v3.1.1<br>
+      Файл: Subway.apk (239 MB) &nbsp;·&nbsp; Дата сканирования: 26.05.2026
+    </div>
+  </header>
+
+  <div class="score-row">
+    <div class="score-box main">
+      <div class="num">41/100</div>
+      <div class="label">Security Score</div>
+    </div>
+    <div class="score-box red">
+      <div class="num">11</div>
+      <div class="label">High</div>
+    </div>
+    <div class="score-box orange">
+      <div class="num">28</div>
+      <div class="label">Medium</div>
+    </div>
+    <div class="score-box blue">
+      <div class="num">4</div>
+      <div class="label">Info</div>
+    </div>
+    <div class="score-box green">
+      <div class="num">3</div>
+      <div class="label">Secure</div>
+    </div>
+  </div>
+
+  <h2>Обнаруженные уязвимости и план митигации</h2>
+
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge high">HIGH</span>
+        <span class="card-title">Cleartext HTTP трафик</span>
+        <span class="cwe" style="margin-left:auto">CWE-319</span>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="block">
+            <div class="block-label">Описание</div>
+            <div class="block-text">Приложение разрешает передачу данных по незашифрованному HTTP. Злоумышленник в той же сети может перехватить и модифицировать трафик (MITM-атака).</div>
+          </div>
+          <div class="block">
+            <div class="block-label">Затронутые домены</div>
+            <div class="block-text">Домены Unity Ads и других рекламных SDK настроены без принудительного HTTPS в <code>network_security_config.xml</code>.</div>
+          </div>
+        </div>
+        <div class="fix-block">
+          <div class="block-label">Митигация</div>
+          <div class="block-text">Установить <code>android:usesCleartextTraffic="false"</code> в манифесте. В <code>network_security_config.xml</code> явно указать <code>cleartextTrafficPermitted="false"</code> для всех доменов. Все SDK обновить до версий с поддержкой HTTPS.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge high">HIGH</span>
+        <span class="card-title">Слабый алгоритм подписи сертификата — SHA1withRSA + RSA 1024 бит</span>
+        <span class="cwe" style="margin-left:auto">CWE-327</span>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="block">
+            <div class="block-label">Описание</div>
+            <div class="block-text">Приложение подписано алгоритмом SHA1withRSA. SHA-1 имеет известные коллизии и считается устаревшим. Размер ключа 1024 бит недостаточен по современным стандартам.</div>
+          </div>
+          <div class="block">
+            <div class="block-label">Риск</div>
+            <div class="block-text">Теоретическая возможность подделки подписи и распространения вредоносной версии приложения от имени разработчика.</div>
+          </div>
+        </div>
+        <div class="fix-block">
+          <div class="block-label">Митигация</div>
+          <div class="block-text">Перевыпустить сертификат подписи с алгоритмом SHA256withRSA и ключом минимум 2048 бит. Включить v3/v4 подпись при сборке. Обновить keystore и переподписать приложение.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge high">HIGH</span>
+        <span class="card-title">Некорректная настройка App Links (assetlinks.json)</span>
+        <span class="cwe" style="margin-left:auto">CWE-20</span>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="block">
+            <div class="block-label">Описание</div>
+            <div class="block-text">Файл верификации App Links <code>assetlinks.json</code> не найден или некорректно настроен для доменов SubwaySurfers.sng.link и subwaysurfers.sng.link.</div>
+          </div>
+          <div class="block">
+            <div class="block-label">Риск</div>
+            <div class="block-text">Вредоносное приложение может перехватывать deep-link URL, предназначенные для Subway Surfers — фишинг, кража токенов авторизации.</div>
+          </div>
+        </div>
+        <div class="fix-block">
+          <div class="block-label">Митигация</div>
+          <div class="block-text">Разместить корректный файл <code>/.well-known/assetlinks.json</code> на всех доменах, указанных в манифесте как App Links. Верифицировать через Google Digital Asset Links API. Добавить <code>android:autoVerify="true"</code> в intent-filter.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge high">HIGH</span>
+        <span class="card-title">Поддержка устаревших версий Android (minSdk=23)</span>
+        <span class="cwe" style="margin-left:auto">CWE-1104</span>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="block">
+            <div class="block-label">Описание</div>
+            <div class="block-text">Приложение может быть установлено на Android 6.0 (API 23), которая содержит множество неисправленных уязвимостей и не получает обновлений безопасности от Google.</div>
+          </div>
+          <div class="block">
+            <div class="block-label">Риск</div>
+            <div class="block-text">Пользователи на старых Android подвержены эксплойтам уровня ОС, которые приложение не может компенсировать.</div>
+          </div>
+        </div>
+        <div class="fix-block">
+          <div class="block-label">Митигация</div>
+          <div class="block-text">Поднять <code>minSdkVersion</code> до 29 (Android 10) в соответствии с рекомендациями Google. Это исключит устройства, не получающие обновлений безопасности.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge high">HIGH</span>
+        <span class="card-title">Использование слабого шифрования — ECB режим и MD5/SHA-1</span>
+        <span class="cwe" style="margin-left:auto">CWE-327 / CWE-328</span>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="block">
+            <div class="block-label">Описание</div>
+            <div class="block-text">В коде найдено использование AES в режиме ECB (одинаковые блоки открытого текста дают одинаковый шифротекст), а также хэш-функций MD5 и SHA-1 в криптографических целях.</div>
+          </div>
+          <div class="block">
+            <div class="block-label">Файлы</div>
+            <div class="block-text">Преимущественно в рекламных SDK: <code>com/ironsource/</code>, <code>com/fyber/</code>, <code>com/mbridge/</code>, <code>com/unity3d/</code></div>
+          </div>
+        </div>
+        <div class="fix-block">
+          <div class="block-label">Митигация</div>
+          <div class="block-text">Заменить ECB на AES/GCM или AES/CBC с уникальным IV. Заменить MD5/SHA-1 на SHA-256 или SHA-3. Обновить рекламные SDK до актуальных версий — большинство уязвимостей находится в сторонних библиотеках.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge medium">MEDIUM</span>
+        <span class="card-title">Экспортированные компоненты без защиты</span>
+        <span class="cwe" style="margin-left:auto">CWE-926</span>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="block">
+            <div class="block-label">Описание</div>
+            <div class="block-text">5 Activity, 3 Service, 6 Broadcast Receiver и 1 Content Provider помечены <code>android:exported=true</code> без требования разрешений. Доступны любому приложению на устройстве.</div>
+          </div>
+          <div class="block">
+            <div class="block-label">Риск</div>
+            <div class="block-text">Стороннее приложение может запускать внутренние экраны, отправлять broadcast-события или читать данные Content Provider без авторизации.</div>
+          </div>
+        </div>
+        <div class="fix-block">
+          <div class="block-label">Митигация</div>
+          <div class="block-text">Для компонентов, не предназначенных для внешнего использования — установить <code>android:exported=false</code>. Для остальных — добавить <code>android:permission</code> с уровнем <code>signature</code> или <code>signatureOrSystem</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge medium">MEDIUM</span>
+        <span class="card-title">Небезопасная реализация WebView (JavaScript Bridge)</span>
+        <span class="cwe" style="margin-left:auto">CWE-749</span>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="block">
+            <div class="block-label">Описание</div>
+            <div class="block-text">WebView используется с выполнением пользовательского JavaScript-кода. Найдено в Unity Ads, AppLovin, IronSource SDK.</div>
+          </div>
+          <div class="block">
+            <div class="block-label">Риск</div>
+            <div class="block-text">XSS через рекламный контент может привести к выполнению произвольного кода в контексте приложения.</div>
+          </div>
+        </div>
+        <div class="fix-block">
+          <div class="block-label">Митигация</div>
+          <div class="block-text">Отключить <code>setJavaScriptEnabled</code> там, где JS не нужен. Валидировать URL перед загрузкой в WebView. Использовать <code>@JavascriptInterface</code> только для необходимых методов. Обновить SDK.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge medium">MEDIUM</span>
+        <span class="card-title">Хардкод чувствительных данных в коде</span>
+        <span class="cwe" style="margin-left:auto">CWE-312</span>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="block">
+            <div class="block-label">Описание</div>
+            <div class="block-text">MobSF обнаружил файлы с потенциально захардкоженными ключами, паролями или токенами в коде рекламных SDK.</div>
+          </div>
+          <div class="block">
+            <div class="block-label">Риск</div>
+            <div class="block-text">APK может быть декомпилирован (jadx, apktool), что даст доступ к API-ключам рекламных платформ.</div>
+          </div>
+        </div>
+        <div class="fix-block">
+          <div class="block-label">Митигация</div>
+          <div class="block-text">Вынести чувствительные значения на сервер и получать их во время выполнения. Применить обфускацию (ProGuard/R8). Ротировать обнаруженные ключи. Использовать Android Keystore для хранения секретов.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge medium">MEDIUM</span>
+        <span class="card-title">Запись чувствительных данных в логи</span>
+        <span class="cwe" style="margin-left:auto">CWE-532 · MSTG-STORAGE-3</span>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="block">
+            <div class="block-label">Описание</div>
+            <div class="block-text">Приложение использует <code>android.util.Log</code> для записи информации. На рутованных устройствах или через ADB логи доступны другим приложениям.</div>
+          </div>
+          <div class="block">
+            <div class="block-label">Файлы</div>
+            <div class="block-text"><code>com/mbridge/</code>, <code>com/vungle/</code>, <code>com/fyber/inneractive/sdk/logger/</code></div>
+          </div>
+        </div>
+        <div class="fix-block">
+          <div class="block-label">Митигация</div>
+          <div class="block-text">Отключить все <code>Log.d/Log.v</code> в production-сборке через ProGuard-правила или флаг <code>BuildConfig.DEBUG</code>. Никогда не логировать токены, ID пользователей, ответы серверов с персональными данными.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>

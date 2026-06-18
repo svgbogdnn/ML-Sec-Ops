@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЛР5</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="лабораторная-работа-№5">Лабораторная работа №5</h1>
+<h2 id="анализ-уязвимостей-python-кода-и-модель-безопасности-django">Анализ уязвимостей Python-кода и модель безопасности Django</h2>
+<h1 id="часть-i-—-анализ-уязвимостей-в-коде">Часть I — Анализ уязвимостей в коде</h1>
+<p>Фрагмент 1:</p>
+<p>#!/usr/bin/env python3<br>
+from flask import Flask<br>
+from mod_api import mod_api</p>
+<p>app = Flask(‘vuln_app’)<br>
+app.config[‘SECRET_KEY’] = ‘F0cUzh8BgYJSLXAU8qDmClM0dE8GJTpsiyVEl3BCqQMCABp1U$f%’<br>
+app.register_blueprint(mod_api, url_prefix=’/api’)</p>
+<p>Недостаток: SECRET_KEY хранится прямо в коде приложения.</p>
+<p>Риски: компрометация сессий, подделка cookies, утечка секрета при публикации кода.</p>
+<p>Рекомендации: хранить SECRET_KEY в переменных окружения, использовать vault или конфигурационные файлы вне репозитория.</p>
+<p>Фрагмент 2:</p>
+<p>from flask_wtf import Form<br>
+from wtforms import TextField</p>
+<p>class LoginForm(Form):<br>
+username = TextField(‘username’)<br>
+password = TextField(‘password’)</p>
+<p>Недостаток: отсутствует валидация пользовательского ввода.</p>
+<p>Риски: некорректные данные, возможные XSS/SQL Injection при обработке, отсутствие ограничений ввода.</p>
+<p>Рекомендации: использовать WTForms validators (DataRequired, Length, Regexp), ограничивать ввод, выполнять server-side validation.</p>
+<p>Фрагмент 3:</p>
+<p>def post(self):<br>
+username = self.get_argument(‘username’)<br>
+password = self.get_argument(‘password’).encode(‘utf-8’)<br>
+email = self.get_argument(‘mail’)</p>
+<p>try:<br>
+username = username.lower()<br>
+email = email.strip().lower()<br>
+user = User({<br>
+‘username’: username,<br>
+‘password’: password,<br>
+‘email’: email,<br>
+‘date_joined’: curtime()<br>
+})<br>
+user.validate()<br>
+save_user(self.db_conn, user)<br>
+except Exception as e:<br>
+return self.render_template(“success_create.html”)</p>
+<p>Недостатки: некорректная обработка ошибок (успех возвращается даже при исключении), отсутствие валидации данных, отсутствие логирования.</p>
+<p>Риски: ложный success, сложность отладки, сохранение некорректных данных.</p>
+<p>Рекомендации: разделить success/error логику, добавить логирование, усилить валидацию, использовать ORM.</p>
+<h1 id="часть-ii-—-django-безопасность">Часть II — Django безопасность</h1>
+<p>Django защищает от следующих атак: XSS (автоэкранирование шаблонов), CSRF (токены и проверка origin), SQL Injection (ORM и параметризация), Clickjacking (X-Frame-Options), session hijacking (HttpOnly и Secure cookies).</p>
+<p>Управление сессиями в Django: при входе создаётся sessionid, который сохраняется в cookie браузера. На сервере хранится связанная сессия (БД/кэш/файлы). Cookie не содержит чувствительных данных. Sessionid подписывается и может иметь срок жизни. При logout сессия удаляется и инвалидируется на сервере.</p>
+<h1 id="итог">Итог</h1>
+<p>В работе выявлены типовые ошибки Python-кода: хранение секретов в коде, отсутствие валидации, некорректная обработка ошибок. Также изучены механизмы безопасности Django: защита от XSS, CSRF, SQL Injection и управление сессиями.</p>
+</div>
+</body>
+
+</html>

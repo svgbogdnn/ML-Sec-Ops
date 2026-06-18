@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Лабораторная работа 6</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.55;
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 20px;
+      color: #222;
+      background: #fff;
+    }
+
+    h1, h2, h3 {
+      color: #222;
+      line-height: 1.25;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-top: 0;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 8px;
+    }
+
+    h2 {
+      font-size: 23px;
+      margin-top: 34px;
+      border-bottom: 1px solid #e5e5e5;
+      padding-bottom: 6px;
+    }
+
+    h3 {
+      font-size: 19px;
+      margin-top: 26px;
+    }
+
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.95em;
+    }
+
+    pre {
+      background: #f4f4f4;
+      padding: 13px;
+      border-radius: 6px;
+      overflow-x: auto;
+      border: 1px solid #e0e0e0;
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      font-size: 14px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 16px 0;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #f2f2f2;
+    }
+
+    img {
+      max-width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      margin: 10px 0;
+    }
+
+    ul {
+      padding-left: 24px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Лабораторная работа 6</h1>
+  <p><strong>Тема:</strong> базовая настройка безопасности Docker-контейнера.</p>
+
+  <h2>Часть 1. Проверка пользователя в контейнере</h2>
+
+  <p>Для работы я выбрал образ:</p>
+  <pre><code>ket9/otus-devsecops-owasp-rest:latest</code></pre>
+
+  <p>Сначала посмотрел локальные образы:</p>
+  <pre><code>docker image ls</code></pre>
+
+  <p>На машине уже были образы <code>ket9/otus-devsecops-owasp-rest</code>, <code>ket9/otus-devsecops-xss</code>, <code>ket9/otus-devsecops</code> и <code>mysql:5.7</code>.</p>
+
+  <p>До запуска контейнера выполнил:</p>
+  <pre><code>whoami</code></pre>
+
+  <p>Результат:</p>
+  <pre><code>glebovmaksim</code></pre>
+
+  <p>Потом проверил пользователя внутри контейнера:</p>
+  <pre><code>docker run --rm --entrypoint sh ket9/otus-devsecops-owasp-rest:latest -c 'whoami'</code></pre>
+
+  <p>Результат:</p>
+  <pre><code>root</code></pre>
+
+  <p>Вывод: базовый контейнер запускается от пользователя <code>root</code>, это небезопасно.</p>
+
+  <p><img src="part1.png" alt="Скриншот части 1"></p>
+
+  <h2>Часть 2. Dockerfile с non-root пользователем</h2>
+
+  <p>Я написал Dockerfile на основе выбранного образа:</p>
+  <pre><code>FROM ket9/otus-devsecops-owasp-rest:latest
+
+RUN adduser -D -H -s /sbin/nologin appuser
+
+USER appuser
+
+EXPOSE 8080</code></pre>
+
+  <p>Полный файл лежит рядом с отчетом:</p>
+  <pre><code>Dockerfile</code></pre>
+
+  <p>Собрал образ:</p>
+  <pre><code>docker build -t lab6-secure .</code></pre>
+
+  <p>Проверил пользователя внутри нового контейнера:</p>
+  <pre><code>docker run --rm --entrypoint sh lab6-secure -c 'whoami; id'</code></pre>
+
+  <p>Результат:</p>
+  <pre><code>appuser
+uid=1000(appuser) gid=1000(appuser) groups=1000(appuser)</code></pre>
+
+  <p>Вывод: теперь контейнер запускается не от <code>root</code>.</p>
+
+  <p><img src="part2.png" alt="Скриншот части 2"></p>
+
+  <h2>Часть 3. Сканирование образа Trivy</h2>
+
+  <p>Для проверки я использовал Trivy:</p>
+  <pre><code>trivy image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed \
+  ket9/otus-devsecops-owasp-rest:latest</code></pre>
+
+  <p>Краткий результат:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Уровень</th>
+        <th>Количество</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>HIGH</td><td>62</td></tr>
+      <tr><td>CRITICAL</td><td>8</td></tr>
+      <tr><td>Всего</td><td>70</td></tr>
+    </tbody>
+  </table>
+
+  <p>По целям:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Цель</th>
+        <th>Количество</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Alpine 3.14.2</td><td>56</td></tr>
+      <tr><td>Python packages</td><td>14</td></tr>
+    </tbody>
+  </table>
+
+  <p>Trivy также показал предупреждение, что <code>Alpine 3.14.2</code> больше не поддерживается. Значит, для этой версии уже не выпускаются security updates, и использовать такой образ в production нельзя.</p>
+
+  <p>Примеры найденных уязвимостей:</p>
+  <ul>
+    <li><code>CVE-2021-42378</code> в <code>busybox</code>;</li>
+    <li><code>CVE-2022-22822</code> в <code>expat</code>;</li>
+    <li><code>CVE-2023-30861</code> в <code>Flask</code>;</li>
+    <li>уязвимости в <code>PyJWT</code>, <code>Werkzeug</code>, <code>setuptools</code>, <code>urllib3</code>.</li>
+  </ul>
+
+  <h2>Вывод</h2>
+
+  <p>Исходный контейнер запускался от <code>root</code>, поэтому я собрал новый образ с пользователем <code>appuser</code>. Это снижает риск, если приложение внутри контейнера будет скомпрометировано.</p>
+
+  <p>Сканирование Trivy показало, что выбранный образ небезопасен: старая Alpine 3.14.2 уже не поддерживается, а в системных и Python-пакетах есть 70 уязвимостей уровня <code>HIGH</code> и <code>CRITICAL</code>.</p>
+
+  <p>Что нужно сделать для улучшения:</p>
+  <ul>
+    <li>обновить базовый образ до поддерживаемой версии Alpine;</li>
+    <li>обновить Python и зависимости приложения;</li>
+    <li>запускать контейнер от non-root пользователя;</li>
+    <li>запускать контейнер с ограничениями <code>--read-only</code>, <code>--cap-drop ALL</code>, <code>no-new-privileges</code>;</li>
+    <li>добавить сканирование Trivy в CI/CD.</li>
+  </ul>
+</body>
+</html>

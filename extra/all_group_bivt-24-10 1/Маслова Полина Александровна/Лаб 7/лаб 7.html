@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 26.2.2.2 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changed" content="00:00:00"/>
+	<style type="text/css">
+		@page { size: 8.27in 11.69in; margin: 0.79in }
+		p { margin-bottom: 0.1in; line-height: 115%; background: transparent }
+		h2 { margin-top: 0.14in; margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h2.western { font-weight: bold; font-size: 16pt; font-family: "Liberation Sans", sans-serif }
+		h2.cjk { font-weight: bold; font-size: 16pt; font-family: "Noto Sans CJK SC" }
+		h2.ctl { font-weight: bold; font-family: "Droid Sans"; font-size: 16pt }
+		h3 { margin-top: 0.1in; margin-bottom: 0.08in; background: transparent; page-break-after: avoid }
+		h3.western { font-weight: bold; font-size: 14pt; font-family: "Liberation Sans", sans-serif }
+		h3.cjk { font-weight: bold; font-size: 14pt; font-family: "Noto Sans CJK SC" }
+		h3.ctl { font-weight: bold; font-family: "Droid Sans"; font-size: 14pt }
+		td p { widows: 0; orphans: 0; background: transparent }
+		th p { widows: 0; text-align: center; orphans: 0; font-weight: bold; background: transparent }
+	</style>
+</head>
+<body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><p><b>План
+по митигации рисков для приложения
+Telegram (org.telegram.messenger.web)</b></p>
+<p><b>Общая информация</b></p>
+<ul>
+	<li><p>Приложение: Telegram</p></li>
+	<li><p>Версия: 12.7.3</p></li>
+	<li><p>Дата сканирования: 30 мая 2026 г.</p></li>
+	<li><p>Инструмент: MobSF v4.5.0</p></li>
+	<li><p>Общий уровень риска: MEDIUM RISK (51/100)</p></li>
+</ul>
+<hr/>
+
+<h2 class="western">1. Обнаруженные недостатки
+и уязвимости</h2>
+<h3 class="western">1.1. Manifest Analysis</h3>
+<table width="100%" cellpadding="4" cellspacing="0">
+	<col width="64*"/>
+	<col width="64*"/>
+	<col width="64*"/>
+	<col width="64*"/>
+	<thead>
+		<tr valign="top">
+			<th width="25%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				№</p>
+			</th>
+			<th width="25%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Проблема</p>
+			</th>
+			<th width="25%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Severity</p>
+			</th>
+			<th width="25%" style="border: 1px solid #000000; padding: 0.04in"><p align="left">
+				Описание</p>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				1</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Поддержка устаревшей версии Android</b></p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>HIGH</b></p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Приложение можно установить на Android
+				5.0 (API 21), у которого есть множество
+				неисправленных уязвимостей. Эти
+				устройства не получают обновления
+				безопасности.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				2</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Разрешен незашифрованный трафик
+				(Cleartext Traffic)</b></p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>HIGH</b></p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p>
+				<font face="Liberation Mono, monospace">android:usesCleartextTraffic=true</font>
+				— приложение разрешает HTTP-трафик,
+				который не защищен и может быть
+				перехвачен.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				3</p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Множество экспортированных
+				компонентов</b></p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>WARNING</b></p>
+			</td>
+			<td width="25%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				14 exported Activities, 15 exported Services, 4 exported
+				Receivers, 1 exported Provider — это увеличивает
+				поверхность атаки.</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p><br/>
+<br/>
+
+</p>
+<h3 class="western">1.2. Code Analysis</h3>
+<table width="100%" cellpadding="4" cellspacing="0">
+	<col width="51*"/>
+	<col width="51*"/>
+	<col width="51*"/>
+	<col width="51*"/>
+	<col width="51*"/>
+	<thead>
+		<tr valign="top">
+			<th width="20%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				№</p>
+			</th>
+			<th width="20%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Проблема</p>
+			</th>
+			<th width="20%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Severity</p>
+			</th>
+			<th width="20%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Расположение</p>
+			</th>
+			<th width="20%" style="border: 1px solid #000000; padding: 0.04in"><p align="left">
+				Описание</p>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				1</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Небезопасная криптография (Padding
+				Oracle)</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>HIGH</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">BotBiometry.java</font></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Использование режима CBC с PKCS5/PKCS7
+				padding уязвимо для атак Padding Oracle.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				2</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Логирование информации</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>INFO</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				Файлы: <font face="Liberation Mono, monospace">AndroidUtilities.java</font>,
+				<font face="Liberation Mono, monospace">FileLog.java</font> и
+				др.</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Приложение логирует данные.
+				Чувствительная информация не должна
+				попадать в логи.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				3</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Небезопасная реализация WebView</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>WARNING</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">ArticleViewer.java</font>,
+				<font face="Liberation Mono, monospace">WebPlayerView.java</font>,
+				<font face="Liberation Mono, monospace">BotWebViewContainer.java</font>
+				и др.</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Выполнение пользовательского кода
+				в WebView может привести к XSS и RCE.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				4</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Доступ к внешнему хранилищу</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>WARNING</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">AndroidUtilities.java</font>,
+				<font face="Liberation Mono, monospace">ImageLoader.java</font> и
+				др.</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Приложение читает/пишет во внешнее
+				хранилище. Любое приложение может
+				прочитать эти данные.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				5</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Копирование данных в буфер обмена</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>INFO</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">AndroidUtilities.java</font>,
+				<font face="Liberation Mono, monospace">ChatActivity.java</font>,
+				<font face="Liberation Mono, monospace">ShareAlert.java</font> и
+				др.</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Чувствительные данные не должны
+				копироваться в clipboard, так как другие
+				приложения могут их прочитать.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				6</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Небезопасный генератор случайных
+				чисел</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>WARNING</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">Utilities.java</font>,
+				<font face="Liberation Mono, monospace">ThreadLocalRandom.java</font>
+				и др.</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Использование небезопасного RNG может
+				привести к предсказуемости случайных
+				значений.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				7</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Использование слабых хешей (MD5)</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>WARNING</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">FileUploadOperation.java</font>,
+				<font face="Liberation Mono, monospace">MessagesController.java</font>,
+				<font face="Liberation Mono, monospace">Utilities.java</font></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				MD5 известен коллизиями и не должен
+				использоваться для криптографических
+				целей.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				8</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Использование слабых хешей (SHA-1)</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>WARNING</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">Utilities.java</font>,
+				<font face="Liberation Mono, monospace">PassportActivity.java</font></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				SHA-1 также имеет известные коллизии,
+				следует перейти на SHA-256.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				9</p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Раскрытие IP-адреса</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>WARNING</b></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<font face="Liberation Mono, monospace">NanoHTTPD.java</font></p>
+			</td>
+			<td width="20%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				IP-адрес устройства может быть раскрыт.</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p><br/>
+<br/>
+
+</p>
+<h3 class="western">1.3. App Permissions</h3>
+<p>Приложение запрашивает 19 разрешений,
+которые могут быть использованы
+злоумышленником:</p>
+<ul>
+	<li><p><font face="Liberation Mono, monospace">ACCESS_COARSE_LOCATION</font>
+	/ <font face="Liberation Mono, monospace">ACCESS_FINE_LOCATION</font>
+	— доступ к местоположению</p></li>
+	<li><p><font face="Liberation Mono, monospace">READ_CALL_LOG</font>
+	/ <font face="Liberation Mono, monospace">READ_PHONE_STATE</font> /
+	<font face="Liberation Mono, monospace">READ_PHONE_NUMBERS</font> —
+	доступ к звонкам и данным телефона</p></li>
+	<li><p><font face="Liberation Mono, monospace">SEND_SMS</font> —
+	отправка SMS</p></li>
+	<li><p><font face="Liberation Mono, monospace">RECORD_AUDIO</font> —
+	запись звука</p></li>
+	<li><p><font face="Liberation Mono, monospace">CAMERA</font> —
+	доступ к камере</p></li>
+	<li><p><font face="Liberation Mono, monospace">READ_CONTACTS</font>
+	/ <font face="Liberation Mono, monospace">WRITE_CONTACTS</font> /
+	<font face="Liberation Mono, monospace">GET_ACCOUNTS</font> /
+	<font face="Liberation Mono, monospace">MANAGE_ACCOUNTS</font> —
+	доступ к контактам и аккаунтам</p></li>
+	<li><p><font face="Liberation Mono, monospace">READ_EXTERNAL_STORAGE</font>
+	/ <font face="Liberation Mono, monospace">WRITE_EXTERNAL_STORAGE</font>
+	— доступ к файлам</p></li>
+	<li><p><font face="Liberation Mono, monospace">READ_MEDIA_IMAGES</font>
+	/ <font face="Liberation Mono, monospace">READ_MEDIA_VIDEO</font> /
+	<font face="Liberation Mono, monospace">READ_MEDIA_AUDIO</font> —
+	доступ к медиафайлам</p></li>
+	<li><p><font face="Liberation Mono, monospace">REQUEST_INSTALL_PACKAGES</font>
+	— установка APK</p></li>
+	<li><p><font face="Liberation Mono, monospace">POST_NOTIFICATIONS</font>
+	— отправка уведомлений</p></li>
+	<li><p><font face="Liberation Mono, monospace">ACCESS_BACKGROUND_LOCATION</font>
+	— доступ к местоположению в фоне</p></li>
+	<li><p><font face="Liberation Mono, monospace">SYSTEM_ALERT_WINDOW</font>
+	— системные окна</p></li>
+</ul>
+<h3 class="western">1.4. Certificate Analysis</h3>
+<table width="100%" cellpadding="4" cellspacing="0">
+	<col width="85*"/>
+	<col width="85*"/>
+	<col width="85*"/>
+	<thead>
+		<tr valign="top">
+			<th width="33%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Проблема</p>
+			</th>
+			<th width="33%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Severity</p>
+			</th>
+			<th width="33%" style="border: 1px solid #000000; padding: 0.04in"><p align="left">
+				Описание</p>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Уязвимость Janus</b></p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>WARNING</b></p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Приложение подписано с использованием
+				v1 signature scheme, что делает его уязвимым
+				для Janus на Android 5.0-8.0.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Алгоритм сертификата подвержен
+				коллизиям хеша</b></p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>WARNING</b></p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Используется SHA1withRSA. SHA-1 имеет известные
+				коллизии.</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p><br/>
+<br/>
+
+</p>
+<h3 class="western">1.5. Behaviour Analysis</h3>
+<table width="100%" cellpadding="4" cellspacing="0">
+	<col width="128*"/>
+	<col width="128*"/>
+	<thead>
+		<tr valign="top">
+			<th width="50%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Поведение</p>
+			</th>
+			<th width="50%" style="border: 1px solid #000000; padding: 0.04in"><p align="left">
+				Риск</p>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Открытие файлов по абсолютному пути</p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Доступ к файловой системе</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Чтение файлов и помещение в поток</p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Утечка данных</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Подключение к URL и получение данных</p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Сетевая активность (может быть
+				экфильтрация)</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Получение геолокации</p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Сбор местоположения</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Получение IMEI/IMSI</p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Идентификация устройства</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Отправка SMS</p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Финансовые риски</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Запуск камеры и запись</p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Вторжение в приватность</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p><br/>
+<br/>
+
+</p>
+<hr/>
+
+<h2 class="western">2. План по митигации рисков</h2>
+<h3 class="western">2.1. Краткосрочные меры</h3>
+<table width="100%" cellpadding="4" cellspacing="0">
+	<col width="128*"/>
+	<col width="128*"/>
+	<thead>
+		<tr valign="top">
+			<th width="50%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Уязвимость</p>
+			</th>
+			<th width="50%" style="border: 1px solid #000000; padding: 0.04in"><p align="left">
+				Что можно сделать</p>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Cleartext Traffic (HTTP)</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p>
+				Установить <font face="Liberation Mono, monospace">android:usesCleartextTraffic=&quot;false&quot;</font>
+				в <font face="Liberation Mono, monospace">AndroidManifest.xml</font>.
+				Все сетевые соединения перевести на
+				HTTPS.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Уязвимость Janus</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Подписывать приложение с использованием
+				v2 (APK Signature Scheme v2) и v3 в дополнение к v1.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Слабый алгоритм сертификата</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Сгенерировать новый ключ с использованием
+				RSA с 2048 бит и подпись SHA-256.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Логирование</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Удалить или закомментировать логи в
+				release-сборке. Использовать ProGuard для
+				удаления Log.d() вызовов.</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p><br/>
+<br/>
+
+</p>
+<h3 class="western">2.2. Среднесрочные меры</h3>
+<table width="100%" cellpadding="4" cellspacing="0">
+	<col width="128*"/>
+	<col width="128*"/>
+	<thead>
+		<tr valign="top">
+			<th width="50%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Уязвимость</p>
+			</th>
+			<th width="50%" style="border: 1px solid #000000; padding: 0.04in"><p align="left">
+				Что можно сделать</p>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Небезопасная криптография (CBC +
+				PKCS5/PKCS7)</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Перейти на GCM (Galois/Counter Mode) или другой
+				режим с аутентификацией. Использовать
+				библиотеки с безопасными дефолтами
+				(например, libsodium, Tink).</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>MD5 / SHA-1</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Заменить на SHA-256 или SHA-3. Для паролей
+				использовать bcrypt, PBKDF2 или Argon2.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Небезопасный RNG</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Использовать java.security.SecureRandom вместо
+				ThreadLocalRandom или Xoroshiro128PlusRandom.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>WebView уязвимости</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				setJavaScriptEnabled(false) по умолчанию. Для
+				доверенных доменов использовать
+				addJavascriptInterface с @JavascriptInterface. Внедрить
+				проверку URL перед загрузкой.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Экспортированные компоненты</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Установить android:exported=&quot;false&quot; для
+				компонентов, которые не должны
+				вызываться другими приложениями. Для
+				необходимых — добавить разрешения.</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p><br/>
+<br/>
+
+</p>
+<h3 class="western">2.3. Долгосрочные архитектурные
+меры</h3>
+<table width="100%" cellpadding="4" cellspacing="0">
+	<col width="128*"/>
+	<col width="128*"/>
+	<thead>
+		<tr valign="top">
+			<th width="50%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Проблема</p>
+			</th>
+			<th width="50%" style="border: 1px solid #000000; padding: 0.04in"><p align="left">
+				Рекомендация</p>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Поддержка устаревших Android</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Повысить minSdkVersion до API 23 (Android 6.0) или
+				выше. Это отсечет уязвимые устройства
+				и позволит использовать новые API
+				безопасности.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Доступ к внешнему хранилищу</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Использовать Scoped Storage (Android 10+). Для
+				файлов приложения использовать
+				внутреннее хранилище или MediaStore API.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Опасные разрешения</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Пересмотреть необходимость каждого
+				dangerous разрешения. Запрашивать их
+				только в момент использования (runtime
+				permissions). Добавить объяснение пользователю
+				(shouldShowRequestPermissionRationale).</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Копирование в буфер обмена</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Не копировать чувствительные данные
+				(пароли, токены, ключи) в clipboard. Если
+				необходимо — использовать временные
+				метки и очищать clipboard.</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p><br/>
+<br/>
+
+</p>
+<h3 class="western">2.4. Процедурные меры</h3>
+<table width="100%" cellpadding="4" cellspacing="0">
+	<col width="128*"/>
+	<col width="128*"/>
+	<thead>
+		<tr valign="top">
+			<th width="50%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Мера</p>
+			</th>
+			<th width="50%" style="border: 1px solid #000000; padding: 0.04in"><p align="left">
+				Описание</p>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>SAST в CI/CD</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Внедрить MobSF или другой SAST-инструмент
+				в пайплайн CI/CD (GitHub Actions, GitLab CI, Jenkins).
+				Сканировать каждую сборку перед
+				публикацией.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Обновление зависимостей</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Регулярно обновлять библиотеки и
+				зависимости, отслеживая CVE через
+				Dependabot или Snyk.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>ProGuard / R8</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Включить обфускацию кода и оптимизацию.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Проверка на root</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Добавить обнаружение рутованных
+				устройств (например, SafetyNet или RootBeer).</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>Отчеты о безопасности</b></p>
+			</td>
+			<td width="50%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Проводить регулярные пентесты и
+				анализ отчетов MobSF (не реже раза в
+				квартал).</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p><br/>
+<br/>
+
+</p>
+<hr/>
+
+<h2 class="western">3. Резюме приоритетов</h2>
+<table width="100%" cellpadding="4" cellspacing="0">
+	<col width="85*"/>
+	<col width="85*"/>
+	<col width="85*"/>
+	<thead>
+		<tr valign="top">
+			<th width="33%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Приоритет</p>
+			</th>
+			<th width="33%" style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.04in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Что исправить</p>
+			</th>
+			<th width="33%" style="border: 1px solid #000000; padding: 0.04in"><p align="left">
+				Почему</p>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>1 (Критично)</b></p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Cleartext Traffic (HTTP) + Janus Vulnerability</p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Перехват трафика, компрометация
+				данных, подделка APK</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>2 (Очень важно)</b></p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Padding Oracle (CBC) + MD5/SHA-1</p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Нарушение конфиденциальности данных</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>3 (Важно)</b></p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				WebView уязвимости + экспортированные
+				компоненты</p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				XSS, RCE, несанкционированный доступ</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>4 (Желательно)</b></p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Логирование + clipboard + external storage</p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Утечка данных</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p>
+				<b>5 (Рекомендуется)</b></p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0in"><p align="left">
+				Поддержка старых Android + опасные
+				разрешения</p>
+			</td>
+			<td width="33%" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0in; padding-bottom: 0.04in; padding-left: 0.04in; padding-right: 0.04in"><p align="left">
+				Снижение поверхности атаки, улучшение
+				приватности</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p><br/>
+<br/>
+
+</p>
+<p><br/>
+<br/>
+
+</p>
+</body>
+</html>
